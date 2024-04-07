@@ -16,7 +16,7 @@
         "/api/inventories": {
             "get": {
                 "tags": [
-                    "Inventory"
+                    "Inventories"
                 ],
                 "summary": "Get all inventories",
                 "description": "Returns a list of all inventories.",
@@ -179,7 +179,7 @@
         "/api/inventories/{id}": {
             "get": {
                 "tags": [
-                    "Inventory"
+                    "Inventories"
                 ],
                 "summary": "Get inventory record by ID",
                 "description": "Returns a single inventory record based on the provided ID.",

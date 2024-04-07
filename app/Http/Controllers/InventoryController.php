@@ -3,14 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreInventoryRequest;
+use App\Http\Requests\UpdateInventoryRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use App\Models\Inventory;
-
-
-
+use Carbon\Carbon;
 
 class InventoryController extends Controller
 {
@@ -19,7 +18,7 @@ class InventoryController extends Controller
     /**
      * @OA\Get(
      *      path="/api/inventories",
-     *      tags={"Inventory"},
+     *      tags={"Inventories"},
      *      summary="Get all inventories",
      *      description="Returns a list of all inventories.",
      *      @OA\Response(
@@ -63,7 +62,7 @@ class InventoryController extends Controller
     /**
      * @OA\Get(
      *      path="/api/inventories/{id}",
-     *      tags={"Inventory"},
+     *      tags={"Inventories"},
      *      summary="Get inventory record by ID",
      *      description="Returns a single inventory record based on the provided ID.",
      *      @OA\Parameter(
@@ -242,8 +241,47 @@ class InventoryController extends Controller
     public function store(StoreInventoryRequest $request)
     {
         try {
+
+
             $inventory = Inventory::create($request->validated());
+            $currentTime = Carbon::now()->toDateTimeString();
+            $inventory->updated_at = $currentTime;
+            $inventory->created_at = $currentTime;
+            $inventory->save();
+
             return response()->json(['message' => 'שורה נוצרה בהצלחה.'], Response::HTTP_CREATED);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+    public function update(UpdateInventoryRequest $request, $id = null)
+    {
+        if (is_null($id)) {
+            return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+
+
+            $inventory = Inventory::where('is_deleted', 0)
+                ->where('id', $id)
+                ->first();
+            if (is_null($inventory)) {
+                return response()->json(['message' => 'שורה אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
+            }
+
+
+            $currentTime = Carbon::now()->toDateTimeString();
+
+
+            $inventory->update($request->validated());
+
+            $inventory->updated_at =  $currentTime;
+            $inventory->save();
+
+            return response()->json(['message' => 'שורה התעדכנה בהצלחה.'], Response::HTTP_OK);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
