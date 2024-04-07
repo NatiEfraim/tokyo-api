@@ -25,7 +25,7 @@ Route::controller(InventoryController::class)
 Route::controller(DistributionController::class)
     ->prefix('distributions')->group(function () {
         Route::get('/', 'index');
-        // Route::get('/getinventory/{id?}', 'getRecordById');
+        Route::get('/getditribution/{id?}', 'getRecordById');
         // Route::put('/{id?}', 'update');
         // Route::post('/', 'store');
         // Route::delete('/{id?}', 'destroy');

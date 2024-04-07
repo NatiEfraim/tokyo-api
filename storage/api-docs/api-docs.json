@@ -20,7 +20,7 @@
                 ],
                 "summary": "Get all distributions",
                 "description": "Returns a list of all distributions.",
-                "operationId": "2f5d0579f6d5f31ac02e4b190dc086c6",
+                "operationId": "1c50a7e7560b6a28a8dc55c38f7ed1c1",
                 "responses": {
                     "200": {
                         "description": "Successful operation",
@@ -101,6 +101,292 @@
                                         "message": {
                                             "type": "string",
                                             "example": "התרחש בעיית שרת יש לנסות שוב מאוחר יותר."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/distributions/{id}": {
+            "get": {
+                "tags": [
+                    "Distributions"
+                ],
+                "summary": "Get distribution by ID",
+                "description": "Returns a single distribution by its ID.",
+                "operationId": "969a77d88e641f3dd8bf2e3935a24bed",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the distribution",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "comment": {
+                                            "type": "string",
+                                            "example": "Velit veritatis quia vel nemo qui. Eaque commodi expedita enim libero ut. Porro ducimus repellendus tenetur."
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "quantity": {
+                                            "type": "integer",
+                                            "example": 44
+                                        },
+                                        "inventory_id": {
+                                            "type": "integer",
+                                            "example": 24
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2024-04-07T11:42:45.000000Z"
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2024-04-07T11:42:45.000000Z"
+                                        },
+                                        "inventory": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 24
+                                                },
+                                                "quantity": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "sku": {
+                                                    "type": "string",
+                                                    "example": "1359395842801"
+                                                },
+                                                "item_type": {
+                                                    "type": "string",
+                                                    "example": "magni"
+                                                },
+                                                "detailed_description": {
+                                                    "type": "string",
+                                                    "example": "Velit ut ipsam neque tempora est dicta. Et distinctio eligendi expedita corporis assumenda aspernatur hic."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "יש לשלוח מספר מזהה של שורה"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "התרחש בעיית שרת יש לנסות שוב מאוחר יותר."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/inventories": {
+            "get": {
+                "tags": [
+                    "Inventories"
+                ],
+                "summary": "Get all inventories",
+                "description": "Returns a list of all inventories.",
+                "operationId": "14778f5d86f3e51cab479d0cf398aac1",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "quantity": {
+                                                "type": "integer",
+                                                "example": 33
+                                            },
+                                            "sku": {
+                                                "type": "string",
+                                                "example": "0028221469208"
+                                            },
+                                            "item_type": {
+                                                "type": "string",
+                                                "example": "autem"
+                                            },
+                                            "detailed_description": {
+                                                "type": "string",
+                                                "example": "Neque recusandae corporis totam facere pariatur. Et perspiciatis aut in quia. Placeat quas vero modi magni ut. Voluptas et qui vitae culpa."
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "התרחש בעיית שרת יש לנסות שוב מאוחר יותר."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Inventories"
+                ],
+                "summary": "Create a new inventory item",
+                "description": "Store a newly created inventory item in the database.",
+                "operationId": "104375b37edb2c1ab9fc350db904eec6",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "quantity",
+                                    "sku",
+                                    "item_type",
+                                    "detailed_description"
+                                ],
+                                "properties": {
+                                    "quantity": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "sku": {
+                                        "type": "string",
+                                        "example": "ABC123"
+                                    },
+                                    "item_type": {
+                                        "type": "string",
+                                        "example": "Product"
+                                    },
+                                    "detailed_description": {
+                                        "type": "string",
+                                        "example": "Detailed description of the item."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Inventory item created successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": {
+                                                "quantity": [
+                                                    "The quantity field is required."
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Internal server error."
                                         }
                                     },
                                     "type": "object"
@@ -275,108 +561,6 @@
                                         "message": {
                                             "type": "string",
                                             "example": "התרחש בעיית שרת יש לנסות שוב מאוחר יותר."
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/inventories": {
-            "post": {
-                "tags": [
-                    "Inventories"
-                ],
-                "summary": "Create a new inventory item",
-                "description": "Store a newly created inventory item in the database.",
-                "operationId": "104375b37edb2c1ab9fc350db904eec6",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "quantity",
-                                    "sku",
-                                    "item_type",
-                                    "detailed_description"
-                                ],
-                                "properties": {
-                                    "quantity": {
-                                        "type": "integer",
-                                        "example": 10
-                                    },
-                                    "sku": {
-                                        "type": "string",
-                                        "example": "ABC123"
-                                    },
-                                    "item_type": {
-                                        "type": "string",
-                                        "example": "Product"
-                                    },
-                                    "detailed_description": {
-                                        "type": "string",
-                                        "example": "Detailed description of the item."
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Success response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Inventory item created successfully."
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "The given data was invalid."
-                                        },
-                                        "errors": {
-                                            "type": "object",
-                                            "example": {
-                                                "quantity": [
-                                                    "The quantity field is required."
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Server error response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Internal server error."
                                         }
                                     },
                                     "type": "object"

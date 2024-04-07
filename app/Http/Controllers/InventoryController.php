@@ -17,10 +17,10 @@ class InventoryController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/distributions",
-     *      tags={"Distributions"},
-     *      summary="Get all distributions",
-     *      description="Returns a list of all distributions.",
+     *      path="/api/inventories",
+     *      tags={"Inventories"},
+     *      summary="Get all inventories",
+     *      description="Returns a list of all inventories.",
      *      @OA\Response(
      *          response=200,
      *          description="Successful operation",
@@ -29,19 +29,10 @@ class InventoryController extends Controller
      *              @OA\Items(
      *                  type="object",
      *                  @OA\Property(property="id", type="integer", example=1),
-     *                  @OA\Property(property="comment", type="string", example="Velit veritatis quia vel nemo qui. Eaque commodi expedita enim libero ut. Porro ducimus repellendus tenetur."),
-     *                  @OA\Property(property="status", type="integer", example=1),
-     *                  @OA\Property(property="quantity", type="integer", example=44),
-     *                  @OA\Property(property="inventory_id", type="integer", example=24),
-     *                  @OA\Property(property="created_at", type="string", format="date-time", example="2024-04-07T11:42:45.000000Z"),
-     *                  @OA\Property(property="updated_at", type="string", format="date-time", example="2024-04-07T11:42:45.000000Z"),
-     *                  @OA\Property(property="inventory", type="object",
-     *                      @OA\Property(property="id", type="integer", example=24),
-     *                      @OA\Property(property="quantity", type="integer", example=10),
-     *                      @OA\Property(property="sku", type="string", example="1359395842801"),
-     *                      @OA\Property(property="item_type", type="string", example="magni"),
-     *                      @OA\Property(property="detailed_description", type="string", example="Velit ut ipsam neque tempora est dicta. Et distinctio eligendi expedita corporis assumenda aspernatur hic.")
-     *                  )
+     *                  @OA\Property(property="quantity", type="integer", example=33),
+     *                  @OA\Property(property="sku", type="string", example="0028221469208"),
+     *                  @OA\Property(property="item_type", type="string", example="autem"),
+     *                  @OA\Property(property="detailed_description", type="string", example="Neque recusandae corporis totam facere pariatur. Et perspiciatis aut in quia. Placeat quas vero modi magni ut. Voluptas et qui vitae culpa.")
      *              )
      *          )
      *      ),
