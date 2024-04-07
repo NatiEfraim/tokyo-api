@@ -13,4 +13,5 @@ Route::controller(InventoryController::class)
     ->prefix('inventories')->group(function ()
     {
         Route::get('/','index');
+        Route::get('/getinventory/{id?}','getRecordById');
     });
