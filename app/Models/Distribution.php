@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Inventory extends Model
+class Distribution extends Model
 {
     use HasFactory;
 
@@ -15,10 +15,10 @@ class Inventory extends Model
      * @var array
      */
     protected $fillable = [
+        'comment',
+        'status',
         'quantity',
-        'sku',
-        'item_type',
-        'detailed_description',
+        'inventory_id',
         'is_deleted',
         'created_at',
         'updated_at'
@@ -31,17 +31,15 @@ class Inventory extends Model
      */
     protected $hidden = [
         'is_deleted',
-        'created_at',
-        'updated_at',
-
     ];
 
 
+
     /**
-     * Get the distribution record associated with the inventory.
+     * Get the inventory record associated with the distribution.
      */
-    public function distribution()
+    public function inventory()
     {
-        return $this->hasOne(Distribution::class);
+        return $this->belongsTo(Inventory::class);
     }
 }

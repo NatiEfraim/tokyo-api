@@ -17,10 +17,10 @@ class InventoryController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/inventories",
-     *      tags={"Inventories"},
-     *      summary="Get all inventories",
-     *      description="Returns a list of all inventories.",
+     *      path="/api/distributions",
+     *      tags={"Distributions"},
+     *      summary="Get all distributions",
+     *      description="Returns a list of all distributions.",
      *      @OA\Response(
      *          response=200,
      *          description="Successful operation",
@@ -29,10 +29,19 @@ class InventoryController extends Controller
      *              @OA\Items(
      *                  type="object",
      *                  @OA\Property(property="id", type="integer", example=1),
-     *                  @OA\Property(property="quantity", type="integer", example=33),
-     *                  @OA\Property(property="sku", type="string", example="0028221469208"),
-     *                  @OA\Property(property="item_type", type="string", example="autem"),
-     *                  @OA\Property(property="detailed_description", type="string", example="Neque recusandae corporis totam facere pariatur. Et perspiciatis aut in quia. Placeat quas vero modi magni ut. Voluptas et qui vitae culpa.")
+     *                  @OA\Property(property="comment", type="string", example="Velit veritatis quia vel nemo qui. Eaque commodi expedita enim libero ut. Porro ducimus repellendus tenetur."),
+     *                  @OA\Property(property="status", type="integer", example=1),
+     *                  @OA\Property(property="quantity", type="integer", example=44),
+     *                  @OA\Property(property="inventory_id", type="integer", example=24),
+     *                  @OA\Property(property="created_at", type="string", format="date-time", example="2024-04-07T11:42:45.000000Z"),
+     *                  @OA\Property(property="updated_at", type="string", format="date-time", example="2024-04-07T11:42:45.000000Z"),
+     *                  @OA\Property(property="inventory", type="object",
+     *                      @OA\Property(property="id", type="integer", example=24),
+     *                      @OA\Property(property="quantity", type="integer", example=10),
+     *                      @OA\Property(property="sku", type="string", example="1359395842801"),
+     *                      @OA\Property(property="item_type", type="string", example="magni"),
+     *                      @OA\Property(property="detailed_description", type="string", example="Velit ut ipsam neque tempora est dicta. Et distinctio eligendi expedita corporis assumenda aspernatur hic.")
+     *                  )
      *              )
      *          )
      *      ),
@@ -243,6 +252,7 @@ class InventoryController extends Controller
         try {
 
 
+
             $inventory = Inventory::create($request->validated());
             $currentTime = Carbon::now()->toDateTimeString();
             $inventory->updated_at = $currentTime;
@@ -256,6 +266,45 @@ class InventoryController extends Controller
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
+
+    /**
+     * @OA\Patch(
+     *     path="/inventory/{id}",
+     *     tags={"Inventories"},
+     *     summary="Update an inventory item",
+     *     description="Updates an inventory item with the provided ID.",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID of the inventory item to update",
+     *         @OA\Schema(
+     *             type="integer",
+     *             format="int64"
+     *         )
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Inventory object to update",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="quantity", type="integer", example="10"),
+     *             @OA\Property(property="sku", type="string", maxLength=255, example="SKU123"),
+     *             @OA\Property(property="item_type", type="string", maxLength=255, example="Electronics"),
+     *             @OA\Property(property="detailed_description", type="string", example="This is an electronic device.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success message",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="שורה התעדכנה בהצלחה.")
+     *         )
+     *     ),
+     *     
+     * )
+     */
+
+
     public function update(UpdateInventoryRequest $request, $id = null)
     {
         if (is_null($id)) {
@@ -266,6 +315,7 @@ class InventoryController extends Controller
 
 
             $inventory = Inventory::where('is_deleted', 0)
+
                 ->where('id', $id)
                 ->first();
             if (is_null($inventory)) {
