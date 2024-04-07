@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('inventories', function (Blueprint $table) {
             $table->id();
-            $table->integer('quantity'); 
+            $table->integer('quantity');
             $table->string('sku');
-            $table->string('item_type'); 
-            $table->longText('detailed_description'); 
-            $table->boolean('is_deleted'); 
+            $table->string('item_type');
+            $table->longText('detailed_description');
+            $table->boolean('is_deleted')->default('0');
             $table->timestamps();
         });
     }

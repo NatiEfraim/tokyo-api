@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreInventoryRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
@@ -16,55 +17,233 @@ class InventoryController extends Controller
     //
 
     /**
- * @OA\Get(
- *      path="/api/inventories",
- *      tags={"Inventory"},
- *      summary="Get all inventories",
- *      description="Returns a list of all inventories.",
- *      @OA\Response(
- *          response=200,
- *          description="Successful operation",
- *          @OA\JsonContent(
- *              type="array",
- *              @OA\Items(
- *                  type="object",
- *                  @OA\Property(property="id", type="integer", example=1),
- *                  @OA\Property(property="quantity", type="integer", example=33),
- *                  @OA\Property(property="sku", type="string", example="0028221469208"),
- *                  @OA\Property(property="item_type", type="string", example="autem"),
- *                  @OA\Property(property="detailed_description", type="string", example="Neque recusandae corporis totam facere pariatur. Et perspiciatis aut in quia. Placeat quas vero modi magni ut. Voluptas et qui vitae culpa.")
- *              )
- *          )
- *      ),
- *      @OA\Response(
- *          response=500,
- *          description="Internal server error",
- *          @OA\JsonContent(
- *              type="object",
- *              @OA\Property(property="message", type="string", example="התרחש בעיית שרת יש לנסות שוב מאוחר יותר.")
- *          )
- *      )
- * )
- */
+     * @OA\Get(
+     *      path="/api/inventories",
+     *      tags={"Inventory"},
+     *      summary="Get all inventories",
+     *      description="Returns a list of all inventories.",
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              type="array",
+     *              @OA\Items(
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="quantity", type="integer", example=33),
+     *                  @OA\Property(property="sku", type="string", example="0028221469208"),
+     *                  @OA\Property(property="item_type", type="string", example="autem"),
+     *                  @OA\Property(property="detailed_description", type="string", example="Neque recusandae corporis totam facere pariatur. Et perspiciatis aut in quia. Placeat quas vero modi magni ut. Voluptas et qui vitae culpa.")
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Internal server error",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="התרחש בעיית שרת יש לנסות שוב מאוחר יותר.")
+     *          )
+     *      )
+     * )
+     */
 
     public function index()
     {
         try {
-            $inventories=Inventory::where('is_deleted',0)->get();
-            return \response()->json($inventories,Response::HTTP_OK);
+            $inventories = Inventory::where('is_deleted', 0)->get();
+            return \response()->json($inventories, Response::HTTP_OK);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
-    public function getRecordById($id=null)
+
+    /**
+     * @OA\Get(
+     *      path="/api/inventories/{id}",
+     *      tags={"Inventory"},
+     *      summary="Get inventory record by ID",
+     *      description="Returns a single inventory record based on the provided ID.",
+     *      @OA\Parameter(
+     *          name="id",
+     *          in="path",
+     *          description="ID of the inventory record",
+     *          required=true,
+     *          @OA\Schema(type="integer", format="int64")
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="id", type="integer", example=2),
+     *              @OA\Property(property="quantity", type="integer", example=43),
+     *              @OA\Property(property="sku", type="string", example="2216255278905"),
+     *              @OA\Property(property="item_type", type="string", example="quia"),
+     *              @OA\Property(property="detailed_description", type="string", example="Vel sunt odit quam qui ut suscipit quo. Ipsum dignissimos totam in totam. Veniam voluptas vitae et repellendus dolores consectetur tempora. Placeat atque provident enim sint et qui.")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad request response",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="יש לשלוח מספר מזה של שורה")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Internal server error",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="התרחש בעיית שרת יש לנסות שוב מאוחר יותר.")
+     *          )
+     *      )
+     * )
+     */
+
+    public function getRecordById($id = null)
+    {
+        if (is_null($id)) {
+            return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
+        }
+        try {
+            $inventory = Inventory::where('is_deleted', 0)
+                ->where('id', $id)
+                ->first();
+            return response()->json($inventory, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+
+    /**
+     * @OA\Delete(
+     *      path="/api/inventories/{id}",
+     *      tags={"Inventories"},
+     *      summary="Delete an inventory by ID",
+     *      description="Deletes an inventory based on the provided ID.",
+     *      @OA\Parameter(
+     *          name="id",
+     *          in="path",
+     *          description="ID of the inventory to delete",
+     *          required=true,
+     *          @OA\Schema(type="integer", format="int64")
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success response",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="שורה נמחקה בהצלחה.")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad request response",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="יש לשלוח מספר מזהה של שורה")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="שורה אינה קיימת במערכת.")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error response",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="התרחש בעיית שרת יש לנסות שוב מאוחר יותר.")
+     *          )
+     *      )
+     * )
+     */
+
+    public function destroy($id = null)
+    {
+        if (is_null($id)) {
+            return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $inventory = Inventory::where('is_deleted', 0)
+                ->where('id', $id)
+                ->first();
+            if (is_null($inventory)) {
+                return response()->json(['message' => 'שורה אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
+            }
+            $inventory->update([
+                'is_deleted' => true,
+            ]);
+            return response()->json(['message' => 'שורה נמחקה בהצלחה.'], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+    /**
+     * Store a newly created inventory item in storage.
+     *
+     * @OA\Post(
+     *      path="/api/inventories",
+     *      tags={"Inventories"},
+     *      summary="Create a new inventory item",
+     *      description="Store a newly created inventory item in the database.",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              required={"quantity", "sku", "item_type", "detailed_description"},
+     *              @OA\Property(property="quantity", type="integer", example=10),
+     *              @OA\Property(property="sku", type="string", example="ABC123"),
+     *              @OA\Property(property="item_type", type="string", example="Product"),
+     *              @OA\Property(property="detailed_description", type="string", example="Detailed description of the item.")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=201,
+     *          description="Success response",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="Inventory item created successfully.")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=422,
+     *          description="Validation error response",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="The given data was invalid."),
+     *              @OA\Property(property="errors", type="object", example={"quantity": {"The quantity field is required."}})
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server error response",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="Internal server error.")
+     *          )
+     *      )
+     * )
+     */
+
+    public function store(StoreInventoryRequest $request)
     {
         try {
-            $inventory = Inventory::where('is_deleted',0)
-            ->where('id',$id)
-            ->first();
-            return \response()->json($inventory,Response::HTTP_OK);
+            $inventory = Inventory::create($request->validated());
+            return response()->json(['message' => 'שורה נוצרה בהצלחה.'], Response::HTTP_CREATED);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
