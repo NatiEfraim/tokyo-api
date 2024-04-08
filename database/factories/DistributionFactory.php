@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Department;
 use App\Models\Distribution;
 use App\Models\Inventory;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -27,13 +28,16 @@ class DistributionFactory extends Factory
     public function definition(): array
     {
         $randomInventory = Inventory::inRandomOrder()->first();
+        $randomDepartemnt = Department::inRandomOrder()->first();
 
         return [
             //
             'comment' => $this->faker->paragraph,
             'status' => $this->faker->numberBetween(0, 2),
             'quantity' => $this->faker->numberBetween(1, 100),
-            'inventory_id' => $randomInventory->id
+            'inventory_id' => $randomInventory->id, //set relation
+            'department_id' => $randomDepartemnt->id, //set relation
+
         ];
     }
 }

@@ -17,10 +17,14 @@ return new class extends Migration
             $table->integer('status')->default(0);
             $table->integer('quantity');
             $table->foreignId('inventory_id');
+            $table->foreignId('department_id');
             $table->boolean('is_deleted')->default('0');
             $table->timestamps();
 
+
+            //? set relations on others table.
             $table->foreign('inventory_id')->references('id')->on('inventories')->onUpdate('cascade')->onDelete('cascade');
+            $table->foreign('department_id')->references('id')->on('departments')->onUpdate('cascade')->onDelete('cascade');
         });
     }
 
