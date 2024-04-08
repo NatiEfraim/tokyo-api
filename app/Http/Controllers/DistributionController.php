@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 
+
+
+
 class DistributionController extends Controller
 {
     //
@@ -28,11 +31,11 @@ class DistributionController extends Controller
      *                  @OA\Property(property="comment", type="string", example="Velit veritatis quia vel nemo qui. Eaque commodi expedita enim libero ut. Porro ducimus repellendus tenetur."),
      *                  @OA\Property(property="status", type="integer", example=1),
      *                  @OA\Property(property="quantity", type="integer", example=44),
-     *                  @OA\Property(property="inventory_id", type="integer", example=24),
+     *                  @OA\Property(property="Distributions_id", type="integer", example=24),
      *                  @OA\Property(property="created_at", type="string", format="date-time", example="2024-04-07T11:42:45.000000Z"),
      *                  @OA\Property(property="updated_at", type="string", format="date-time", example="2024-04-07T11:42:45.000000Z"),
      *                  @OA\Property(
-     *                      property="inventory",
+     *                      property="Distributions",
      *                      type="object",
      *                      @OA\Property(property="id", type="integer", example=24),
      *                      @OA\Property(property="quantity", type="integer", example=10),
@@ -147,6 +150,80 @@ class DistributionController extends Controller
 
 
             return response()->json($distribution, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+
+    /**
+     * @OA\Delete(
+     *      path="/api/distributions/{id}",
+     *      tags={"Distributions"},
+     *      summary="Delete an Distributions by ID",
+     *      description="Deletes an Distributions based on the provided ID.",
+     *      @OA\Parameter(
+     *          name="id",
+     *          in="path",
+     *          description="ID of the Distributions to delete",
+     *          required=true,
+     *          @OA\Schema(type="integer", format="int64")
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success response",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="שורה נמחקה בהצלחה.")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad request response",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="יש לשלוח מספר מזהה של שורה")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="שורה אינה קיימת במערכת.")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error response",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="התרחש בעיית שרת יש לנסות שוב מאוחר יותר.")
+     *          )
+     *      )
+     * )
+     */
+
+
+    public function destroy($id = null)
+    {
+        if (is_null($id)) {
+            return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
+        }
+
+
+        try {
+            $distirbution = Distribution::where('is_deleted', 0)
+                ->where('id', $id)
+                ->first();
+            if (is_null($distirbution)) {
+                return response()->json(['message' => 'שורה אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
+            }
+            $distirbution->update([
+                'is_deleted' => true,
+            ]);
+            return response()->json(['message' => 'שורה נמחקה בהצלחה.'], Response::HTTP_OK);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }

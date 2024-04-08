@@ -28,5 +28,5 @@ Route::controller(DistributionController::class)
         Route::get('/getditribution/{id?}', 'getRecordById');
         // Route::put('/{id?}', 'update');
         // Route::post('/', 'store');
-        // Route::delete('/{id?}', 'destroy');
+        Route::delete('/{id?}', 'destroy');
     });
