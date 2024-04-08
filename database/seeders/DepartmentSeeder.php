@@ -17,19 +17,19 @@ class DepartmentSeeder extends Seeder
         // Create 10 departments using DepartmentFactory
         // Department::factory()->count(10)->create();
         Department::create([
-            'name' => 'מתמתיקה',
+            'name' => 'משקים ומטה',
 
         ]);
         Department::create([
-            'name' => 'מונחה עצמים',
+            'name' => 'מופת',
 
         ]);
         Department::create([
-            'name' => 'מבני  נתונים',
+            'name' => 'חט"ל',
 
         ]);
         Department::create([
-            'name' => 'בסיסי נתונים',
+            'name' => 'מש"א',
         ]);
     }
 }

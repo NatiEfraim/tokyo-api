@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\DistributionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +28,16 @@ Route::controller(DistributionController::class)
         Route::get('/', 'index');
         Route::get('/getditribution/{id?}', 'getRecordById');
         // Route::put('/{id?}', 'update');
-        // Route::post('/', 'store');
+        Route::post('/', 'store');
         Route::delete('/{id?}', 'destroy');
+    });
+
+
+Route::controller(DepartmentController::class)
+    ->prefix('depratments')->group(function () {
+        Route::get('/', 'index');
+        // Route::get('/getditribution/{id?}', 'getRecordById');
+        // Route::put('/{id?}', 'update');
+        // Route::post('/', 'store');
+        // Route::delete('/{id?}', 'destroy');
     });

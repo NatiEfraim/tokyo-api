@@ -19,6 +19,7 @@ class Distribution extends Model
         'status',
         'quantity',
         'inventory_id',
+        'department_id',
         'is_deleted',
         'created_at',
         'updated_at'
@@ -34,6 +35,13 @@ class Distribution extends Model
     ];
 
 
+    /**
+     * Get the depratment record associated with the distribution.
+     */
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
 
     /**
      * Get the inventory record associated with the distribution.

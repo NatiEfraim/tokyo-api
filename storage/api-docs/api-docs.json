@@ -18,8 +18,8 @@
                 "tags": [
                     "Distributions"
                 ],
-                "summary": "Get all distributions",
-                "description": "Returns a list of all distributions.",
+                "summary": "Retrieve all distributions",
+                "description": "Retrieve all distributions.\n\nThis endpoint retrieves all distribution records along with their associated inventory and department.",
                 "operationId": "1c50a7e7560b6a28a8dc55c38f7ed1c1",
                 "responses": {
                     "200": {
@@ -36,7 +36,7 @@
                                             },
                                             "comment": {
                                                 "type": "string",
-                                                "example": "Velit veritatis quia vel nemo qui. Eaque commodi expedita enim libero ut. Porro ducimus repellendus tenetur."
+                                                "example": "Numquam vitae neque rerum laboriosam excepturi aut eligendi."
                                             },
                                             "status": {
                                                 "type": "integer",
@@ -44,43 +44,60 @@
                                             },
                                             "quantity": {
                                                 "type": "integer",
-                                                "example": 44
+                                                "example": 14
                                             },
-                                            "Distributions_id": {
+                                            "inventory_id": {
                                                 "type": "integer",
-                                                "example": 24
+                                                "example": 29
+                                            },
+                                            "department_id": {
+                                                "type": "integer",
+                                                "example": 1
                                             },
                                             "created_at": {
                                                 "type": "string",
                                                 "format": "date-time",
-                                                "example": "2024-04-07T11:42:45.000000Z"
+                                                "example": "2024-04-08T08:50:47.000000Z"
                                             },
                                             "updated_at": {
                                                 "type": "string",
                                                 "format": "date-time",
-                                                "example": "2024-04-07T11:42:45.000000Z"
+                                                "example": "2024-04-08T08:50:47.000000Z"
                                             },
-                                            "Distributions": {
+                                            "inventory": {
                                                 "properties": {
                                                     "id": {
                                                         "type": "integer",
-                                                        "example": 24
+                                                        "example": 29
                                                     },
                                                     "quantity": {
                                                         "type": "integer",
-                                                        "example": 10
+                                                        "example": 53
                                                     },
                                                     "sku": {
                                                         "type": "string",
-                                                        "example": "1359395842801"
+                                                        "example": "7666918685123"
                                                     },
                                                     "item_type": {
                                                         "type": "string",
-                                                        "example": "magni"
+                                                        "example": "dolor"
                                                     },
                                                     "detailed_description": {
                                                         "type": "string",
-                                                        "example": "Velit ut ipsam neque tempora est dicta. Et distinctio eligendi expedita corporis assumenda aspernatur hic."
+                                                        "example": "Itaque omnis non maxime maxime rerum."
+                                                    }
+                                                },
+                                                "type": "object"
+                                            },
+                                            "department": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "משקים ומטה"
                                                     }
                                                 },
                                                 "type": "object"
@@ -93,7 +110,7 @@
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Internal Server Error",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -303,6 +320,98 @@
                     },
                     "500": {
                         "description": "Error response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "התרחש בעיית שרת יש לנסות שוב מאוחר יותר."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/distributions/": {
+            "post": {
+                "tags": [
+                    "Distributions"
+                ],
+                "summary": "Store a new distribution",
+                "description": "Store a newly created distribution.\n\nThis endpoint creates a new distribution record.",
+                "operationId": "0c48cb63988c3445ad75087001e82224",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "comment": {
+                                        "type": "string",
+                                        "example": "This is a distribution comment."
+                                    },
+                                    "status": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "quantity": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "inventory_id": {
+                                        "type": "integer",
+                                        "example": 123
+                                    },
+                                    "department_id": {
+                                        "type": "integer",
+                                        "example": 456
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Distribution created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "שורה נוצרה בהצלחה."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation failed."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "content": {
                             "application/json": {
                                 "schema": {
