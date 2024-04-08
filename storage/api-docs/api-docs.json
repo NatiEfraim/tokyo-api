@@ -429,6 +429,104 @@
                 }
             }
         },
+        "/api/distributions/mass-destroy": {
+            "delete": {
+                "tags": [
+                    "Distributions"
+                ],
+                "summary": "Mass delete distributions",
+                "description": "Mass delete distributions.\n\nThis endpoint deletes multiple distribution records based on the provided IDs.",
+                "operationId": "a71cfafd35ad10158bc3c57dc0d6c128",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "distributions"
+                                ],
+                                "properties": {
+                                    "distributions": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "id"
+                                            ],
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "שורות נמחקו בהצלחה."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "messages": {
+                                            "properties": {
+                                                "distributions": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "יש לשלוח שורות למחיקה."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "התרחש בעיית שרת יש לנסות שוב מאוחר יותר."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/inventories": {
             "get": {
                 "tags": [
@@ -827,6 +925,104 @@
                                         "message": {
                                             "type": "string",
                                             "example": "שורה התעדכנה בהצלחה."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/inventories/mass-destroy": {
+            "delete": {
+                "tags": [
+                    "Inventories"
+                ],
+                "summary": "Mass delete inventories",
+                "description": "Mass delete inventories.\n\nThis endpoint deletes multiple distribution records based on the provided IDs.",
+                "operationId": "9b9b99c268d4c6a1aab23a8905cfec0d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "inventories"
+                                ],
+                                "properties": {
+                                    "inventories": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "id"
+                                            ],
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "שורות נמחקו בהצלחה."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "messages": {
+                                            "properties": {
+                                                "distributions": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "יש לשלוח שורות למחיקה."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "התרחש בעיית שרת יש לנסות שוב מאוחר יותר."
                                         }
                                     },
                                     "type": "object"

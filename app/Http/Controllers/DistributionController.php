@@ -8,6 +8,8 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Validator;
 
 
 
@@ -289,7 +291,6 @@ class DistributionController extends Controller
     public function store(StoreDistributionRequest $request)
     {
         try {
-            // dd($request->validated());
 
             $distribution = Distribution::create($request->validated());
 
@@ -300,4 +301,108 @@ class DistributionController extends Controller
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
+
+
+
+    /**
+     * Mass delete distributions.
+     *
+     * This endpoint deletes multiple distribution records based on the provided IDs.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @OA\Delete(
+     *     path="/api/distributions/mass-destroy",
+     *     summary="Mass delete distributions",
+     *     tags={"Distributions"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"distributions"},
+     *             @OA\Property(property="distributions", type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     required={"id"},
+     *                     @OA\Property(property="id", type="integer", example=1)
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="שורות נמחקו בהצלחה.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Unprocessable Entity",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="messages", type="object",
+     *                 @OA\Property(property="distributions", type="array",
+     *                     @OA\Items(type="string", example="יש לשלוח שורות למחיקה."),
+     *                     @OA\Items(type="string", example="שורות אינם בפורמט תקין."),
+     *                     @OA\Items(type="string", example="שדה המזהה חובה."),
+     *                     @OA\Items(type="string", example="אחת מהשדות שנשלחו אינו תקין."),
+     *                     @OA\Items(type="string", example="המזהה שנבחר לא קיים או שהמשימה נמחקה.")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="התרחש בעיית שרת יש לנסות שוב מאוחר יותר.")
+     *         )
+     *     )
+     * )
+     */
+
+    public function massDestroy(Request $request)
+    {
+
+
+
+
+        try {
+            // set custom error messages in Hebrew
+            $customMessages = [
+                'distributions.required' => 'יש לשלוח שורות למחיקה.',
+                'distributions.array' => 'שורות אינם בפורמט תקין.',
+                'distributions.*.id.required' => 'שדה המזהה חובה.',
+                'distributions.*.id.integer' => 'אחת מהשדות שנשלחו אינו תקין.',
+                'distributions.*.id.exists' => 'המזהה שנבחר לא קיים או שהמשימה נמחקה.',
+            ];
+            //set the rules
+            $rules = [
+                'distributions' => 'required|array',
+                'distributions.*.id' => 'required|integer|exists:distributions,id,is_deleted,0',
+            ];
+
+            // validate the request data
+            $validator = Validator::make($request->all(), $rules, $customMessages);
+
+            // Check if validation fails
+            if ($validator->fails()) {
+
+                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+            $distributions = $request->input('distributions');
+            $ids = collect($distributions)->pluck('id')->toArray();
+
+            // Update the 'is_deleted' column to 1 for the distributions with the given IDs
+            Distribution::whereIn('id', $ids)->update(['is_deleted' => 1]);
+
+            return response()->json(['message' => 'שורות נמחקו בהצלחה.'], Response::HTTP_OK);
+
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
 }

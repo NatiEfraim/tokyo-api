@@ -20,6 +20,7 @@ Route::controller(InventoryController::class)
         Route::get('/getinventory/{id?}', 'getRecordById');
         Route::put('/{id?}', 'update');
         Route::post('/', 'store');
+        Route::delete('/mass-destroy', 'massDestroy');
         Route::delete('/{id?}', 'destroy');
     });
 
@@ -29,6 +30,7 @@ Route::controller(DistributionController::class)
         Route::get('/getditribution/{id?}', 'getRecordById');
         // Route::put('/{id?}', 'update');
         Route::post('/', 'store');
+        Route::delete('/mass-destroy', 'massDestroy');
         Route::delete('/{id?}', 'destroy');
     });
 
