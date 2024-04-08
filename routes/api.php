@@ -38,8 +38,9 @@ Route::controller(DistributionController::class)
 Route::controller(DepartmentController::class)
     ->prefix('depratments')->group(function () {
         Route::get('/', 'index');
+        Route::post('/', 'store');
         // Route::get('/getditribution/{id?}', 'getRecordById');
         // Route::put('/{id?}', 'update');
-        // Route::post('/', 'store');
-        // Route::delete('/{id?}', 'destroy');
+        Route::delete('/mass-destroy', 'massDestroy');
+        Route::delete('/{id?}', 'destroy');
     });
