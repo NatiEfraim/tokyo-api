@@ -30,7 +30,7 @@ Route::controller(DistributionController::class)
         Route::get('/', 'index');
         Route::get('/getditribution/{id?}', 'getRecordById');
         Route::put('/changed-status/{id?}', 'changeStatus');
-        // Route::put('/{id?}', 'update');
+        Route::put('/{id?}', 'update');
         Route::post('/', 'store');
         Route::delete('/mass-destroy', 'massDestroy');
         Route::delete('/{id?}', 'destroy');

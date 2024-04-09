@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\DistributionStatus;
 use App\Http\Requests\StoreDistributionRequest;
+use App\Http\Requests\UpdateDistributionRequest;
 use App\Models\Distribution;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -519,5 +520,39 @@ class DistributionController extends Controller
 
 
     }
+
+
+
+    public function update(UpdateDistributionRequest $request, $id = null)
+    {
+        if (is_null($id)) {
+            return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+
+            $distribution = Distribution::where('is_deleted', 0)
+                ->where('id', $id)
+                ->first();
+            if (is_null($distribution)) {
+                return response()->json(['message' => 'שורה אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
+            }
+
+
+            $currentTime = Carbon::now()->toDateTimeString();
+
+
+            $distribution->update($request->validated());
+
+            $distribution->updated_at = $currentTime;
+            $distribution->save();
+
+            return response()->json(['message' => 'שורה התעדכנה בהצלחה.'], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
 
 }

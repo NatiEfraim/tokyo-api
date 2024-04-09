@@ -481,14 +481,15 @@ class InventoryController extends Controller
 
   
         try {
-            // Check if search string is provided
+
+            
             if (is_null($searchString)) {
                 return response()->json(['message' => 'חובה לשלוח ערך לחיפוש פריט.'], Response::HTTP_BAD_REQUEST);
             }
 
             // Determine if the search string is a numeric value (SKU) or a string (item type)
             $isSkuSearch = ctype_digit($searchString);
-            // Perform search based on search type
+
             if ($isSkuSearch) {
 
                 // Search by SKU
