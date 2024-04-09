@@ -32,6 +32,8 @@ class Distribution extends Model
      */
     protected $hidden = [
         'is_deleted',
+        'created_at',
+        'updated_at'
     ];
 
 

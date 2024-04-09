@@ -74,14 +74,17 @@ class DistributionController extends Controller
         try {
 
             $distributions = Distribution::with(['inventory', 'department'])
-                ->where('is_deleted', 0)
-                ->get()
-                ->map(function ($distribution) {
-                    // Format the timestamps - not changed.
-                    $distribution->created_at = $distribution->created_at->format('Y-m-d H:i:s');
-                    $distribution->updated_at = $distribution->updated_at->format('Y-m-d H:i:s');
-                    return $distribution;
-                });
+            ->where('is_deleted', 0)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($distribution) {
+
+                // Format the created_at and updated_at timestamps
+                $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+                $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+
+                 return $distribution;
+            });
 
             return response()->json($distributions, Response::HTTP_OK);
         } catch (\Exception $e) {
@@ -493,7 +496,8 @@ class DistributionController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-            $status_input = $request->input('status');
+            $currentTime = Carbon::now()->toDateTimeString();
+
 
             $distribution_record=Distribution::where('id',$id)->where('is_deleted',false)->first();
 
@@ -503,6 +507,7 @@ class DistributionController extends Controller
 
             $distribution_record->update([
                 'status' => $request->input('status'),
+                'updated_at' => $currentTime,
             ]);
 
             return response()->json(['message' => 'שורה התעדכנה בהצלחה.'], Response::HTTP_OK);

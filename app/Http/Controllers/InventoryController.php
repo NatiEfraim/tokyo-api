@@ -432,4 +432,93 @@ class InventoryController extends Controller
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
+
+
+    /**
+ * @OA\Get(
+ *     path="/api/inventory/search-records/{searchString}",
+ *     tags={"Inventory"},
+ *     summary="Search inventory records by SKU or item type",
+ *     description="Search inventory records by providing either SKU or item type. Returns matching inventory records.",
+ *     @OA\Parameter(
+ *         name="searchString",
+ *         in="path",
+ *         description="Search string (SKU or item type)",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="string"
+ *         )
+ *     ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              type="array",
+     *              @OA\Items(
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="quantity", type="integer", example=33),
+     *                  @OA\Property(property="sku", type="string", example="0028221469208"),
+     *                  @OA\Property(property="item_type", type="string", example="autem"),
+     *                  @OA\Property(property="detailed_description", type="string", example="Neque recusandae corporis totam facere pariatur. Et perspiciatis aut in quia. Placeat quas vero modi magni ut. Voluptas et qui vitae culpa.")
+     *              )
+     *          )
+     *      ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Invalid input"
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Server error"
+ *     )
+ * )
+ */
+
+
+    public function searchRecords(string $searchString = null)
+    {
+
+  
+        try {
+            // Check if search string is provided
+            if (is_null($searchString)) {
+                return response()->json(['message' => 'חובה לשלוח ערך לחיפוש פריט.'], Response::HTTP_BAD_REQUEST);
+            }
+
+            // Determine if the search string is a numeric value (SKU) or a string (item type)
+            $isSkuSearch = ctype_digit($searchString);
+            // Perform search based on search type
+            if ($isSkuSearch) {
+
+                // Search by SKU
+                $inventory = Inventory::where('sku', $searchString)
+                ->where('is_deleted',false)
+                ->first();
+
+                if (is_null($inventory)) {
+                    
+                    return response()->json([], Response::HTTP_OK);
+                }
+
+                return response()->json($inventory, Response::HTTP_OK);
+            } else {
+
+                // Search by item type
+                $inventories = Inventory::where('item_type', 'LIKE', '%' . $searchString . '%')
+                ->where('is_deleted',false)
+                ->get();
+
+                if ($inventories->isEmpty()) {
+                    return response()->json([], Response::HTTP_OK);
+                }
+
+                return response()->json($inventories, Response::HTTP_OK);
+            }
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
 }

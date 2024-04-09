@@ -18,6 +18,7 @@ Route::controller(InventoryController::class)
     ->prefix('inventories')->group(function () {
         Route::get('/', 'index');
         Route::get('/getinventory/{id?}', 'getRecordById');
+        Route::get('/search-records/{searchString?}', 'searchRecords');
         Route::put('/{id?}', 'update');
         Route::post('/', 'store');
         Route::delete('/mass-destroy', 'massDestroy');
