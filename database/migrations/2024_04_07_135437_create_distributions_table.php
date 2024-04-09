@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('distributions', function (Blueprint $table) {
             $table->id();
             $table->longText('comment');
+            //? 0--> pendig. 1--> approved. 2 -->canceld
             $table->integer('status')->default(0);
             $table->integer('quantity');
             $table->foreignId('inventory_id');

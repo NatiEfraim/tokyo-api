@@ -28,6 +28,7 @@ Route::controller(DistributionController::class)
     ->prefix('distributions')->group(function () {
         Route::get('/', 'index');
         Route::get('/getditribution/{id?}', 'getRecordById');
+        Route::put('/changed-status/{id?}', 'changeStatus');
         // Route::put('/{id?}', 'update');
         Route::post('/', 'store');
         Route::delete('/mass-destroy', 'massDestroy');

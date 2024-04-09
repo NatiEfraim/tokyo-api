@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\DistributionStatus;
 use App\Http\Requests\StoreDistributionRequest;
 use App\Models\Distribution;
 use Carbon\Carbon;
@@ -403,6 +404,115 @@ class DistributionController extends Controller
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+
+    /**
+ * @OA\Put(
+ *      path="/changed-status/{id}",
+ *      tags={"Distributions"},
+ *      summary="Update distribution status by ID",
+ *      description="Updates the status of a distribution by its ID.",
+ *      @OA\Parameter(
+ *          name="id",
+ *          description="Distribution ID",
+ *          required=true,
+ *          in="path",
+ *          @OA\Schema(
+ *              type="integer",
+ *          ),
+ *      ),
+ *      @OA\RequestBody(
+ *          required=true,
+ *          description="Request data",
+ *          @OA\JsonContent(
+ *              required={"status"},
+ *              @OA\Property(property="status", type="integer", example="1", description="New status value (0 for pending, 1 for approved, 2 for canceled)"),
+ *          ),
+ *      ),
+ *      @OA\Response(
+ *          response=200,
+ *          description="Success response",
+ *          @OA\JsonContent(
+ *              @OA\Property(property="message", type="string", example="שורה התעדכנה בהצלחה."),
+ *          ),
+ *      ),
+ *      @OA\Response(
+ *          response=404,
+ *          description="Distribution not found",
+ *          @OA\JsonContent(
+ *              @OA\Property(property="message", type="string", example="הרשומה לא נמצאה."),
+ *          ),
+ *      ),
+ *      @OA\Response(
+ *          response=422,
+ *          description="Validation error",
+ *          @OA\JsonContent(
+ *              @OA\Property(property="messages", type="object", description="Validation error messages"),
+ *          ),
+ *      ),
+ *      @OA\Response(
+ *          response=500,
+ *          description="Internal server error",
+ *          @OA\JsonContent(
+ *              @OA\Property(property="message", type="string", example="התרחשה תקלה בשרת. נסה שוב מאוחר יותר."),
+ *          ),
+ *      ),
+ * )
+ */
+
+
+    public function changeStatus(Request $request, $id=null)
+    {
+
+
+        try {
+
+            if (is_null($id)) {
+                return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה.'], Response::HTTP_BAD_REQUEST);
+            }
+
+            // set custom error messages in Hebrew
+            $customMessages = [
+                'status.required' => 'חובה לשלוח שדה סטטוס לעידכון.',
+                'status.integer' => 'שדה סטטוס שנשלח אינו בפורמט תקין.',
+                'status.between' => 'ערך הסטטוס שנשלח אינו תקין.',
+            ];
+
+            //set the rules
+            $rules = [
+                'status' => 'required|integer|between:0,2'
+            ];
+
+            // validate the request data
+            $validator = Validator::make($request->all(), $rules, $customMessages);
+
+            // Check if validation fails
+            if ($validator->fails()) {
+
+                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+            $status_input = $request->input('status');
+
+            $distribution_record=Distribution::where('id',$id)->where('is_deleted',false)->first();
+
+            if (is_null($distribution_record)) {
+                return response()->json(['message' => 'שורה זו אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
+            }
+
+            $distribution_record->update([
+                'status' => $request->input('status'),
+            ]);
+
+            return response()->json(['message' => 'שורה התעדכנה בהצלחה.'], Response::HTTP_OK);
+
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+
     }
 
 }
