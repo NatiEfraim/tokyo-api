@@ -51,13 +51,51 @@ class InventoryController extends Controller
     {
         try {
             $inventories = Inventory::where('is_deleted', 0)->get();
-            return \response()->json($inventories, Response::HTTP_OK);
+            return response()->json($inventories, Response::HTTP_OK);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
+    /**
+ * @OA\Get(
+ *     path="/api/sku-records",
+ *     tags={"Inventory"},
+ *     summary="Get SKU records",
+ *     description="Retrieve a list of SKU records from the inventory.",
+ *     @OA\Response(
+ *         response=200,
+ *         description="Successful operation",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(
+ *                 type="string",
+ *                 example="1486404413070"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Server error"
+ *     )
+ * )
+ */
+
+    public function getSkuRecords()
+    {
+        try {
+            $inventories = Inventory::where('is_deleted', 0)
+                ->pluck('sku')->toArray();
+            return response()->json($inventories, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+
+    
 
     /**
      * @OA\Get(
@@ -482,7 +520,7 @@ class InventoryController extends Controller
   
         try {
 
-            
+
             if (is_null($searchString)) {
                 return response()->json(['message' => 'חובה לשלוח ערך לחיפוש פריט.'], Response::HTTP_BAD_REQUEST);
             }

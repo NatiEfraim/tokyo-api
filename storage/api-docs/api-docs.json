@@ -949,6 +949,88 @@
                 }
             }
         },
+        "/api/distribution/{id}": {
+            "put": {
+                "tags": [
+                    "Distribution"
+                ],
+                "summary": "Update distribution record",
+                "description": "Update an existing distribution record by providing the ID.",
+                "operationId": "6b27941186332feb1a4d989a3939dda1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the distribution record to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Updated distribution record data",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "comment"
+                                ],
+                                "properties": {
+                                    "comment": {
+                                        "type": "string",
+                                        "example": "This is an updated comment"
+                                    },
+                                    "status": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "quantity": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "inventory_id": {
+                                        "type": "integer",
+                                        "example": 123
+                                    },
+                                    "department_id": {
+                                        "type": "integer",
+                                        "example": 456
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success: Distribution record updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "שורה התעדכנה בהצלחה."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request: Missing or invalid input"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
         "/api/inventories": {
             "get": {
                 "tags": [
@@ -1108,6 +1190,35 @@
                                 }
                             }
                         }
+                    }
+                }
+            }
+        },
+        "/api/sku-records": {
+            "get": {
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Get SKU records",
+                "description": "Retrieve a list of SKU records from the inventory.",
+                "operationId": "4b8e4e17dfea61576c0a392350a10cb6",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "example": "1486404413070"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error"
                     }
                 }
             }

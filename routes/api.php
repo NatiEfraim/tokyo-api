@@ -17,6 +17,7 @@ Route::get('/user', function (Request $request) {
 Route::controller(InventoryController::class)
     ->prefix('inventories')->group(function () {
         Route::get('/', 'index');
+        Route::get('/sku-records','getSkuRecords');
         Route::get('/getinventory/{id?}', 'getRecordById');
         Route::get('/search-records/{searchString?}', 'searchRecords');
         Route::put('/{id?}', 'update');

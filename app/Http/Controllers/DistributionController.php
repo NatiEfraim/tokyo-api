@@ -521,7 +521,76 @@ class DistributionController extends Controller
 
     }
 
-
+    /**
+ * @OA\Put(
+ *     path="/api/distribution/{id}",
+ *     tags={"Distribution"},
+ *     summary="Update distribution record",
+ *     description="Update an existing distribution record by providing the ID.",
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         description="ID of the distribution record to update",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="integer",
+ *             format="int64"
+ *         )
+ *     ),
+ *     @OA\RequestBody(
+ *         required=true,
+ *         description="Updated distribution record data",
+ *         @OA\JsonContent(
+ *             required={"comment"},
+ *             @OA\Property(
+ *                 property="comment",
+ *                 type="string",
+ *                 example="This is an updated comment"
+ *             ),
+ *             @OA\Property(
+ *                 property="status",
+ *                 type="integer",
+ *                 example=1
+ *             ),
+ *             @OA\Property(
+ *                 property="quantity",
+ *                 type="integer",
+ *                 example=10
+ *             ),
+ *             @OA\Property(
+ *                 property="inventory_id",
+ *                 type="integer",
+ *                 example=123
+ *             ),
+ *             @OA\Property(
+ *                 property="department_id",
+ *                 type="integer",
+ *                 example=456
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Success: Distribution record updated successfully",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="שורה התעדכנה בהצלחה."
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Bad request: Missing or invalid input"
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Server error"
+ *     )
+ * )
+ */
 
     public function update(UpdateDistributionRequest $request, $id = null)
     {
