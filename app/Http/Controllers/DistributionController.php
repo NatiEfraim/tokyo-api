@@ -77,17 +77,17 @@ class DistributionController extends Controller
         try {
 
             $distributions = Distribution::with(['inventory', 'department'])
-            ->where('is_deleted', 0)
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($distribution) {
+                ->where('is_deleted', 0)
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($distribution) {
 
-                // Format the created_at and updated_at timestamps
-                $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
-                $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+                    // Format the created_at and updated_at timestamps
+                    $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+                    $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
 
-                 return $distribution;
-            });
+                    return $distribution;
+                });
 
             return response()->json($distributions, Response::HTTP_OK);
         } catch (\Exception $e) {
@@ -414,61 +414,61 @@ class DistributionController extends Controller
 
 
     /**
- * @OA\Put(
- *      path="/changed-status/{id}",
- *      tags={"Distributions"},
- *      summary="Update distribution status by ID",
- *      description="Updates the status of a distribution by its ID.",
- *      @OA\Parameter(
- *          name="id",
- *          description="Distribution ID",
- *          required=true,
- *          in="path",
- *          @OA\Schema(
- *              type="integer",
- *          ),
- *      ),
- *      @OA\RequestBody(
- *          required=true,
- *          description="Request data",
- *          @OA\JsonContent(
- *              required={"status"},
- *              @OA\Property(property="status", type="integer", example="1", description="New status value (0 for pending, 1 for approved, 2 for canceled)"),
- *          ),
- *      ),
- *      @OA\Response(
- *          response=200,
- *          description="Success response",
- *          @OA\JsonContent(
- *              @OA\Property(property="message", type="string", example="שורה התעדכנה בהצלחה."),
- *          ),
- *      ),
- *      @OA\Response(
- *          response=404,
- *          description="Distribution not found",
- *          @OA\JsonContent(
- *              @OA\Property(property="message", type="string", example="הרשומה לא נמצאה."),
- *          ),
- *      ),
- *      @OA\Response(
- *          response=422,
- *          description="Validation error",
- *          @OA\JsonContent(
- *              @OA\Property(property="messages", type="object", description="Validation error messages"),
- *          ),
- *      ),
- *      @OA\Response(
- *          response=500,
- *          description="Internal server error",
- *          @OA\JsonContent(
- *              @OA\Property(property="message", type="string", example="התרחשה תקלה בשרת. נסה שוב מאוחר יותר."),
- *          ),
- *      ),
- * )
- */
+     * @OA\Put(
+     *      path="/changed-status/{id}",
+     *      tags={"Distributions"},
+     *      summary="Update distribution status by ID",
+     *      description="Updates the status of a distribution by its ID.",
+     *      @OA\Parameter(
+     *          name="id",
+     *          description="Distribution ID",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="integer",
+     *          ),
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Request data",
+     *          @OA\JsonContent(
+     *              required={"status"},
+     *              @OA\Property(property="status", type="integer", example="1", description="New status value (0 for pending, 1 for approved, 2 for canceled)"),
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="שורה התעדכנה בהצלחה."),
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Distribution not found",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="הרשומה לא נמצאה."),
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=422,
+     *          description="Validation error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="messages", type="object", description="Validation error messages"),
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Internal server error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="התרחשה תקלה בשרת. נסה שוב מאוחר יותר."),
+     *          ),
+     *      ),
+     * )
+     */
 
 
-    public function changeStatus(Request $request, $id=null)
+    public function changeStatus(Request $request, $id = null)
     {
 
 
@@ -502,7 +502,7 @@ class DistributionController extends Controller
             $currentTime = Carbon::now()->toDateTimeString();
 
 
-            $distribution_record=Distribution::where('id',$id)->where('is_deleted',false)->first();
+            $distribution_record = Distribution::where('id', $id)->where('is_deleted', false)->first();
 
             if (is_null($distribution_record)) {
                 return response()->json(['message' => 'שורה זו אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
@@ -524,75 +524,75 @@ class DistributionController extends Controller
     }
 
     /**
- * @OA\Put(
- *     path="/api/distribution/{id}",
- *     tags={"Distribution"},
- *     summary="Update distribution record",
- *     description="Update an existing distribution record by providing the ID.",
- *     @OA\Parameter(
- *         name="id",
- *         in="path",
- *         description="ID of the distribution record to update",
- *         required=true,
- *         @OA\Schema(
- *             type="integer",
- *             format="int64"
- *         )
- *     ),
- *     @OA\RequestBody(
- *         required=true,
- *         description="Updated distribution record data",
- *         @OA\JsonContent(
- *             required={"comment"},
- *             @OA\Property(
- *                 property="comment",
- *                 type="string",
- *                 example="This is an updated comment"
- *             ),
- *             @OA\Property(
- *                 property="status",
- *                 type="integer",
- *                 example=1
- *             ),
- *             @OA\Property(
- *                 property="quantity",
- *                 type="integer",
- *                 example=10
- *             ),
- *             @OA\Property(
- *                 property="inventory_id",
- *                 type="integer",
- *                 example=123
- *             ),
- *             @OA\Property(
- *                 property="department_id",
- *                 type="integer",
- *                 example=456
- *             )
- *         )
- *     ),
- *     @OA\Response(
- *         response=200,
- *         description="Success: Distribution record updated successfully",
- *         @OA\JsonContent(
- *             type="object",
- *             @OA\Property(
- *                 property="message",
- *                 type="string",
- *                 example="שורה התעדכנה בהצלחה."
- *             )
- *         )
- *     ),
- *     @OA\Response(
- *         response=400,
- *         description="Bad request: Missing or invalid input"
- *     ),
- *     @OA\Response(
- *         response=500,
- *         description="Server error"
- *     )
- * )
- */
+     * @OA\Put(
+     *     path="/api/distribution/{id}",
+     *     tags={"Distribution"},
+     *     summary="Update distribution record",
+     *     description="Update an existing distribution record by providing the ID.",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID of the distribution record to update",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer",
+     *             format="int64"
+     *         )
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Updated distribution record data",
+     *         @OA\JsonContent(
+     *             required={"comment"},
+     *             @OA\Property(
+     *                 property="comment",
+     *                 type="string",
+     *                 example="This is an updated comment"
+     *             ),
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="integer",
+     *                 example=1
+     *             ),
+     *             @OA\Property(
+     *                 property="quantity",
+     *                 type="integer",
+     *                 example=10
+     *             ),
+     *             @OA\Property(
+     *                 property="inventory_id",
+     *                 type="integer",
+     *                 example=123
+     *             ),
+     *             @OA\Property(
+     *                 property="department_id",
+     *                 type="integer",
+     *                 example=456
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success: Distribution record updated successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="שורה התעדכנה בהצלחה."
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request: Missing or invalid input"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error"
+     *     )
+     * )
+     */
 
     public function update(UpdateDistributionRequest $request, $id = null)
     {
@@ -625,96 +625,152 @@ class DistributionController extends Controller
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
+
+    /**
+     * Get distributions records by query.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @OA\Get(
+     *     path="/api/distributions/search-by-query",
+     *     summary="Get distributions records by query",
+     *     tags={"Distributions"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"query"},
+     *             @OA\Property(property="query", type="string", example="Pending")
+     *         )
+     *     ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="id", type="integer", example=1),
+     *              @OA\Property(property="comment", type="string", example="Velit veritatis quia vel nemo qui. Eaque commodi expedita enim libero ut. Porro ducimus repellendus tenetur."),
+     *              @OA\Property(property="status", type="integer", example=1),
+     *              @OA\Property(property="quantity", type="integer", example=44),
+     *              @OA\Property(property="inventory_id", type="integer", example=24),
+     *              @OA\Property(property="created_at", type="string", format="date-time", example="2024-04-07T11:42:45.000000Z"),
+     *              @OA\Property(property="updated_at", type="string", format="date-time", example="2024-04-07T11:42:45.000000Z"),
+     *              @OA\Property(
+     *                  property="inventory",
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=24),
+     *                  @OA\Property(property="quantity", type="integer", example=10),
+     *                  @OA\Property(property="sku", type="string", example="1359395842801"),
+     *                  @OA\Property(property="item_type", type="string", example="magni"),
+     *                  @OA\Property(property="detailed_description", type="string", example="Velit ut ipsam neque tempora est dicta. Et distinctio eligendi expedita corporis assumenda aspernatur hic.")
+     *              )
+     *          )
+     *      ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Invalid search value")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Server error occurred")
+     *         )
+     *     )
+     * )
+     */
+
+
+
     public function getRecordsByQuery(Request $request)
     {
         try {
-
-
 
             // set custom error messages in Hebrew
             $customMessages = [
                 'query.required' => 'יש לשלוח שדה לחיפוש',
                 'query.string' => 'ערך השדה שנשלח אינו תקין.',
             ];
-                        //set the rules
-                             
-                        $rules = [
-                            'query' => 'required|string',
-                        ];
-            
-                        // validate the request data
-                        $validator = Validator::make($request->all(), $rules, $customMessages);
-            
-                        // Check if validation fails
-                        if ($validator->fails()) {
-            
-                            return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-                        }
+            //set the rules
+
+            $rules = [
+                'query' => 'required|string',
+            ];
+
+            // validate the request data
+            $validator = Validator::make($request->all(), $rules, $customMessages);
+
+            // Check if validation fails
+            if ($validator->fails()) {
+
+                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
 
 
-                        $searchQuery=$request->input('query');
+            $searchQuery = $request->input('query');
 
-                        if (ctype_digit($searchQuery)) {
-                            //search by status value.
-                            $searchQuery=((int)($searchQuery));
-                            $status_value = match ($searchQuery) {
-                                DistributionStatus::PENDING->value => 0,
-                                DistributionStatus::APPROVED->value => 1,
-                                DistributionStatus::CANCELD->value => 2,
-                                default => false,
-                            };
+            if (ctype_digit($searchQuery)) {
+                //search by status value.
+                $searchQuery = ((int) ($searchQuery));
+                $status_value = match ($searchQuery) {
+                    DistributionStatus::PENDING->value => 0,
+                    DistributionStatus::APPROVED->value => 1,
+                    DistributionStatus::CANCELD->value => 2,
+                    default => false,
+                };
 
-                            if ($status_value==false) {
-                                return response()->json(['message' => 'יש לשלוח ערך תקין לחיפוש.'], Response::HTTP_BAD_REQUEST);
-                            }
-
-
-                            $distributions=Distribution::with(['inventory', 'department'])
-                            ->where('status', $status_value)->where('is_deleted',false)->get();
-
-                            return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
-
-                        }
+                if ($status_value == false) {
+                    return response()->json(['message' => 'יש לשלוח ערך תקין לחיפוש.'], Response::HTTP_BAD_REQUEST);
+                }
 
 
-                        $id_department=Department::where('name',$searchQuery)
-                        ->where('is_deleted',false)
-                        ->pluck('id');
+                $distributions = Distribution::with(['inventory', 'department'])
+                    ->where('status', $status_value)->where('is_deleted', false)->get();
 
-                      
-                        if ($id_department->isEmpty()==false) {
-                            //?search by name of department
-
-                            $distributions=Distribution::with(['inventory', 'department'])
-                            ->where('department_id',$id_department[0])
-                            ->where('is_deleted',false)
-                            ->get();
-
-
-            // //? search records with specific name department
-            // $distributions = Distribution::with(['inventory', 'department'])
-            // ->whereHas('department', function ($query) use ($searchQuery) {
-            //     $query->where('name', 'like', '%' . $searchQuery . '%');
-            // })->get();
-
-
-                          return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
-
-                        }
-
-
-//? search records with specific item_type of inventory 
-$distributions = Distribution::with(['inventory', 'department'])
-    ->whereHas('inventory', function ($query) use ($searchQuery) {
-        $query->where('name', 'like', '%' . $searchQuery . '%');
-    })->get();
-            
-dd($distributions);
                 return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
+
+            }
+
+            // get id base of department name fileds.
+            $id_department = Department::where('name', $searchQuery)
+                ->where('is_deleted', false)
+                ->pluck('id');
+
+
+            if ($id_department->isEmpty() == false) {
+                //?search by name of department
+
+                $distributions = Distribution::with(['inventory', 'department'])
+                    ->where('department_id', $id_department[0])
+                    ->where('is_deleted', false)
+                    ->get();
+
+
+                // //? search records with specific name department
+                // $distributions = Distribution::with(['inventory', 'department'])
+                // ->whereHas('department', function ($query) use ($searchQuery) {
+                //     $query->where('name', 'like', '%' . $searchQuery . '%');
+                // })->get();
+
+
+                return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
+
+            }
+
+            //? search distributions records by item_type inventories records associated.
+            $distributions = Distribution::with(['inventory', 'department'])
+                ->whereHas('inventory', function ($query) use ($searchQuery) {
+                    $query->where('item_type', $searchQuery);
+                })->get();
+
+            return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
 
 
         } catch (\Exception $e) {
-            dd($e->getMessage());
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);

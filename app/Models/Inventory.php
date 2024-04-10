@@ -42,6 +42,6 @@ class Inventory extends Model
      */
     public function distribution()
     {
-        return $this->hasOne(Distribution::class);
+        return $this->hasMany(Distribution::class);
     }
 }

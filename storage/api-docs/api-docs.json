@@ -1031,6 +1031,136 @@
                 }
             }
         },
+        "/api/distributions/search-by-query": {
+            "get": {
+                "tags": [
+                    "Distributions"
+                ],
+                "summary": "Get distributions records by query",
+                "description": "Get distributions records by query.",
+                "operationId": "b075308bab586236ff4ec09c34d37454",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "query"
+                                ],
+                                "properties": {
+                                    "query": {
+                                        "type": "string",
+                                        "example": "Pending"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "comment": {
+                                            "type": "string",
+                                            "example": "Velit veritatis quia vel nemo qui. Eaque commodi expedita enim libero ut. Porro ducimus repellendus tenetur."
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "quantity": {
+                                            "type": "integer",
+                                            "example": 44
+                                        },
+                                        "inventory_id": {
+                                            "type": "integer",
+                                            "example": 24
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2024-04-07T11:42:45.000000Z"
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2024-04-07T11:42:45.000000Z"
+                                        },
+                                        "inventory": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 24
+                                                },
+                                                "quantity": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "sku": {
+                                                    "type": "string",
+                                                    "example": "1359395842801"
+                                                },
+                                                "item_type": {
+                                                    "type": "string",
+                                                    "example": "magni"
+                                                },
+                                                "detailed_description": {
+                                                    "type": "string",
+                                                    "example": "Velit ut ipsam neque tempora est dicta. Et distinctio eligendi expedita corporis assumenda aspernatur hic."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid search value"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Server error occurred"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/inventories": {
             "get": {
                 "tags": [

@@ -59,28 +59,28 @@ class InventoryController extends Controller
     }
 
     /**
- * @OA\Get(
- *     path="/api/sku-records",
- *     tags={"Inventory"},
- *     summary="Get SKU records",
- *     description="Retrieve a list of SKU records from the inventory.",
- *     @OA\Response(
- *         response=200,
- *         description="Successful operation",
- *         @OA\JsonContent(
- *             type="array",
- *             @OA\Items(
- *                 type="string",
- *                 example="1486404413070"
- *             )
- *         )
- *     ),
- *     @OA\Response(
- *         response=500,
- *         description="Server error"
- *     )
- * )
- */
+     * @OA\Get(
+     *     path="/api/sku-records",
+     *     tags={"Inventory"},
+     *     summary="Get SKU records",
+     *     description="Retrieve a list of SKU records from the inventory.",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 type="string",
+     *                 example="1486404413070"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error"
+     *     )
+     * )
+     */
 
     public function getSkuRecords()
     {
@@ -95,7 +95,7 @@ class InventoryController extends Controller
     }
 
 
-    
+
 
     /**
      * @OA\Get(
@@ -327,7 +327,7 @@ class InventoryController extends Controller
      *             @OA\Property(property="message", type="string", example="שורה התעדכנה בהצלחה.")
      *         )
      *     ),
-     *     
+     *
      * )
      */
 
@@ -473,20 +473,20 @@ class InventoryController extends Controller
 
 
     /**
- * @OA\Get(
- *     path="/api/inventory/search-records/{searchString}",
- *     tags={"Inventory"},
- *     summary="Search inventory records by SKU or item type",
- *     description="Search inventory records by providing either SKU or item type. Returns matching inventory records.",
- *     @OA\Parameter(
- *         name="searchString",
- *         in="path",
- *         description="Search string (SKU or item type)",
- *         required=true,
- *         @OA\Schema(
- *             type="string"
- *         )
- *     ),
+     * @OA\Get(
+     *     path="/api/inventory/search-records/{searchString}",
+     *     tags={"Inventory"},
+     *     summary="Search inventory records by SKU or item type",
+     *     description="Search inventory records by providing either SKU or item type. Returns matching inventory records.",
+     *     @OA\Parameter(
+     *         name="searchString",
+     *         in="path",
+     *         description="Search string (SKU or item type)",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
      *      @OA\Response(
      *          response=200,
      *          description="Successful operation",
@@ -502,22 +502,22 @@ class InventoryController extends Controller
      *              )
      *          )
      *      ),
- *     @OA\Response(
- *         response=400,
- *         description="Invalid input"
- *     ),
- *     @OA\Response(
- *         response=500,
- *         description="Server error"
- *     )
- * )
- */
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid input"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error"
+     *     )
+     * )
+     */
 
 
     public function searchRecords(string $searchString = null)
     {
 
-  
+
         try {
 
 
@@ -532,11 +532,11 @@ class InventoryController extends Controller
 
                 // Search by SKU
                 $inventory = Inventory::where('sku', $searchString)
-                ->where('is_deleted',false)
-                ->first();
+                    ->where('is_deleted', false)
+                    ->first();
 
                 if (is_null($inventory)) {
-                    
+
                     return response()->json([], Response::HTTP_OK);
                 }
 
@@ -545,8 +545,8 @@ class InventoryController extends Controller
 
                 // Search by item type
                 $inventories = Inventory::where('item_type', 'LIKE', '%' . $searchString . '%')
-                ->where('is_deleted',false)
-                ->get();
+                    ->where('is_deleted', false)
+                    ->get();
 
                 if ($inventories->isEmpty()) {
                     return response()->json([], Response::HTTP_OK);
