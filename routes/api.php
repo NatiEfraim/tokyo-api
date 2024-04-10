@@ -30,6 +30,7 @@ Route::controller(DistributionController::class)
     ->prefix('distributions')->group(function () {
         Route::get('/', 'index');
         Route::get('/getditribution/{id?}', 'getRecordById');
+        Route::get('/search-by-query', 'getRecordsByQuery');
         Route::put('/changed-status/{id?}', 'changeStatus');
         Route::put('/{id?}', 'update');
         Route::post('/', 'store');

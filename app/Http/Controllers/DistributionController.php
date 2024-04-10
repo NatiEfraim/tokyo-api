@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Enums\DistributionStatus;
 use App\Http\Requests\StoreDistributionRequest;
 use App\Http\Requests\UpdateDistributionRequest;
+use App\Models\Department;
 use App\Models\Distribution;
+use App\Models\Inventory;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -623,5 +625,99 @@ class DistributionController extends Controller
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
+    public function getRecordsByQuery(Request $request)
+    {
+        try {
+
+
+
+            // set custom error messages in Hebrew
+            $customMessages = [
+                'query.required' => 'יש לשלוח שדה לחיפוש',
+                'query.string' => 'ערך השדה שנשלח אינו תקין.',
+            ];
+                        //set the rules
+                             
+                        $rules = [
+                            'query' => 'required|string',
+                        ];
+            
+                        // validate the request data
+                        $validator = Validator::make($request->all(), $rules, $customMessages);
+            
+                        // Check if validation fails
+                        if ($validator->fails()) {
+            
+                            return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+                        }
+
+
+                        $searchQuery=$request->input('query');
+
+                        if (ctype_digit($searchQuery)) {
+                            //search by status value.
+                            $searchQuery=((int)($searchQuery));
+                            $status_value = match ($searchQuery) {
+                                DistributionStatus::PENDING->value => 0,
+                                DistributionStatus::APPROVED->value => 1,
+                                DistributionStatus::CANCELD->value => 2,
+                                default => false,
+                            };
+
+                            if ($status_value==false) {
+                                return response()->json(['message' => 'יש לשלוח ערך תקין לחיפוש.'], Response::HTTP_BAD_REQUEST);
+                            }
+
+
+                            $distributions=Distribution::with(['inventory', 'department'])
+                            ->where('status', $status_value)->where('is_deleted',false)->get();
+
+                            return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
+
+                        }
+
+
+                        $id_department=Department::where('name',$searchQuery)
+                        ->where('is_deleted',false)
+                        ->pluck('id');
+
+                      
+                        if ($id_department->isEmpty()==false) {
+                            //?search by name of department
+
+                            $distributions=Distribution::with(['inventory', 'department'])
+                            ->where('department_id',$id_department[0])
+                            ->where('is_deleted',false)
+                            ->get();
+
+
+            // //? search records with specific name department
+            // $distributions = Distribution::with(['inventory', 'department'])
+            // ->whereHas('department', function ($query) use ($searchQuery) {
+            //     $query->where('name', 'like', '%' . $searchQuery . '%');
+            // })->get();
+
+
+                          return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
+
+                        }
+
+
+//? search records with specific item_type of inventory 
+$distributions = Distribution::with(['inventory', 'department'])
+    ->whereHas('inventory', function ($query) use ($searchQuery) {
+        $query->where('name', 'like', '%' . $searchQuery . '%');
+    })->get();
+            
+dd($distributions);
+                return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
+
+
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
 
 }
