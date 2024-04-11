@@ -52,4 +52,26 @@ class Distribution extends Model
     {
         return $this->belongsTo(Inventory::class);
     }
+
+
+    //? set relations function with users table
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function createdByUser()
+    {
+        return $this->belongsTo(User::class, 'created_by')
+            ->select('id', 'name', 'emp_type_id', 'phone')->with('employeeType');
+    }
+
+    // public function updatedByUser()
+    // {
+    //     return $this->belongsTo(User::class, 'updated_by')
+    //         ->select('id', 'name', 'emp_type_id', 'phone')->with(['employeeType']);
+    // }
+
+
+
 }

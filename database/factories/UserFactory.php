@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\EmployeeType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -23,11 +24,20 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $randomEmpType = EmployeeType::inRandomOrder()->first();
+        $faker = \Faker\Factory::create('he_IL');
+        //* generate random personl_number
+        $pn = $faker->unique()->regexify('[scm]\d{7}');
+
         return [
             'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
+            'email' => "$pn@army.idf.il",
+            'personal_number' => $pn,
+            'emp_type_id' => $randomEmpType->id, //set realtion
+            'phone' => $faker->unique()->regexify('05\d{8}'),
+            // 'email' => fake()->unique()->safeEmail(),
+            // 'email_verified_at' => now(),
+            // 'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
         ];
     }

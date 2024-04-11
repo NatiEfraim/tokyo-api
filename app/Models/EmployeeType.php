@@ -25,6 +25,10 @@ class EmployeeType extends Model
 
     protected $hidden = ['created_at', 'updated_at', 'is_deleted'];
 
-
+    //set the relation
+    public function users()
+    {
+        return $this->hasMany(User::class, 'emp_type_id');
+    }
 
 }

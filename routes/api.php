@@ -18,8 +18,8 @@ Route::get('/user', function (Request $request) {
 Route::controller(InventoryController::class)
     ->prefix('inventories')->group(function () {
         Route::get('/', 'index');
+        Route::get('/{id?}', 'getRecordById');
         Route::get('/sku-records','getSkuRecords');
-        Route::get('/getinventory/{id?}', 'getRecordById');
         Route::get('/search-records/{searchString?}', 'searchRecords');
         Route::put('/{id?}', 'update');
         Route::post('/', 'store');
@@ -30,10 +30,10 @@ Route::controller(InventoryController::class)
 Route::controller(DistributionController::class)
     ->prefix('distributions')->group(function () {
         Route::get('/', 'index');
-        Route::get('/getditribution/{id?}', 'getRecordById');
         Route::get('/search-by-query', 'getRecordsByQuery');
+        Route::get('/{id?}', 'getRecordById');
         Route::put('/changed-status/{id?}', 'changeStatus');
-        Route::put('/{id?}', 'update');
+         Route::put('/{id?}', 'update');
         Route::post('/', 'store');
         Route::delete('/mass-destroy', 'massDestroy');
         Route::delete('/{id?}', 'destroy');

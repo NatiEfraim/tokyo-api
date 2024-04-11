@@ -33,35 +33,42 @@ class DistributionController extends Controller
      *     path="/api/distributions",
      *     summary="Retrieve all distributions",
      *     tags={"Distributions"},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             type="array",
-     *             @OA\Items(
-     *                 type="object",
-     *                 @OA\Property(property="id", type="integer", example=1),
-     *                 @OA\Property(property="comment", type="string", example="Numquam vitae neque rerum laboriosam excepturi aut eligendi."),
-     *                 @OA\Property(property="status", type="integer", example=1),
-     *                 @OA\Property(property="quantity", type="integer", example=14),
-     *                 @OA\Property(property="inventory_id", type="integer", example=29),
-     *                 @OA\Property(property="department_id", type="integer", example=1),
-     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2024-04-08T08:50:47.000000Z"),
-     *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2024-04-08T08:50:47.000000Z"),
-     *                 @OA\Property(property="inventory", type="object",
-     *                     @OA\Property(property="id", type="integer", example=29),
-     *                     @OA\Property(property="quantity", type="integer", example=53),
-     *                     @OA\Property(property="sku", type="string", example="7666918685123"),
-     *                     @OA\Property(property="item_type", type="string", example="dolor"),
-     *                     @OA\Property(property="detailed_description", type="string", example="Itaque omnis non maxime maxime rerum.")
-     *                 ),
-     *                 @OA\Property(property="department", type="object",
-     *                     @OA\Property(property="id", type="integer", example=1),
-     *                     @OA\Property(property="name", type="string", example="משקים ומטה")
-     *                 )
-     *             )
-     *         )
-     *     ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="id", type="integer", example=1),
+     *              @OA\Property(property="comment", type="string", example="Velit veritatis quia vel nemo qui. Eaque commodi expedita enim libero ut. Porro ducimus repellendus tenetur."),
+     *              @OA\Property(property="status", type="integer", example=1),
+     *              @OA\Property(property="quantity", type="integer", example=44),
+     *              @OA\Property(property="inventory_id", type="integer", example=24),
+     *              @OA\Property(property="created_at", type="string", format="date-time", example="2024-04-07T11:42:45.000000Z"),
+     *              @OA\Property(property="updated_at", type="string", format="date-time", example="2024-04-07T11:42:45.000000Z"),
+     *              @OA\Property(
+     *                  property="inventory",
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=24),
+     *                  @OA\Property(property="quantity", type="integer", example=10),
+     *                  @OA\Property(property="sku", type="string", example="1359395842801"),
+     *                  @OA\Property(property="item_type", type="string", example="magni"),
+     *                  @OA\Property(property="detailed_description", type="string", example="Velit ut ipsam neque tempora est dicta. Et distinctio eligendi expedita corporis assumenda aspernatur hic.")
+     *              ),
+     *              @OA\Property(
+     *                  property="created_by_user",
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="name", type="string", example="Percival Schulist"),
+     *                  @OA\Property(property="emp_type_id", type="integer", example=2),
+     *                  @OA\Property(property="phone", type="string", example="0556926412"),
+     *                  @OA\Property(
+     *                      property="employee_type",
+     *                      type="object",
+     *                      @OA\Property(property="id", type="integer", example=2),
+     *                      @OA\Property(property="name", type="string", example="miluim")
+     *                  )
+     *              )
+     *          )
+     *      ),
      *     @OA\Response(
      *         response=500,
      *         description="Internal Server Error",
@@ -76,7 +83,7 @@ class DistributionController extends Controller
     {
         try {
 
-            $distributions = Distribution::with(['inventory', 'department'])
+            $distributions = Distribution::with(['inventory', 'department', 'createdByUser'])
                 ->where('is_deleted', 0)
                 ->orderBy('created_at', 'desc')
                 ->get()
@@ -133,6 +140,20 @@ class DistributionController extends Controller
      *                  @OA\Property(property="sku", type="string", example="1359395842801"),
      *                  @OA\Property(property="item_type", type="string", example="magni"),
      *                  @OA\Property(property="detailed_description", type="string", example="Velit ut ipsam neque tempora est dicta. Et distinctio eligendi expedita corporis assumenda aspernatur hic.")
+     *              ),
+     *              @OA\Property(
+     *                  property="created_by_user",
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="name", type="string", example="Percival Schulist"),
+     *                  @OA\Property(property="emp_type_id", type="integer", example=2),
+     *                  @OA\Property(property="phone", type="string", example="0556926412"),
+     *                  @OA\Property(
+     *                      property="employee_type",
+     *                      type="object",
+     *                      @OA\Property(property="id", type="integer", example=2),
+     *                      @OA\Property(property="name", type="string", example="miluim")
+     *                  )
      *              )
      *          )
      *      ),
@@ -161,7 +182,7 @@ class DistributionController extends Controller
 
 
         try {
-            $distribution = Distribution::with(['inventory'])
+            $distribution = Distribution::with(['inventory', 'createdByUser'])
                 ->where('id', $id)
                 ->where('is_deleted', 0)
                 ->first();
@@ -662,6 +683,20 @@ class DistributionController extends Controller
      *                  @OA\Property(property="sku", type="string", example="1359395842801"),
      *                  @OA\Property(property="item_type", type="string", example="magni"),
      *                  @OA\Property(property="detailed_description", type="string", example="Velit ut ipsam neque tempora est dicta. Et distinctio eligendi expedita corporis assumenda aspernatur hic.")
+     *              ),
+     *              @OA\Property(
+     *                  property="created_by_user",
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="name", type="string", example="Percival Schulist"),
+     *                  @OA\Property(property="emp_type_id", type="integer", example=2),
+     *                  @OA\Property(property="phone", type="string", example="0556926412"),
+     *                  @OA\Property(
+     *                      property="employee_type",
+     *                      type="object",
+     *                      @OA\Property(property="id", type="integer", example=2),
+     *                      @OA\Property(property="name", type="string", example="miluim")
+     *                  )
      *              )
      *          )
      *      ),
@@ -728,7 +763,7 @@ class DistributionController extends Controller
                 }
 
 
-                $distributions = Distribution::with(['inventory', 'department'])
+                $distributions = Distribution::with(['inventory', 'department', 'createdByUser'])
                     ->where('status', $status_value)->where('is_deleted', false)->get();
 
                 return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
@@ -744,7 +779,7 @@ class DistributionController extends Controller
             if ($id_department->isEmpty() == false) {
                 //?search by name of department
 
-                $distributions = Distribution::with(['inventory', 'department'])
+                $distributions = Distribution::with(['inventory', 'department', 'createdByUser'])
                     ->where('department_id', $id_department[0])
                     ->where('is_deleted', false)
                     ->get();
@@ -762,7 +797,7 @@ class DistributionController extends Controller
             }
 
             //? search distributions records by item_type inventories records associated.
-            $distributions = Distribution::with(['inventory', 'department'])
+            $distributions = Distribution::with(['inventory', 'department', 'createdByUser'])
                 ->whereHas('inventory', function ($query) use ($searchQuery) {
                     $query->where('item_type', $searchQuery);
                 })->get();

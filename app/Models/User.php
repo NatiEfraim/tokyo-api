@@ -44,4 +44,30 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+
+    public function employeeType()
+    {
+        return $this->belongsTo(EmployeeType::class, 'emp_type_id');
+    }
+
+    public function getTranslatedEmployeeTypeAttribute()
+    {
+        $employeeTypes = [
+            'civilian_employee' => 'אע"צ',
+            'sadir' => 'סדיר',
+            'miluim' => 'מילואים',
+            'keva' => 'קבע',
+        ];
+
+        return $employeeTypes[$this->employeeType->emp_type_name] ?? 'חסר';
+    }
+
+
+    public function distribution()
+    {
+        return $this->hasMany(Distribution::class);
+    }
+
+
 }
