@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\DistributionController;
+use App\Http\Controllers\EmployeeTypeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\InventoryController;
@@ -48,3 +49,9 @@ Route::controller(DepartmentController::class)
         Route::delete('/mass-destroy', 'massDestroy');
         Route::delete('/{id?}', 'destroy');
     });
+
+Route::controller(EmployeeTypeController::class)
+->prefix('employee-types')->group(function () {
+    Route::get('/', 'index');
+
+});

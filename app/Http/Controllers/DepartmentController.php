@@ -6,7 +6,7 @@ use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Rule;
+// use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -235,7 +235,7 @@ class DepartmentController extends Controller
      * @OA\Delete(
      *     path="/api/departments/mass-destroy",
      *     summary="Mass delete departments",
-     *     tags={"Departmnet"},
+     *     tags={"Departments"},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(

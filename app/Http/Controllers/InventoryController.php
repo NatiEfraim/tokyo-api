@@ -61,7 +61,7 @@ class InventoryController extends Controller
     /**
      * @OA\Get(
      *     path="/api/sku-records",
-     *     tags={"Inventory"},
+     *     tags={"Inventories"},
      *     summary="Get SKU records",
      *     description="Retrieve a list of SKU records from the inventory.",
      *     @OA\Response(
@@ -475,7 +475,7 @@ class InventoryController extends Controller
     /**
      * @OA\Get(
      *     path="/api/inventory/search-records/{searchString}",
-     *     tags={"Inventory"},
+     *     tags={"Inventories"},
      *     summary="Search inventory records by SKU or item type",
      *     description="Search inventory records by providing either SKU or item type. Returns matching inventory records.",
      *     @OA\Parameter(

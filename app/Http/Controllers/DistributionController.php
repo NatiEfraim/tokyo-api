@@ -7,12 +7,12 @@ use App\Http\Requests\StoreDistributionRequest;
 use App\Http\Requests\UpdateDistributionRequest;
 use App\Models\Department;
 use App\Models\Distribution;
-use App\Models\Inventory;
+// use App\Models\Inventory;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Rule;
+// use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -526,7 +526,7 @@ class DistributionController extends Controller
     /**
      * @OA\Put(
      *     path="/api/distribution/{id}",
-     *     tags={"Distribution"},
+     *     tags={"Distributions"},
      *     summary="Update distribution record",
      *     description="Update an existing distribution record by providing the ID.",
      *     @OA\Parameter(

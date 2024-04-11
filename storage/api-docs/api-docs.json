@@ -232,7 +232,7 @@
         "/api/departments/mass-destroy": {
             "delete": {
                 "tags": [
-                    "Departmnet"
+                    "Departments"
                 ],
                 "summary": "Mass delete departments",
                 "description": "Mass delete departments.\n\nThis endpoint deletes multiple distribution records based on the provided IDs.",
@@ -952,7 +952,7 @@
         "/api/distribution/{id}": {
             "put": {
                 "tags": [
-                    "Distribution"
+                    "Distributions"
                 ],
                 "summary": "Update distribution record",
                 "description": "Update an existing distribution record by providing the ID.",
@@ -1161,6 +1161,63 @@
                 }
             }
         },
+        "/api/employeetypes": {
+            "get": {
+                "tags": [
+                    "Employee Types"
+                ],
+                "summary": "Get all employee types",
+                "description": "Retrieves all employee types available in the system.",
+                "operationId": "33e774cd7f40bc5df0837e0873a3bd9a",
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "description": "Employee type ID",
+                                                "type": "integer"
+                                            },
+                                            "name": {
+                                                "description": "Employee type name",
+                                                "type": "string",
+                                                "example": "keva"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "בעיה בשרת. יש לנסות שוב מאוחר יותר."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/inventories": {
             "get": {
                 "tags": [
@@ -1327,7 +1384,7 @@
         "/api/sku-records": {
             "get": {
                 "tags": [
-                    "Inventory"
+                    "Inventories"
                 ],
                 "summary": "Get SKU records",
                 "description": "Retrieve a list of SKU records from the inventory.",
@@ -1699,7 +1756,7 @@
         "/api/inventory/search-records/{searchString}": {
             "get": {
                 "tags": [
-                    "Inventory"
+                    "Inventories"
                 ],
                 "summary": "Search inventory records by SKU or item type",
                 "description": "Search inventory records by providing either SKU or item type. Returns matching inventory records.",
