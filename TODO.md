@@ -5,7 +5,7 @@
 -   [ ] Implement inventories table 
 -   [ ] Add CRUD functionality for posts/gets/put/delete - for inventories,departments,users,distributions table.
 -   [ ] UserController - user can search user by personal_number or by name.
--   [ ] DistributionController user can search records based status fileds,departments (associated department_id),item_type (assoscited inventory_id)       
+-   [ ] DistributionController user can search records based status fileds,departments (associated department_id),item_type (assoscited inventory_id),persnol_numer (associated created_by)       
 
 
 

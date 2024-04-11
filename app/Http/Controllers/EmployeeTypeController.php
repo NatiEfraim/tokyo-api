@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\EmployeeType;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 

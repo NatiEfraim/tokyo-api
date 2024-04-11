@@ -7,6 +7,7 @@ use App\Http\Requests\StoreDistributionRequest;
 use App\Http\Requests\UpdateDistributionRequest;
 use App\Models\Department;
 use App\Models\Distribution;
+use App\Models\User;
 // use App\Models\Inventory;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -22,6 +23,8 @@ class DistributionController extends Controller
 {
     //
 
+    const MIN_LEN = 1;
+    const MAX_LEN = 7;
     /**
      * Retrieve all distributions.
      *
@@ -747,8 +750,7 @@ class DistributionController extends Controller
 
 
             $searchQuery = $request->input('query');
-
-            if (ctype_digit($searchQuery)) {
+            if (ctype_digit($searchQuery) && strlen($searchQuery) == self::MIN_LEN) {
                 //search by status value.
                 $searchQuery = ((int) ($searchQuery));
                 $status_value = match ($searchQuery) {
@@ -769,6 +771,34 @@ class DistributionController extends Controller
                 return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
 
             }
+
+            if (ctype_digit($searchQuery) && strlen($searchQuery) == self::MAX_LEN) {
+                //? search distributions records - by created_by fileds
+                $user_record=User::with(['employeeType'])
+                    ->whereRaw('SUBSTRING(personal_number, 2) LIKE ?', ['%' . $searchQuery . '%'])
+                    ->where('is_deleted', false)
+                    ->first();
+
+
+
+                if (is_null($user_record)) {
+                    return response()->json(['message' => 'משתמש זה אינו קיים במערכת.'], Response::HTTP_CONFLICT);
+                }
+
+
+
+                $distributions = Distribution::with(['inventory', 'department', 'createdByUser'])
+                ->where('created_by', $user_record->id)
+                ->where('is_deleted', false)
+                ->get();
+
+
+
+                return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
+            }
+
+
+
 
             // get id base of department name fileds.
             $id_department = Department::where('name', $searchQuery)

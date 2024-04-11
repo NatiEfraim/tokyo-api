@@ -6,7 +6,6 @@ use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
-// use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
 
 

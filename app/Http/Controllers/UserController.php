@@ -8,10 +8,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 use Illuminate\Support\Str;
 
-// use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -343,4 +341,183 @@ class UserController extends Controller
 
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
+
+
+
+    /**
+     * @OA\Delete(
+     *      path="/api/users/{id}",
+     *      tags={"Users"},
+     *      summary="Delete a user by ID",
+     *      description="Deletes a user from the system based on the provided ID.",
+     *      @OA\Parameter(
+     *          name="id",
+     *          in="path",
+     *          required=true,
+     *          description="ID of the user to delete",
+     *          @OA\Schema(type="integer")
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success response",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="המשתמש הוסר בהצלחה.")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=409,
+     *          description="Not found",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="לא ניתן למחוק משתמש שמחובר למערכת.")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=403,
+     *          description="Forbidden",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="המשתמש אינו מורשה לבצע פעולה זו.")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Internal server error",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="התרחש בעיית שרתת יש לנסות שוב מאוחר יותר.")
+     *          )
+     *      ),
+     * )
+     */
+
+
+
+    public function destroy($id = null)
+    {
+        try {
+
+            if (!$id) {
+                return response()->json(['message' => 'חובה לשלוח מספר מזהה של הבקשה.'], Response::HTTP_BAD_REQUEST);
+            }
+
+
+            $user_exsist = User::where('id', $id)->where('is_deleted', false)->first();
+
+
+
+            if (is_null($user_exsist)) {
+                return response()->json(['message' => 'משתמש אינו קיים במערכת.'], Response::HTTP_BAD_REQUEST);
+            }
+
+
+            //doft deleted user
+            $user_exsist->update(['is_deleted' => true]);
+
+            return response()->json(['message' => 'משתמש נמחק מהמערכת.'], Response::HTTP_OK);
+
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+    }
+
+
+    /**
+     * @OA\Post(
+     *      path="/api/users/mass-destroy",
+     *      tags={"Users"},
+     *      summary="Delete multiple users",
+     *      description="Deletes multiple users from the system.",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="List of user IDs to delete",
+     *          @OA\JsonContent(
+     *              required={"users"},
+     *              @OA\Property(property="users", type="array",
+     *                  @OA\Items(
+     *                      type="object",
+     *                      required={"id"},
+     *                      @OA\Property(property="id", type="integer", example=1, description="User ID to delete")
+     *                  )
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="שורות נמחקו בהצלחה.")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=422,
+     *          description="Unprocessable Entity",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="messages", type="object",
+     *                  @OA\Property(property="users", type="array",
+     *                      @OA\Items(
+     *                          @OA\Property(property="id", type="string", example="שדה המזהה חובה.")
+     *                      )
+     *                  )
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Internal server error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="התרחש בעיית שרת יש לנסות שוב מאוחר יותר.")
+     *          )
+     *      )
+     * )
+     */
+
+
+    public function massDestroy(Request $request)
+    {
+
+
+
+
+        try {
+            // set custom error messages in Hebrew
+            $customMessages = [
+                'users.required' => 'יש לשלוח שורות למחיקה.',
+                'users.array' => 'שורות אינם בפורמט תקין.',
+                'users.*.id.required' => 'שדה המזהה חובה.',
+                'users.*.id.integer' => 'אחת מהשדות שנשלחו אינו תקין.',
+                'users.*.id.exists' => 'המזהה שנבחר לא קיים או שהמשימה נמחקה.',
+            ];
+            //set the rules
+            $rules = [
+                'users' => 'required|array',
+                'users.*.id' => 'required|integer|exists:users,id,is_deleted,0',
+            ];
+
+            // validate the request data
+            $validator = Validator::make($request->all(), $rules, $customMessages);
+
+            // Check if validation fails
+            if ($validator->fails()) {
+
+                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+            $users = $request->input('users');
+            $ids = collect($users)->pluck('id')->toArray();
+
+            // Update the 'is_deleted' column to 1 for the users with the given IDs
+            User::whereIn('id', $ids)->update(['is_deleted' => 1]);
+
+            return response()->json(['message' => 'שורות נמחקו בהצלחה.'], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+
 }
