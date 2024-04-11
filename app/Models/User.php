@@ -18,6 +18,10 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'is_deleted',
+        'emp_type_id',
+        'phone',
+        'personal_number',
         'email',
         'password',
     ];
@@ -29,6 +33,10 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
+        'is_deleted',
+        'created_at',
+        'updated_at',
+        // 'emp_type_id',
         'remember_token',
     ];
 

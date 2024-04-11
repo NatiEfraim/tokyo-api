@@ -20,6 +20,7 @@ class Distribution extends Model
         'quantity',
         'inventory_id',
         'department_id',
+        'created_by',
         'is_deleted',
         'created_at',
         'updated_at'
@@ -32,6 +33,11 @@ class Distribution extends Model
      */
     protected $hidden = [
         'is_deleted',
+
+        // 'inventory_id',
+        // 'department_id',
+        // 'created_by',
+
         'created_at',
         'updated_at'
     ];

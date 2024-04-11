@@ -6,9 +6,7 @@ use App\Http\Controllers\EmployeeTypeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\InventoryController;
-
-
-
+use App\Http\Controllers\UserController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -29,25 +27,25 @@ Route::controller(InventoryController::class)
 
 Route::controller(DistributionController::class)
     ->prefix('distributions')->group(function () {
-        Route::get('/', 'index');
-        Route::get('/search-by-query', 'getRecordsByQuery');
-        Route::get('/{id?}', 'getRecordById');
-        Route::put('/changed-status/{id?}', 'changeStatus');
-         Route::put('/{id?}', 'update');
-        Route::post('/', 'store');
-        Route::delete('/mass-destroy', 'massDestroy');
-        Route::delete('/{id?}', 'destroy');
+    Route::get('/', 'index');
+    Route::get('/search-by-query', 'getRecordsByQuery');
+    Route::get('/{id?}', 'getRecordById');
+    Route::put('/changed-status/{id?}', 'changeStatus');
+    Route::put('/{id?}', 'update');
+    Route::post('/', 'store');
+    Route::delete('/mass-destroy', 'massDestroy');
+    Route::delete('/{id?}', 'destroy');
     });
 
 
 Route::controller(DepartmentController::class)
     ->prefix('depratments')->group(function () {
-        Route::get('/', 'index');
-        Route::post('/', 'store');
-        // Route::get('/getditribution/{id?}', 'getRecordById');
-        // Route::put('/{id?}', 'update');
-        Route::delete('/mass-destroy', 'massDestroy');
-        Route::delete('/{id?}', 'destroy');
+    Route::get('/', 'index');
+    Route::post('/', 'store');
+    // Route::get('/getditribution/{id?}', 'getRecordById');
+    // Route::put('/{id?}', 'update');
+    Route::delete('/mass-destroy', 'massDestroy');
+    Route::delete('/{id?}', 'destroy');
     });
 
 Route::controller(EmployeeTypeController::class)
@@ -55,3 +53,16 @@ Route::controller(EmployeeTypeController::class)
     Route::get('/', 'index');
 
 });
+
+
+
+Route::controller(UserController::class)
+    ->prefix('users')->group(function () {
+    Route::get('/', 'index');
+    Route::get('/search', 'searchUser');
+
+    Route::post('/', 'store');
+    // Route::put('/{id?}', 'update');
+    Route::delete('/mass-destroy', 'massDestroy');
+    Route::delete('/{id?}', 'destroy');
+    });
