@@ -1324,6 +1324,121 @@
                 }
             }
         },
+        "/api/export/inventories-email": {
+            "get": {
+                "tags": [
+                    "Export"
+                ],
+                "summary": "Send inventories email to selected users",
+                "description": "Send inventories email to users based on provided user IDs. Optionally, fetch and send a specific inventories by ID.",
+                "operationId": "55163d8b045e11fb981a9d80912fe0de",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "users"
+                                ],
+                                "properties": {
+                                    "users": {
+                                        "type": "array",
+                                        "items": {
+                                            "description": "User ID",
+                                            "type": "integer",
+                                            "example": "1"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "הנתונים נשלחו בהצלחה."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "הנתונים שנשלחו אינם תקינים."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "הנתונים שנשלחו אינם בפורמט תקין"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "המשתמש אינו מורשה לבצע פעולה זו."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error sending inventories email"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/inventories": {
             "get": {
                 "tags": [

@@ -72,4 +72,5 @@ Route::controller(ExportController::class)
     ->prefix('export')
     ->group(function () {
         Route::get('/inventories', 'exportInventories');
+        Route::get('/inventories-email', 'sendMissionEmail');
     });
