@@ -58,8 +58,41 @@ class ExportController extends Controller
     public function exportInventories(Request $request)
     {
         try {
-            // Fetch all inventories
-            $inventories = Inventory::where('is_deleted', false)->get();
+
+
+            // set validation rules
+            $rules = [
+                'sku' => 'nullable|string|max:255|exists:inventories,sku,is_deleted,0',
+            ];
+
+            // Define custom error messages
+            $customMessages = [
+                'sku.string' => 'שדה שהוזן אינו בפורמט תקין',
+                'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
+                'sku.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
+            ];
+
+            // validate the request with custom error messages
+            $validator = Validator::make($request->all(), $rules, $customMessages);
+
+
+            // Check if validation fails
+            if ($validator->fails()) {
+                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+
+
+            if ($request->input('sku')) {
+                $inventories = Inventory::where('sku',$request->input('sku'))
+                ->where('is_deleted', false)->get();
+
+            }else{
+
+                // Fetch all inventories
+                $inventories = Inventory::where('is_deleted', false)->get();
+            }
+
 
             // Create a new Spreadsheet object
             $spreadsheet = new Spreadsheet();
@@ -131,7 +164,6 @@ class ExportController extends Controller
                 $sheet->getColumnDimension($column)->setAutoSize(true);
             }
 
-            // // set the filename as Excel file.
             // $filename = 'inventories.xlsx';
             $filename = 'inventories_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
 
@@ -220,6 +252,8 @@ class ExportController extends Controller
             $rules = [
                 'users' => 'required|array',
                 'users.*' => 'required|exists:users,id,is_deleted,0',
+                'sku' => 'nullable|string|max:255|exists:inventories,sku,is_deleted,0',
+
             ];
 
             // Define custom error messages
@@ -228,6 +262,10 @@ class ExportController extends Controller
                 'users.array' => 'שדה משתמש שנשלח אינו תקין.',
                 'users.*.required' => 'שדה זה נדרש.',
                 'users.*.exists' => 'הערך שהוזן לא חוקי.',
+
+                'sku.string' => 'שדה שהוזן אינו בפורמט תקין',
+                'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
+                'sku.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
             ];
 
             // validate the request with custom error messages
@@ -239,10 +277,16 @@ class ExportController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
+            if ($request->input('sku')) {
+                $inventories = Inventory::where('sku', $request->input('sku'))
+                ->where('is_deleted', false)->get();
+            } else {
+
+                // Fetch all inventories
+                $inventories = Inventory::where('is_deleted', false)->get();
+            }
 
 
-            // Fetch inventories
-            $inventories = Inventory::where('is_deleted', false)->get();
 
             $users = User::whereIn('id', $request->users)->get();
 
@@ -400,7 +444,60 @@ class ExportController extends Controller
 
 
 
-    //? send users records by email.
+    /**
+     * @OA\Post(
+     *      path="/api/export/users-email",
+     *      tags={"Export"},
+     *      summary="Send email to specified users",
+     *      description="Send email to specified users using their user IDs.",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="User IDs to send email to",
+     *          @OA\JsonContent(
+     *              required={"user_ids"},
+     *              @OA\Property(property="user_ids", type="array", @OA\Items(type="integer"), example="[1, 2, 3]", description="Array of user IDs")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Email sent successfully",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="status", type="string", example="OK")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="status", type="string", example="BAD_REQUEST")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=409,
+     *          description="Conflict",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="status", type="string", example="CONFLICT")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=422,
+     *          description="Unprocessable Entity",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Invalid data was sent")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Internal Server Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Error sending email")
+     *          )
+     *      )
+     * )
+     */
+
+
     public function sendUserEmail(Request $request)
     {
         try {
