@@ -86,13 +86,32 @@ class ExportController extends Controller
 
 
             if ($request->input('sku')) {
-                $inventories = Inventory::where('sku',$request->input('sku'))
-                ->where('is_deleted', false)->get();
+
+                $inventories = Inventory::where('sku', $request->input('sku'))
+                    ->where('is_deleted', false)->get()
+                    ->map(function ($inventory) {
+
+                        // Format the created_at and updated_at timestamps
+                        $inventory->created_at_date = $inventory->created_at->format('d/m/Y');
+                        $inventory->updated_at_date = $inventory->updated_at->format('d/m/Y');
+
+                        return $inventory;
+                    });
 
             }else{
 
                 // Fetch all inventories
-                $inventories = Inventory::where('is_deleted', false)->get();
+                $inventories = Inventory::where('is_deleted', false)
+                    ->orderBy('created_at', 'desc')
+                    ->get()
+                    ->map(function ($inventory) {
+
+                        // Format the created_at and updated_at timestamps
+                        $inventory->created_at_date = $inventory->created_at->format('d/m/Y');
+                        $inventory->updated_at_date = $inventory->updated_at->format('d/m/Y');
+
+                        return $inventory;
+                    });
             }
 
 
@@ -114,13 +133,13 @@ class ExportController extends Controller
             $row = 2;
             foreach ($inventories as $inventory) {
 
-                $sheet->setCellValue('A' . $row, $inventory->id);
-                $sheet->setCellValue('B' . $row, $inventory->quantity);
-                $sheet->setCellValue('C' . $row, $inventory->sku);
-                $sheet->setCellValue('D' . $row, $inventory->item_type);
-                $sheet->setCellValue('E' . $row, $inventory->detailed_description);
-                $sheet->setCellValue('F' . $row, $inventory->created_at);
-                $sheet->setCellValue('G' . $row, $inventory->updated_at);
+                $sheet->setCellValue('A' . $row, $inventory->id ?? 'לא קיים');
+                $sheet->setCellValue('B' . $row, $inventory->quantity ?? 'לא קיים');
+                $sheet->setCellValue('C' . $row, $inventory->sku ?? 'לא קיים');
+                $sheet->setCellValue('D' . $row, $inventory->item_type ?? 'לא קיים');
+                $sheet->setCellValue('E' . $row, $inventory->detailed_description ?? 'לא קיים');
+                $sheet->setCellValue('F' . $row, $inventory->created_at_date ?? 'לא קיים');
+                $sheet->setCellValue('G' . $row, $inventory->created_at_date ?? 'לא קיים');
 
                 $row++;
             }
@@ -280,12 +299,32 @@ class ExportController extends Controller
             }
 
             if ($request->input('sku')) {
+
                 $inventories = Inventory::where('sku', $request->input('sku'))
-                ->where('is_deleted', false)->get();
+                ->where('is_deleted', false)->get()
+                    ->map(function ($inventory) {
+
+                    // Format the created_at and updated_at timestamps
+                    $inventory->created_at_date = $inventory->created_at->format('d/m/Y');
+                    $inventory->updated_at_date = $inventory->updated_at->format('d/m/Y');
+
+                    return $inventory;
+                });
+
             } else {
 
                 // Fetch all inventories
-                $inventories = Inventory::where('is_deleted', false)->get();
+                $inventories = Inventory::where('is_deleted', false)
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($inventory) {
+
+                    // Format the created_at and updated_at timestamps
+                    $inventory->created_at_date = $inventory->created_at->format('d/m/Y');
+                    $inventory->updated_at_date = $inventory->updated_at->format('d/m/Y');
+
+                    return $inventory;
+                });
             }
 
 
@@ -346,7 +385,19 @@ class ExportController extends Controller
         try {
 
 
-            $users = User::where('is_deleted', false)->get();
+            // Fetch users_fetch
+            $users = User::where('is_deleted', false)
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($user) {
+
+                    // Format the created_at and updated_at timestamps
+                    $user->created_at_date = $user->created_at->format('d/m/Y');
+                    $user->updated_at_date = $user->updated_at->format('d/m/Y');
+
+                    return $user;
+                });
+
 
             // Set a spreadsheet instance
             $spreadsheet = new Spreadsheet();
@@ -370,14 +421,14 @@ class ExportController extends Controller
 
 
 
-                $sheet->setCellValue('A' . $row, $user->id);
-                $sheet->setCellValue('B' . $row, $user->name);
-                $sheet->setCellValue('C' . $row, $user->personal_number);
-                $sheet->setCellValue('D' . $row, $user->email);
-                $sheet->setCellValue('E' . $row, $user->phone);
-                $sheet->setCellValue('F' . $row, $user->emp_type_id ? $user->translated_employee_type : 'לא מוגדר');
-                $sheet->setCellValue('G' . $row, $user->created_at);
-                $sheet->setCellValue('H' . $row, $user->updated_at);
+                $sheet->setCellValue('A' . $row, $user->id ?? 'לא קיים');
+                $sheet->setCellValue('B' . $row, $user->name ?? 'לא קיים');
+                $sheet->setCellValue('C' . $row, $user->personal_number ?? 'לא קיים');
+                $sheet->setCellValue('D' . $row, $user->email ?? 'לא קיים');
+                $sheet->setCellValue('E' . $row, $user->phone ?? 'לא קיים');
+                $sheet->setCellValue('F' . $row, $user->emp_type_id ? $user->translated_employee_type : 'לא קיים');
+                $sheet->setCellValue('G' . $row, $user->created_at_date ?? 'לא קיים');
+                $sheet->setCellValue('H' . $row, $user->updated_at_date ?? 'לא קיים');
 
                 $row++;
             }
@@ -533,7 +584,17 @@ class ExportController extends Controller
 
 
             // Fetch users_fetch
-            $users_fetch = User::where('is_deleted', false)->get();
+            $users_fetch = User::where('is_deleted', false)
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($user) {
+
+                // Format the created_at and updated_at timestamps
+                $user->created_at_date = $user->created_at->format('d/m/Y');
+                $user->updated_at_date = $user->updated_at->format('d/m/Y');
+
+                return $user;
+            });
 
 
             $users = User::whereIn('id', $request->users)->get();
@@ -834,7 +895,21 @@ class ExportController extends Controller
             } else {
 
                 // Fetch all distributions
-                $distributions = Distribution::where('is_deleted', false)->get();
+                // $distributions = Distribution::where('is_deleted', false)->get();
+
+
+                $distributions = Distribution::with(['inventory', 'department', 'createdByUser'])
+                    ->where('is_deleted', 0)
+                    ->orderBy('created_at', 'desc')
+                    ->get()
+                    ->map(function ($distribution) {
+
+                        // Format the created_at and updated_at timestamps
+                        $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+                        $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+
+                        return $distribution;
+                    });
             }
 
 

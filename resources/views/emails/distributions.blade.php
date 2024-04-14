@@ -77,7 +77,7 @@
                 <tr>
                     <td>{{ $key + 1 }}</td>
                     <td>{{ $distribution->id ?? 'לא קיים' }}</td>
-                    <td>{{ $distribution->created_at ?? 'לא קיים' }}</td>
+                    <td>{{ $distribution->created_at_date ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->department_id ? $distribution->department->name : 'לא קיים' }}</td>
                     <td>{{ $distribution->created_by ? $distribution->createdByUser->personal_number : 'לא קיים' }}</td>
                     <td>{{ $distribution->created_by ? $distribution->createdByUser->name : 'לא קיים' }}</td>
@@ -90,7 +90,7 @@
                     <td>{{ $distribution->inventory_id ? $distribution->inventory->detailed_description : 'לא קיים' }}</td>
                     <td>{{ $distribution->comment ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->getStatusTranslation() ?? 'לא קיים' }}</td>
-                    <td>{{ $distribution->updated_at ?? 'לא קיים' }}</td>
+                    <td>{{ $distribution->updated_at_date ?? 'לא קיים' }}</td>
                 </tr>
             @endforeach
         </tbody>

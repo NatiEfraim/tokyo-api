@@ -30,7 +30,7 @@ class DistributionMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Distribution Mail',
+            subject: 'דו"ח ניפוק פירטים',
         );
     }
 

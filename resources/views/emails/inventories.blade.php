@@ -67,13 +67,13 @@
             @foreach ($inventories as $key => $inventory)
                 <tr>
                     <td>{{ $key + 1 }}</td>
-                    <td>{{ $inventory->id ?? 'חסר' }}</td>
-                    <td>{{ $inventory->quantity ?? 'חסר' }}</td>
-                    <td>{{ $inventory->sku ?? 'חסר' }}</td>
-                    <td>{{ $inventory->item_type ?? 'חסר' }}</td>
-                    <td>{{ $inventory->detailed_description ?? 'חסר' }}</td>
-                    <td>{{ $inventory->created_at ?? 'חסר' }}</td>
-                    <td>{{ $inventory->updated_at ?? 'חסר' }}</td>
+                    <td>{{ $inventory->id ?? 'לא קיים' }}</td>
+                    <td>{{ $inventory->quantity ?? 'לא קיים' }}</td>
+                    <td>{{ $inventory->sku ?? 'לא קיים' }}</td>
+                    <td>{{ $inventory->item_type ?? 'לא קיים' }}</td>
+                    <td>{{ $inventory->detailed_description ?? 'לא קיים' }}</td>
+                    <td>{{ $inventory->created_at_date ?? 'לא קיים' }}</td>
+                    <td>{{ $inventory->updated_at_date ?? 'לא קיים' }}</td>
                 </tr>
             @endforeach
         </tbody>

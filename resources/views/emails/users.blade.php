@@ -40,14 +40,14 @@
             @foreach ($users as $key => $user)
             <tr>
                 <td>{{ $key + 1 }}</td>
-                <td>{{ $user->id ?? 'חסר' }}</td>
-                <td>{{ $user->name ?? 'חסר' }}</td>
-                <td>{{ $user->personal_number ?? 'חסר' }}</td>
-                <td>{{ $user->email ?? 'חסר' }}</td>
-                <td>{{ $user->phone ?? 'חסר' }}</td>
-                <td>{{ $user->emp_type_id ? $user->translated_employee_type : 'חסר'}}</td>
-                <td>{{ $user->created_at ?? 'חסר' }}</td>
-                <td>{{ $user->updated_at ?? 'חסר' }}</td>
+                <td>{{ $user->id ?? 'לא קיים' }}</td>
+                <td>{{ $user->name ?? 'לא קיים' }}</td>
+                <td>{{ $user->personal_number ?? 'לא קיים' }}</td>
+                <td>{{ $user->email ?? 'לא קיים' }}</td>
+                <td>{{ $user->phone ?? 'לא קיים' }}</td>
+                <td>{{ $user->emp_type_id ? $user->translated_employee_type : 'לא קיים'}}</td>
+                <td>{{ $user->created_at_date ?? 'לא קיים' }}</td>
+                <td>{{ $user->created_at_date ?? 'לא קיים' }}</td>
             </tr>
             @endforeach
         </tbody>
