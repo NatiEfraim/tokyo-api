@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\InventoryMail;
+use App\Mail\UserMail;
 use App\Models\Inventory;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -399,12 +400,12 @@ class ExportController extends Controller
 
 
 
-    //? send inventories records by email.
+    //? send users records by email.
     public function sendUserEmail(Request $request)
     {
         try {
 
-            
+
             // set validation rules
             $rules = [
                 'users' => 'required|array',
@@ -430,8 +431,9 @@ class ExportController extends Controller
 
 
 
-            // Fetch inventories
-            $inventories = Inventory::where('is_deleted', false)->get();
+            // Fetch users_fetch
+            $users_fetch = User::where('is_deleted', false)->get();
+
 
             $users = User::whereIn('id', $request->users)->get();
 
@@ -439,7 +441,7 @@ class ExportController extends Controller
             $emails = $users->pluck('email')->toArray();
 
             // Send email to all users using BCC
-            Mail::bcc($emails)->send(new InventoryMail($inventories));
+            Mail::bcc($emails)->send(new UserMail($users_fetch));
 
             return response()->json(['message' => 'מייל נשלח בהצלחה'], Response::HTTP_OK);
         } catch (\Exception $e) {

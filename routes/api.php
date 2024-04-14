@@ -74,4 +74,5 @@ Route::controller(ExportController::class)
         Route::get('/inventories', 'exportInventories');
         Route::get('/inventories-email', 'sendInventoryEmail');
         Route::get('/users', 'exportUsers');
+        Route::get('/users-email', 'sendUserEmail');
     });
