@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\DistributionMail;
 use App\Mail\InventoryMail;
 use App\Mail\UserMail;
 use App\Models\Distribution;
@@ -246,7 +247,7 @@ class ExportController extends Controller
      */
 
     //? send inventories records by email.
-    public function sendInventoryEmail(Request $request)
+    public function sendInventoriesByEmail(Request $request)
     {
         try {
             // set validation rules
@@ -501,7 +502,7 @@ class ExportController extends Controller
      */
 
 
-    public function sendUserEmail(Request $request)
+    public function sendUsersByEmail(Request $request)
     {
         try {
 
@@ -643,7 +644,7 @@ class ExportController extends Controller
 
             // Set headers
             $sheet->setCellValue('A1', 'מזהה שורה');
-            $sheet->setCellValue('B1', 'תאריך');
+            $sheet->setCellValue('B1', 'תאריך ניפוק');
             $sheet->setCellValue('C1', 'שם מחלקה');
             $sheet->setCellValue('D1', 'מספר אישי');
             $sheet->setCellValue('E1', 'שם מלא');
@@ -740,5 +741,121 @@ class ExportController extends Controller
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
+
+    /**
+     * @OA\Post(
+     *      path="/api/export/distributions-email",
+     *      tags={"Export"},
+     *      summary="Send email to specified distributions",
+     *      description="Send email to specified distributions using their user IDs.",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="User IDs to send email to",
+     *          @OA\JsonContent(
+     *              required={"user_ids"},
+     *              @OA\Property(property="user_ids", type="array", @OA\Items(type="integer"), example="[1, 2, 3]", description="Array of user IDs")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Email sent successfully",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="status", type="string", example="OK")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="status", type="string", example="BAD_REQUEST")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=409,
+     *          description="Conflict",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="status", type="string", example="CONFLICT")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=422,
+     *          description="Unprocessable Entity",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Invalid data was sent")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Internal Server Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Error sending email")
+     *          )
+     *      )
+     * )
+     */
+
+
+    public function sendDistributionsByEmail(Request $request)
+    {
+        try {
+            // set validation rules
+            $rules = [
+                'users' => 'required|array',
+                'users.*' => 'required|exists:users,id,is_deleted,0',
+                // 'sku' => 'nullable|string|max:255|exists:inventories,sku,is_deleted,0',
+
+            ];
+
+            // Define custom error messages
+            $customMessages = [
+                'users.required' => 'חובה לשלוח משתמש אחד לפחות.',
+                'users.array' => 'שדה משתמש שנשלח אינו תקין.',
+                'users.*.required' => 'שדה זה נדרש.',
+                'users.*.exists' => 'הערך שהוזן לא חוקי.',
+
+                // 'sku.string' => 'שדה שהוזן אינו בפורמט תקין',
+                // 'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
+                // 'sku.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
+            ];
+
+            // validate the request with custom error messages
+            $validator = Validator::make($request->all(), $rules, $customMessages);
+
+
+            // Check if validation fails
+            if ($validator->fails()) {
+                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+            if ($request->input('sku')) {
+                $distributions = Distribution::where('sku', $request->input('sku'))
+                    ->where('is_deleted', false)->get();
+            } else {
+
+                // Fetch all distributions
+                $distributions = Distribution::where('is_deleted', false)->get();
+            }
+
+
+
+            $users = User::whereIn('id', $request->users)->get();
+
+            // Get an array of user emails
+            $emails = $users->pluck('email')->toArray();
+
+            // Send email to all users using BCC
+            Mail::bcc($emails)->send(new DistributionMail($distributions));
+
+            return response()->json(['message' => 'מייל נשלח בהצלחה'], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+
+
 
 }
