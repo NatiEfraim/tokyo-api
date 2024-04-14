@@ -5,6 +5,7 @@
 -   [ ] Implement inventories table 
 -   [ ] Add CRUD functionality for posts/gets/put/delete - for inventories,departments,users,distributions table.
 -   [ ] UserController - user can search user by personal_number or by name.
+-   [ ] ExportController - user can export records of (users,distributions,inventories) table on email or download as xlsx file.
 -   [ ] DistributionController user can search records based status fileds,departments (associated department_id),item_type (assoscited inventory_id),persnol_numer (associated created_by)       
 
 
@@ -12,8 +13,7 @@
 
 ## Remaining Tasks
 
--   [ ] Need to create Export to xlsx files tables(users,inventories,distirbutions,departments).
--   [] Need to create sendEmail function for tables (users,inventories,distirbutions,departments).
+-   [ ] Need too add fileds by department or by persnol_numer or by data or by status fileds on the exportSitstributions & sendDistributionsByEmail.
 -   [ ] Need to added by SPATIE permissions & roles for users.
 
 ## Bugs
