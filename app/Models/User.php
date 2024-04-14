@@ -69,7 +69,7 @@ class User extends Authenticatable
             'keva' => 'קבע',
         ];
 
-        return $employeeTypes[$this->employeeType->emp_type_name] ?? 'חסר';
+        return $employeeTypes[$this->employeeType->name] ?? 'חסר';
     }
 
 

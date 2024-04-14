@@ -1439,6 +1439,30 @@
                 }
             }
         },
+        "/api/export/users": {
+            "post": {
+                "tags": [
+                    "Export"
+                ],
+                "summary": "Export users data to Excel",
+                "description": "Export users data to an Excel file based on the selected year and month.",
+                "operationId": "202c77a228ef174ad667fb26d61f61f9",
+                "responses": {
+                    "200": {
+                        "description": "Excel file downloaded successfully"
+                    },
+                    "400": {
+                        "description": "Bad request. Invalid input data."
+                    },
+                    "403": {
+                        "description": "Forbidden. User is not authorized to perform this action."
+                    },
+                    "500": {
+                        "description": "Internal Server Error. An unexpected error occurred."
+                    }
+                }
+            }
+        },
         "/api/inventories": {
             "get": {
                 "tags": [
