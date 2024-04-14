@@ -69,7 +69,7 @@ class Distribution extends Model
     public function createdByUser()
     {
         return $this->belongsTo(User::class, 'created_by')
-            ->select('id', 'name', 'emp_type_id', 'phone')->with('employeeType');
+            ->select('id', 'name', 'emp_type_id', 'phone', 'email', 'personal_number')->with('employeeType');
     }
 
     // public function updatedByUser()
@@ -79,5 +79,23 @@ class Distribution extends Model
     // }
 
 
+
+    /**
+     * Get the translated status for the distribution.
+     *
+     * @return string
+     */
+
+
+    public function getStatusTranslation()
+    {
+        $translations = [
+            0 => 'ממתין למשיכה',
+            1 =>  'אושר',
+            2 => 'בוטל',
+        ];
+
+        return $translations[$this->status] ?? 'לא מוגדר';
+    }
 
 }

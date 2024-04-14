@@ -1584,6 +1584,30 @@
                 ]
             }
         },
+        "/api/export/distributions": {
+            "post": {
+                "tags": [
+                    "Export"
+                ],
+                "summary": "Export distributions data to Excel",
+                "description": "Export distributions data to an Excel file based on the selected year and month.",
+                "operationId": "2e3936cb2c92be838ad67a83cdd52422",
+                "responses": {
+                    "200": {
+                        "description": "Excel file downloaded successfully"
+                    },
+                    "400": {
+                        "description": "Bad request. Invalid input data."
+                    },
+                    "403": {
+                        "description": "Forbidden. User is not authorized to perform this action."
+                    },
+                    "500": {
+                        "description": "Internal Server Error. An unexpected error occurred."
+                    }
+                }
+            }
+        },
         "/api/inventories": {
             "get": {
                 "tags": [

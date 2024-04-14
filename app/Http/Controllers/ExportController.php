@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\InventoryMail;
 use App\Mail\UserMail;
+use App\Models\Distribution;
 use App\Models\Inventory;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -21,7 +22,6 @@ use Illuminate\Support\Facades\Validator;
 class ExportController extends Controller
 {
     //
-    ///export inventories table and download as inventories.xlsx file
 
     /**
      * Export inventories data to Excel file.
@@ -55,6 +55,7 @@ class ExportController extends Controller
      *
      */
 
+    ///export inventories table and download as inventories.xlsx file
     public function exportInventories(Request $request)
     {
         try {
@@ -176,7 +177,7 @@ class ExportController extends Controller
                 'Content-Disposition' => "attachment; filename=\"$filename\"",
             ];
 
-            return response()->download($filename, 'inventories.xlsx', $headers)->deleteFileAfterSend(true);
+            return response()->download($filename, $filename, $headers)->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
@@ -426,7 +427,9 @@ class ExportController extends Controller
 
             // create Excel file
             $writer = new Xlsx($spreadsheet);
-            $filename = 'users.xlsx';
+            // $filename = 'users.xlsx';
+            $filename = 'users_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+
             $writer->save($filename);
 
             $headers = [
@@ -435,7 +438,7 @@ class ExportController extends Controller
             ];
 
 
-            return response()->download($filename, "users.xlsx", $headers)->deleteFileAfterSend(true);
+            return response()->download($filename, $filename, $headers)->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
@@ -549,5 +552,193 @@ class ExportController extends Controller
     }
 
 
+    /**
+     * Export distributions data to Excel file.
+     *
+     * Exports distributions data to an Excel file based on the selected year and month.
+     *
+     * @OA\Post(
+     *     path="/api/export/distributions",
+     *     tags={"Export"},
+     *     summary="Export distributions data to Excel",
+     *     description="Export distributions data to an Excel file based on the selected year and month.",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Excel file downloaded successfully",
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request. Invalid input data.",
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden. User is not authorized to perform this action.",
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error. An unexpected error occurred.",
+     *     )
+     * )
+     *
+     *
+     *
+     */
+
+    public function exportDistributions(Request $request)
+    {
+        try {
+
+
+            // // set validation rules
+            // $rules = [
+            //     'sku' => 'nullable|string|max:255|exists:inventories,sku,is_deleted,0',
+            // ];
+
+            // // Define custom error messages
+            // $customMessages = [
+            //     'sku.string' => 'שדה שהוזן אינו בפורמט תקין',
+            //     'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
+            //     'sku.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
+            // ];
+
+            // // validate the request with custom error messages
+            // $validator = Validator::make($request->all(), $rules, $customMessages);
+
+
+            // // Check if validation fails
+            // if ($validator->fails()) {
+            //     return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            // }
+
+
+
+            // if ($request->input('sku')) {
+            //     $inventories = Inventory::where('sku', $request->input('sku'))
+            //     ->where('is_deleted', false)->get();
+            // } else {
+
+            //     // Fetch all inventories
+            //     $inventories = Inventory::where('is_deleted', false)->get();
+            // }
+
+
+            $distributions = Distribution::with(['inventory', 'department', 'createdByUser'])
+                ->where('is_deleted', 0)
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($distribution) {
+
+                    // Format the created_at and updated_at timestamps
+                    $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+                    $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+
+                    return $distribution;
+                });
+
+            // Create a new Spreadsheet object
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+
+            $sheet->setRightToLeft(true);
+
+            // Set headers
+            $sheet->setCellValue('A1', 'מזהה שורה');
+            $sheet->setCellValue('B1', 'תאריך');
+            $sheet->setCellValue('C1', 'שם מחלקה');
+            $sheet->setCellValue('D1', 'מספר אישי');
+            $sheet->setCellValue('E1', 'שם מלא');
+            $sheet->setCellValue('F1', 'סוג עובד');
+            $sheet->setCellValue('G1', 'טלפון');
+            $sheet->setCellValue('H1', 'מייל');
+            $sheet->setCellValue('I1', 'כמות');
+            $sheet->setCellValue('J1', 'מק"ט');
+            $sheet->setCellValue('K1', 'סוג פריט');
+            $sheet->setCellValue('L1', 'פירוט מורחב');
+            $sheet->setCellValue('M1', 'הערות');
+            $sheet->setCellValue('N1', 'סטטוס');
+            $sheet->setCellValue('O1', 'תאריך שינוי אחרון');
+
+            $row = 2;
+            foreach ($distributions as $distribution) {
+
+
+                $sheet->setCellValue('A' . $row, $distribution->id ?? 'לא קיים');
+                $sheet->setCellValue('B' . $row, $distribution->created_at_date ?? 'לא קיים');
+                $sheet->setCellValue('C' . $row, $distribution->department_id ? $distribution->department->name : 'לא קיים');
+                $sheet->setCellValue('D' . $row, $distribution->created_by ? $distribution->createdByUser->personal_number : 'לא קיים');
+                $sheet->setCellValue('E' . $row, $distribution->created_by ? $distribution->createdByUser->name : 'לא קיים');
+                $sheet->setCellValue('F' . $row, $distribution->created_by ? $distribution->createdByUser->translated_employee_type : 'לא קיים');
+                $sheet->setCellValue('G' . $row, $distribution->created_by ? $distribution->createdByUser->phone : 'לא קיים');
+                $sheet->setCellValue('H' . $row, $distribution->created_by ? $distribution->createdByUser->email : 'לא קיים');
+                $sheet->setCellValue('I' . $row, $distribution->quantity ?? 'לא קיים');
+                $sheet->setCellValue('J' . $row, $distribution->inventory_id ? $distribution->inventory->sku : 'לא קיים');
+                $sheet->setCellValue('K' . $row, $distribution->inventory_id ? $distribution->inventory->item_type : 'לא קיים');
+                $sheet->setCellValue('L' . $row, $distribution->inventory_id ? $distribution->inventory->detailed_description : 'לא קיים');
+                $sheet->setCellValue('M' . $row, $distribution->comment ?? 'לא קיים');
+                $sheet->setCellValue('N' . $row, $distribution->getStatusTranslation() ?? 'לא קיים');
+                $sheet->setCellValue('O' . $row, $distribution->updated_at_date ?? 'לא קיים');
+
+                $row++;
+            }
+
+            // Set & Style the header cells
+            $headerStyle = [
+                'font' => [
+                    'bold' => true,
+                    'size' => 12,
+                    'name' => 'Arial',
+                ],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'color' => ['rgb' => 'D9EAD3'], // Light green fill color
+                ],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                ],
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => Border::BORDER_THIN,
+                        'color' => ['rgb' => '000000'],
+                    ],
+                ],
+            ];
+
+            $sheet->getStyle('A1:O1')->applyFromArray($headerStyle);
+
+            // Set & Style the cells
+            $cellStyle = [
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                ],
+            ];
+
+            // apply styling to all cells in the sheet
+            $sheet->getStyle('A1:O' . ($row - 1))->applyFromArray($cellStyle);
+
+            // set the size for rest of columns
+            foreach (range('A', 'O') as $column) {
+                $sheet->getColumnDimension($column)->setAutoSize(true);
+            }
+
+            // $filename = 'inventories.xlsx';
+            $filename = 'distributions_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+
+            // Save the file to a temporary location
+            $writer = new Xlsx($spreadsheet);
+            $writer->save($filename);
+
+            $headers = [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => "attachment; filename=\"$filename\"",
+            ];
+
+            return response()->download($filename, $filename, $headers)->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
 
 }
