@@ -7,6 +7,10 @@
 -   [ ] UserController - user can search user by personal_number or by name.
 -   [ ] ExportController - user can export records of (users,distributions,inventories) table on email or download as xlsx file.
 -   [ ] DistributionController user can search records based status fileds,departments (associated department_id),item_type (assoscited inventory_id),persnol_numer (associated created_by)       
+-   [ ] ExportController - user can export records of 
+(users,distributions - [user can filter based on updated_at,created_at,personal_number,name,status,sku],inventories [user can filter based on sku]) 
+table on email or download as xlsx file.
+
 
 
 
@@ -15,6 +19,7 @@
 
 -   [ ] Need too add fileds by department or by persnol_numer or by data or by status fileds on the exportSitstributions & sendDistributionsByEmail.
 -   [ ] Need to added by SPATIE permissions & roles for users.
+-   [ ] Added user the user send me personal_number and rule -> by outsource api I get all the fileds of the user like name employee_type and so on.
 
 ## Bugs
 

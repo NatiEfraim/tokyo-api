@@ -17,6 +17,7 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 
 use Illuminate\Support\Facades\Validator;
 
@@ -29,7 +30,7 @@ class ExportController extends Controller
      *
      * Exports inventories data to an Excel file based on the selected year and month.
      *
-     * @OA\Post(
+     * @OA\Get(
      *     path="/api/export/inventories",
      *     tags={"Export"},
      *     summary="Export inventories data to Excel",
@@ -353,7 +354,7 @@ class ExportController extends Controller
      *
      * Exports users data to an Excel file based on the selected year and month.
      *
-     * @OA\Post(
+     * @OA\Get(
      *     path="/api/export/users",
      *     tags={"Export"},
      *     summary="Export users data to Excel",
@@ -500,7 +501,7 @@ class ExportController extends Controller
 
 
     /**
-     * @OA\Post(
+     * @OA\Get(
      *      path="/api/export/users-email",
      *      tags={"Export"},
      *      summary="Send email to specified users",
@@ -615,87 +616,185 @@ class ExportController extends Controller
 
 
     /**
-     * Export distributions data to Excel file.
-     *
-     * Exports distributions data to an Excel file based on the selected year and month.
-     *
-     * @OA\Post(
+     * @OA\Get(
      *     path="/api/export/distributions",
+     *     summary="Export distributions",
+     *     description="Export distributions data based on provided filters",
      *     tags={"Export"},
-     *     summary="Export distributions data to Excel",
-     *     description="Export distributions data to an Excel file based on the selected year and month.",
-     *     @OA\Response(
-     *         response=200,
-     *         description="Excel file downloaded successfully",
+     *     @OA\Parameter(
+     *         name="sku",
+     *         in="query",
+     *         description="SKU of the inventory",
+     *         @OA\Schema(type="string")
      *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Bad request. Invalid input data.",
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         description="Status of the distribution (0: pending, 1: approved, 2: canceled)",
+     *         @OA\Schema(type="integer", format="int32", minimum=0, maximum=2)
      *     ),
-     *     @OA\Response(
-     *         response=403,
-     *         description="Forbidden. User is not authorized to perform this action.",
+     *     @OA\Parameter(
+     *         name="name",
+     *         in="query",
+     *         description="Name of the department",
+     *         @OA\Schema(type="string")
      *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Internal Server Error. An unexpected error occurred.",
-     *     )
+     *     @OA\Parameter(
+     *         name="personal_number",
+     *         in="query",
+     *         description="Personal number of the creator",
+     *         @OA\Schema(type="string", minLength=1, maxLength=7)
+     *     ),
+     *     @OA\Parameter(
+     *         name="created_at",
+     *         in="query",
+     *         description="Creation date of the distribution (YYYY-MM-DD)",
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="updated_at",
+     *         in="query",
+     *         description="Last updated date of the distribution (YYYY-MM-DD)",
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Email sent successfully",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="status", type="string", example="OK")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=422,
+     *          description="Unprocessable Entity",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Invalid data was sent")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Internal Server Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Error sending email")
+     *          )
+     *      )
      * )
-     *
-     *
-     *
      */
 
     public function exportDistributions(Request $request)
     {
         try {
 
-
-            // // set validation rules
-            // $rules = [
-            //     'sku' => 'nullable|string|max:255|exists:inventories,sku,is_deleted,0',
-            // ];
-
-            // // Define custom error messages
-            // $customMessages = [
-            //     'sku.string' => 'שדה שהוזן אינו בפורמט תקין',
-            //     'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
-            //     'sku.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
-            // ];
-
-            // // validate the request with custom error messages
-            // $validator = Validator::make($request->all(), $rules, $customMessages);
+            // set validation rules
+            $rules = [
 
 
-            // // Check if validation fails
-            // if ($validator->fails()) {
-            //     return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-            // }
+                'sku' => 'nullable|string|max:255|exists:inventories,sku,is_deleted,0',
+
+                'status' => 'nullable|integer|between:0,2',
+
+                'name' => 'nullable|string|exists:departments,name,is_deleted,0',
+
+                'personal_number' => 'nullable|min:1|max:7',
+
+
+                'created_at' => [
+                    'nullable',
+                    'date',
+                    // Rule::exists('distributions')->where(function ($query) {
+                    //     return $query->where('is_deleted', 0);
+                    // }),
+                ],
+
+                'updated_at' => [
+                    'nullable',
+                    'date',
+                    // Rule::exists('distributions')->where(function ($query) {
+                    //     return $query->where('is_deleted', 0);
+                    // }),
+                ],
+
+
+            ];
+
+            // Define custom error messages
+            $customMessages = [
 
 
 
-            // if ($request->input('sku')) {
-            //     $inventories = Inventory::where('sku', $request->input('sku'))
-            //     ->where('is_deleted', false)->get();
-            // } else {
-
-            //     // Fetch all inventories
-            //     $inventories = Inventory::where('is_deleted', false)->get();
-            // }
+                'sku.string' => 'שדה שהוזן אינו בפורמט תקין',
+                'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
+                'sku.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
 
 
-            $distributions = Distribution::with(['inventory', 'department', 'createdByUser'])
-                ->where('is_deleted', 0)
-                ->orderBy('created_at', 'desc')
-                ->get()
-                ->map(function ($distribution) {
+                'name.string' => 'שדה ערך שם מחלקה אינו תקין.',
 
-                    // Format the created_at and updated_at timestamps
-                    $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
-                    $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+                'status.between' => 'שדה הסטטוס אינו תקין.',
 
-                    return $distribution;
-                });
+
+                'personal_number.min' => 'מספר אישי אינו תקין.',
+                'personal_number.max' => 'מספר אישי אינו תקין.',
+
+
+
+                'created_at.date' => 'שדה תאריך התחלה אינו תקין.',
+                'created_at.exists' => 'שדה תאריך אינו קיים במערכת.',
+                'updated_at.date' => 'שדה תאריך סיום אינו תקין.',
+                'updated_at.exists' => 'שדה תאריך סיום אינו קיים במערכת.',
+
+
+            ];
+
+            // validate the request with custom error messages
+            $validator = Validator::make($request->all(), $rules, $customMessages);
+
+
+            // Check if validation fails
+            if ($validator->fails()) {
+                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+
+            if (
+                $request->input('sku')
+                || $request->input('status')
+                || $request->input('name')
+                || $request->input('personal_number')
+                || $request->input('created_at')
+                || $request->input('updated_at')
+            ) {
+                //? one or more of th search based on value filter send
+
+                $distributions = $this->fetchDistributions($request);
+
+                if ($distributions) {
+
+                    $distributions->map(function ($distribution) {
+                        $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+                        $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+
+                        return $distribution;
+                    });
+                }
+
+            }
+            else {
+                //? fetch all distributions records.
+                $distributions = Distribution::with(['inventory', 'department', 'createdByUser'])
+                    ->where('is_deleted', 0)
+                    ->orderBy('created_at', 'desc')
+                    ->get()
+                    ->map(function ($distribution) {
+
+                        // Format the created_at and updated_at timestamps
+                        $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+                        $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+
+                        return $distribution;
+                    });
+
+            }
+
 
             // Create a new Spreadsheet object
             $spreadsheet = new Spreadsheet();
@@ -803,68 +902,152 @@ class ExportController extends Controller
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
+
     /**
      * @OA\Post(
-     *      path="/api/export/distributions-email",
-     *      tags={"Export"},
-     *      summary="Send email to specified distributions",
-     *      description="Send email to specified distributions using their user IDs.",
-     *      security={{"bearerAuth":{}}},
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="User IDs to send email to",
-     *          @OA\JsonContent(
-     *              required={"user_ids"},
-     *              @OA\Property(property="user_ids", type="array", @OA\Items(type="integer"), example="[1, 2, 3]", description="Array of user IDs")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Email sent successfully",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="status", type="string", example="OK")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=400,
-     *          description="Bad Request",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="status", type="string", example="BAD_REQUEST")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=409,
-     *          description="Conflict",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="status", type="string", example="CONFLICT")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=422,
-     *          description="Unprocessable Entity",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="Invalid data was sent")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=500,
-     *          description="Internal Server Error",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="Error sending email")
-     *          )
-     *      )
+     *     path="/api/send-distributions-by-email",
+     *     tags={"Distributions"},
+     *     summary="Send distributions by email",
+     *     description="Send distribution records by email to specified users.",
+     *     operationId="sendDistributionsByEmail",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Request body",
+     *         @OA\JsonContent(
+     *             required={"users"},
+     *             type="object",
+     *             @OA\Property(
+     *                 property="users",
+     *                 description="Array of user IDs to send email to",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="integer",
+     *                     example=1
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 property="sku",
+     *                 description="SKU of the inventory",
+     *                 type="string",
+     *                 maxLength=255,
+     *                 example="ABC123",
+     *             ),
+     *             @OA\Property(
+     *                 property="status",
+     *                 description="Status of the distribution",
+     *                 type="integer",
+     *                 enum={0, 1, 2},
+     *                 example=1
+     *             ),
+     *             @OA\Property(
+     *                 property="name",
+     *                 description="Name of the department",
+     *                 type="string",
+     *                 example="Sales"
+     *             ),
+     *             @OA\Property(
+     *                 property="personal_number",
+     *                 description="Personal number of the user",
+     *                 type="string",
+     *                 minLength=1,
+     *                 maxLength=7,
+     *                 example="1234567"
+     *             ),
+     *             @OA\Property(
+     *                 property="created_at",
+     *                 description="Filter by creation date (YYYY-MM-DD)",
+     *                 type="string",
+     *                 format="date",
+     *                 example="2024-04-15"
+     *             ),
+     *             @OA\Property(
+     *                 property="updated_at",
+     *                 description="Filter by last updated date (YYYY-MM-DD)",
+     *                 type="string",
+     *                 format="date",
+     *                 example="2024-04-15"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success response",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Email sent successfully"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="messages",
+     *                 type="object",
+     *                 example={
+     *                     "sku": {"The SKU field is not in the correct format."},
+     *                     "personal_number": {"The personal number field must be between 1 and 7 characters."},
+     *                     
+     *                 }
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="An internal server error occurred. Please try again later."
+     *             )
+     *         )
+     *     )
      * )
      */
-
 
     public function sendDistributionsByEmail(Request $request)
     {
         try {
             // set validation rules
             $rules = [
+
                 'users' => 'required|array',
                 'users.*' => 'required|exists:users,id,is_deleted,0',
-                // 'sku' => 'nullable|string|max:255|exists:inventories,sku,is_deleted,0',
+
+                'sku' => 'nullable|string|max:255|exists:inventories,sku,is_deleted,0',
+
+                'status' => 'nullable|integer|between:0,2',
+
+                'name' => 'nullable|string|exists:departments,name,is_deleted,0',
+
+                'personal_number' => 'nullable|min:1|max:7',
+
+
+                'created_at' => [
+                    'nullable',
+                    'date',
+                    // Rule::exists('distributions')->where(function ($query) {
+                    //     return $query->where('is_deleted', 0);
+                    // }),
+                ],
+
+                'updated_at' => [
+                    'nullable',
+                    'date',
+                    // Rule::exists('distributions')->where(function ($query) {
+                    //     return $query->where('is_deleted', 0);
+                    // }),
+                ],
+
+
 
             ];
 
@@ -875,9 +1058,28 @@ class ExportController extends Controller
                 'users.*.required' => 'שדה זה נדרש.',
                 'users.*.exists' => 'הערך שהוזן לא חוקי.',
 
-                // 'sku.string' => 'שדה שהוזן אינו בפורמט תקין',
-                // 'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
-                // 'sku.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
+
+
+                'sku.string' => 'שדה שהוזן אינו בפורמט תקין',
+                'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
+                'sku.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
+
+
+                'name.string' => 'שדה ערך שם מחלקה אינו תקין.',
+
+                'status.between' => 'שדה הסטטוס אינו תקין.',
+
+
+                'personal_number.min' => 'מספר אישי אינו תקין.',
+                'personal_number.max' => 'מספר אישי אינו תקין.',
+
+
+
+                'created_at.date' => 'שדה תאריך התחלה אינו תקין.',
+                'created_at.exists' => 'שדה תאריך אינו קיים במערכת.',
+                'updated_at.date' => 'שדה תאריך סיום אינו תקין.',
+                'updated_at.exists' => 'שדה תאריך סיום אינו קיים במערכת.',
+
             ];
 
             // validate the request with custom error messages
@@ -889,29 +1091,41 @@ class ExportController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-            if ($request->input('sku')) {
-                $distributions = Distribution::where('sku', $request->input('sku'))
-                    ->where('is_deleted', false)->get();
-            } else {
 
-                // Fetch all distributions
-                // $distributions = Distribution::where('is_deleted', false)->get();
+            if (
+                $request->input('sku')
+                || $request->input('status')
+                || $request->input('name')
+                || $request->input('personal_number')
+                || $request->input('created_at')
+                || $request->input('updated_at')
+            ) {
+                //? one or more of th search based on value filter send
+                $distributions = $this->fetchDistributions($request);
+                if ($distributions) {
 
-
-                $distributions = Distribution::with(['inventory', 'department', 'createdByUser'])
-                    ->where('is_deleted', 0)
-                    ->orderBy('created_at', 'desc')
-                    ->get()
-                    ->map(function ($distribution) {
-
-                        // Format the created_at and updated_at timestamps
+                    $distributions->map(function ($distribution) {
                         $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
                         $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
 
                         return $distribution;
                     });
-            }
+                }
+            } else {
+                //? fetch all distributions records.
+                $distributions = Distribution::with(['inventory', 'department', 'createdByUser'])
+                ->where('is_deleted', 0)
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($distribution) {
 
+                    // Format the created_at and updated_at timestamps
+                    $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+                    $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+
+                    return $distribution;
+                });
+            }
 
 
             $users = User::whereIn('id', $request->users)->get();
@@ -931,6 +1145,56 @@ class ExportController extends Controller
     }
 
 
+
+    //? search based on request->input('query').
+    private function fetchDistributions(Request $request)
+    {
+        try {
+            $query = Distribution::query();
+
+            if ($request->has('sku')) {
+                $query->whereHas('inventory', function ($q) use ($request) {
+                    $q->where('sku', $request->sku);
+                });
+            }
+
+            if ($request->has('status')) {
+                $query->where('status', $request->status);
+            }
+
+            if ($request->has('name')) {
+                $query->whereHas('department', function ($q) use ($request) {
+                    $q->where('name', $request->name);
+                });
+            }
+
+
+            if ($request->has('personal_number')) {
+                // $pnInput = $request->personal_number;
+                $query->whereHas('createdByUser', function ($q) use ($request) {
+                    $q->whereRaw('SUBSTRING(personal_number, 2) LIKE ?', ['%' . $request->input('personal_number') . '%']);
+                });
+            }
+
+
+            if ($request->has('created_at')) {
+                $query->whereDate('created_at', $request->created_at);
+            }
+
+            if ($request->has('updated_at')) {
+                $query->whereDate('updated_at', $request->updated_at);
+            }
+
+            // Ensure is_deleted is 0
+            $query->where('is_deleted', 0);
+
+            return $query->get();
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+    }
 
 
 }

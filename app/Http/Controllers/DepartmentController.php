@@ -117,13 +117,13 @@ class DepartmentController extends Controller
             // Set custom error messages in Hebrew
             $customMessages = [
                 'name.required' => 'שדה השם הוא חובה.',
-                'name.string' => 'שדה השם חייב להיות מחרוזת.',
+                'name.string' => 'שדה ערך שם מחלקה אינו תקין.',
                 'name.unique' => 'השם שהוזן כבר קיים במערכת.',
             ];
 
             // Set the rules
             $rules = [
-                'name' => 'required|string|unique:departments,name,NULL,id,is_deleted,0',
+                'name' => 'required|string|unique:departments,name,is_deleted,0',
             ];
 
             // Validate the request data
