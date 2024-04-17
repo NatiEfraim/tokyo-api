@@ -5,16 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-
-
-
 
 class DepartmentController extends Controller
 {
     //
-
 
     /**
      * Retrieve all departments.
@@ -53,8 +50,9 @@ class DepartmentController extends Controller
     {
         try {
 
-            $departments = Department::where('is_deleted', 0)->get();
+           
 
+            $departments = Department::where('is_deleted', 0)->get();
 
             return response()->json($departments, Response::HTTP_OK);
         } catch (\Exception $e) {
@@ -62,9 +60,6 @@ class DepartmentController extends Controller
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
-
-
-
 
     /**
      * Store a newly created department.
@@ -109,8 +104,6 @@ class DepartmentController extends Controller
      * )
      */
 
-
-
     public function store(Request $request)
     {
         try {
@@ -143,7 +136,6 @@ class DepartmentController extends Controller
         }
         return response()->json(['message' => 'התרחשה תקלה בשרת, נסה שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
-
 
     /**
      * @OA\Delete(
@@ -193,19 +185,14 @@ class DepartmentController extends Controller
      * )
      */
 
-
     public function destroy($id = null)
     {
         if (is_null($id)) {
             return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
         }
 
-
         try {
-            $department = Department::where('is_deleted', 0)
-                ->where('id', $id)
-                ->first();
-
+            $department = Department::where('is_deleted', 0)->where('id', $id)->first();
 
             if (is_null($department)) {
                 return response()->json(['message' => 'שורה אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
@@ -215,13 +202,11 @@ class DepartmentController extends Controller
             ]);
 
             return response()->json(['message' => 'שורה נמחקה בהצלחה.'], Response::HTTP_OK);
-
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
-
 
     /**
      * Mass delete departments.
@@ -282,10 +267,6 @@ class DepartmentController extends Controller
 
     public function massDestroy(Request $request)
     {
-
-
-
-
         try {
             // set custom error messages in Hebrew
             $customMessages = [
@@ -306,7 +287,6 @@ class DepartmentController extends Controller
 
             // Check if validation fails
             if ($validator->fails()) {
-
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
@@ -317,11 +297,9 @@ class DepartmentController extends Controller
             Department::whereIn('id', $ids)->update(['is_deleted' => 1]);
 
             return response()->json(['message' => 'שורות נמחקו בהצלחה.'], Response::HTTP_OK);
-
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
-
 }
