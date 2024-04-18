@@ -87,7 +87,7 @@ class DistributionController extends Controller
     {
         try {
 
-            $distributions = Distribution::with(['inventory', 'department', 'createdByUser', 'createdForUser'])
+            $distributions = Distribution::with(['inventory', 'department', 'createdForUser'])
                 ->where('is_deleted', 0)
                 ->orderBy('created_at', 'desc')
                 ->get()
@@ -186,7 +186,7 @@ class DistributionController extends Controller
 
 
         try {
-            $distribution = Distribution::with(['inventory', 'createdByUser', 'createdForUser'])
+            $distribution = Distribution::with(['inventory','', 'department', 'createdForUser'])
                 ->where('id', $id)
                 ->where('is_deleted', 0)
                 ->first();
@@ -745,11 +745,69 @@ class DistributionController extends Controller
             $customMessages = [
                 'query.required' => 'יש לשלוח שדה לחיפוש',
                 'query.string' => 'ערך השדה שנשלח אינו תקין.',
+
+
+                'users.required' => 'חובה לשלוח משתמש אחד לפחות.',
+                'users.array' => 'שדה משתמש שנשלח אינו תקין.',
+                'users.*.required' => 'שדה זה נדרש.',
+                'users.*.exists' => 'הערך שהוזן לא חוקי.',
+
+
+
+                'sku.string' => 'שדה שהוזן אינו בפורמט תקין',
+                'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
+                'sku.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
+
+
+                'name.string' => 'שדה ערך שם מחלקה אינו תקין.',
+
+                'status.between' => 'שדה הסטטוס אינו תקין.',
+
+
+                'personal_number.min' => 'מספר אישי אינו תקין.',
+                'personal_number.max' => 'מספר אישי אינו תקין.',
+
+
+
+                'created_at.date' => 'שדה תאריך התחלה אינו תקין.',
+                'created_at.exists' => 'שדה תאריך אינו קיים במערכת.',
+                'updated_at.date' => 'שדה תאריך סיום אינו תקין.',
+                'updated_at.exists' => 'שדה תאריך סיום אינו קיים במערכת.',
             ];
             //set the rules
 
             $rules = [
-                'query' => 'required|string',
+                // 'query' => 'required|string',
+
+                // 'users' => 'required|array',
+                // 'users.*' => 'required|exists:users,id,is_deleted,0',
+
+                'sku' => 'nullable|string|max:255|exists:inventories,sku,is_deleted,0',
+
+                'status' => 'nullable|integer|between:0,2',
+
+                'name' => 'nullable|string|exists:departments,name,is_deleted,0',
+
+                'personal_number' => 'nullable|min:1|max:7',
+
+
+                'created_at' => [
+                    'nullable',
+                    'date',
+                    // Rule::exists('distributions')->where(function ($query) {
+                    //     return $query->where('is_deleted', 0);
+                    // }),
+                ],
+
+                'updated_at' => [
+                    'nullable',
+                    'date',
+                    // Rule::exists('distributions')->where(function ($query) {
+                    //     return $query->where('is_deleted', 0);
+                    // }),
+                ],
+
+
             ];
 
             // validate the request data
@@ -762,92 +820,173 @@ class DistributionController extends Controller
             }
 
 
-            $searchQuery = $request->input('query');
-            if (ctype_digit($searchQuery) && strlen($searchQuery) == self::MIN_LEN) {
-                //search by status value.
-                $searchQuery = ((int) ($searchQuery));
-                $status_value = match ($searchQuery) {
-                    DistributionStatus::PENDING->value => 0,
-                    DistributionStatus::APPROVED->value => 1,
-                    DistributionStatus::CANCELD->value => 2,
-                    default => false,
-                };
 
-                if ($status_value == false) {
-                    return response()->json(['message' => 'יש לשלוח ערך תקין לחיפוש.'], Response::HTTP_BAD_REQUEST);
-                }
+            if (
+                $request->has('sku') ==false
+                && $request->has('status') == false
+                && $request->has('name') == false
+                && $request->has('personal_number') == false
+                && $request->has('created_at') == false
+                && $request->has('updated_at') == false
+            ) {
 
-
-                $distributions = Distribution::with(['inventory', 'department', 'createdByUser', 'createdForUser'])
-                    ->where('status', $status_value)->where('is_deleted', false)->get();
-
-                return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
-
+                return response()->json(['messages' => 'חובה לשלוח ערך לחיפוש.'], Response::HTTP_BAD_REQUEST);
             }
 
-            if (ctype_digit($searchQuery) && strlen($searchQuery) == self::MAX_LEN) {
-                //? search distributions records - by created_by fileds
-                $user_record=User::with(['employeeType'])
-                    ->whereRaw('SUBSTRING(personal_number, 2) LIKE ?', ['%' . $searchQuery . '%'])
-                    ->where('is_deleted', false)
-                    ->first();
+            //? one or more of th search based on value filter send
+            $distributions = $this->fetchDistributions($request);
+            if ($distributions) {
 
+                $distributions->map(function ($distribution) {
+                    $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+                    $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
 
-
-                if (is_null($user_record)) {
-                    return response()->json(['message' => 'משתמש זה אינו קיים במערכת.'], Response::HTTP_CONFLICT);
-                }
-
-
-
-                $distributions = Distribution::with(['inventory', 'department', 'createdByUser'])
-                ->where('created_by', $user_record->id)
-                ->where('is_deleted', false)
-                ->get();
-
-
-
-                return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
+                    return $distribution;
+                });
             }
 
 
+            // $searchQuery = $request->input('query');
+            // if (ctype_digit($searchQuery) && strlen($searchQuery) == self::MIN_LEN) {
+            //     //search by status value.
+            //     $searchQuery = ((int) ($searchQuery));
+            //     $status_value = match ($searchQuery) {
+            //         DistributionStatus::PENDING->value => 0,
+            //         DistributionStatus::APPROVED->value => 1,
+            //         DistributionStatus::CANCELD->value => 2,
+            //         default => false,
+            //     };
+
+            //     if ($status_value == false) {
+            //         return response()->json(['message' => 'יש לשלוח ערך תקין לחיפוש.'], Response::HTTP_BAD_REQUEST);
+            //     }
 
 
-            // get id base of department name fileds.
-            $id_department = Department::where('name', $searchQuery)
-                ->where('is_deleted', false)
-                ->pluck('id');
+            //     $distributions = Distribution::with(['inventory', 'department', 'createdByUser', 'createdForUser'])
+            //         ->where('status', $status_value)->where('is_deleted', false)->get();
+
+            //     return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
+
+            // }
+
+            // if (ctype_digit($searchQuery) && strlen($searchQuery) == self::MAX_LEN) {
+            //     //? search distributions records - by created_by fileds
+            //     $user_record=User::with(['employeeType'])
+            //         ->whereRaw('SUBSTRING(personal_number, 2) LIKE ?', ['%' . $searchQuery . '%'])
+            //         ->where('is_deleted', false)
+            //         ->first();
 
 
-            if ($id_department->isEmpty() == false) {
-                //?search by name of department
 
-                $distributions = Distribution::with(['inventory', 'department', 'createdByUser', 'createdForUser'])
-                    ->where('department_id', $id_department[0])
-                    ->where('is_deleted', false)
-                    ->get();
+            //     if (is_null($user_record)) {
+            //         return response()->json(['message' => 'משתמש זה אינו קיים במערכת.'], Response::HTTP_CONFLICT);
+            //     }
 
 
-                // //? search records with specific name department
-                // $distributions = Distribution::with(['inventory', 'department'])
-                // ->whereHas('department', function ($query) use ($searchQuery) {
-                //     $query->where('name', 'like', '%' . $searchQuery . '%');
-                // })->get();
+
+            //     $distributions = Distribution::with(['inventory', 'department', 'createdByUser'])
+            //     ->where('created_by', $user_record->id)
+            //     ->where('is_deleted', false)
+            //     ->get();
 
 
-                return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
 
-            }
+            //     return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
+            // }
 
-            //? search distributions records by item_type inventories records associated.
-            $distributions = Distribution::with(['inventory', 'department', 'createdByUser', 'createdForUser'])
-                ->whereHas('inventory', function ($query) use ($searchQuery) {
-                    $query->where('item_type', $searchQuery);
-                })->get();
+
+
+
+            // // get id base of department name fileds.
+            // $id_department = Department::where('name', $searchQuery)
+            //     ->where('is_deleted', false)
+            //     ->pluck('id');
+
+
+            // if ($id_department->isEmpty() == false) {
+            //     //?search by name of department
+
+            //     $distributions = Distribution::with(['inventory', 'department', 'createdByUser', 'createdForUser'])
+            //         ->where('department_id', $id_department[0])
+            //         ->where('is_deleted', false)
+            //         ->get();
+
+
+            //     // //? search records with specific name department
+            //     // $distributions = Distribution::with(['inventory', 'department'])
+            //     // ->whereHas('department', function ($query) use ($searchQuery) {
+            //     //     $query->where('name', 'like', '%' . $searchQuery . '%');
+            //     // })->get();
+
+
+            //     return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
+
+            // }
+
+            // //? search distributions records by item_type inventories records associated.
+            // $distributions = Distribution::with(['inventory', 'department', 'createdByUser', 'createdForUser'])
+            //     ->whereHas('inventory', function ($query) use ($searchQuery) {
+            //         $query->where('item_type', $searchQuery);
+            //     })->get();
 
             return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
 
 
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+
+
+    //? search based on request->input('query').
+    private function fetchDistributions(Request $request)
+    {
+        try {
+
+
+            $query = Distribution::query();
+
+            if ($request->has('sku')) {
+                $query->whereHas('inventory', function ($q) use ($request) {
+                    $q->where('sku', $request->sku);
+                });
+            }
+
+            if ($request->has('status')) {
+                $query->where('status', $request->status);
+            }
+
+            if ($request->has('name')) {
+                $query->whereHas('department', function ($q) use ($request) {
+                    $q->where('name', $request->name);
+                });
+            }
+
+
+            if ($request->has('personal_number')) {
+                // $pnInput = $request->personal_number;
+                $query->whereHas('createdForUser', function ($q) use ($request) {
+                    $q->whereRaw('SUBSTRING(personal_number, 2) LIKE ?', ['%' . $request->input('personal_number') . '%']);
+                });
+            }
+
+
+            if ($request->has('created_at')) {
+                $query->whereDate('created_at', $request->created_at);
+            }
+
+            if ($request->has('updated_at')) {
+                $query->whereDate('updated_at', $request->updated_at);
+            }
+
+            // Ensure is_deleted is 0
+            $query->where('is_deleted', 0);
+
+            return $query->with(['inventory', 'department', 'createdForUser'])
+            ->orderBy('created_at', 'desc')
+            ->get();
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }

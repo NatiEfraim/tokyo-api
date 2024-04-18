@@ -784,7 +784,7 @@ class ExportController extends Controller
             }
             else {
                 //? fetch all distributions records.
-                $distributions = Distribution::with(['inventory', 'department', 'createdByUser', 'createdForUser'])
+                $distributions = Distribution::with(['inventory', 'department', 'createdForUser'])
                     ->where('is_deleted', 0)
                     ->orderBy('created_at', 'desc')
                     ->get()
@@ -1057,6 +1057,8 @@ class ExportController extends Controller
 
             // Define custom error messages
             $customMessages = [
+
+
                 'users.required' => 'חובה לשלוח משתמש אחד לפחות.',
                 'users.array' => 'שדה משתמש שנשלח אינו תקין.',
                 'users.*.required' => 'שדה זה נדרש.',
@@ -1117,7 +1119,7 @@ class ExportController extends Controller
                 }
             } else {
                 //? fetch all distributions records.
-                $distributions = Distribution::with(['inventory', 'department', 'createdByUser', 'createdForUser'])
+                $distributions = Distribution::with(['inventory', 'department', 'createdForUser'])
                 ->where('is_deleted', 0)
                 ->orderBy('created_at', 'desc')
                 ->get()
