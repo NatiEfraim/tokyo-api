@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Auth;
+// use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
@@ -50,7 +50,7 @@ class DepartmentController extends Controller
     {
         try {
 
-           
+
 
             $departments = Department::where('is_deleted', 0)->get();
 

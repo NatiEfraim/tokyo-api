@@ -89,7 +89,9 @@ class ExportController extends Controller
             if ($request->input('sku')) {
 
                 $inventories = Inventory::where('sku', $request->input('sku'))
-                    ->where('is_deleted', false)->get()
+                    ->where('is_deleted', false)
+                    ->orderBy('created_at', 'desc')
+                    ->get()
                     ->map(function ($inventory) {
 
                         // Format the created_at and updated_at timestamps
@@ -302,7 +304,9 @@ class ExportController extends Controller
             if ($request->input('sku')) {
 
                 $inventories = Inventory::where('sku', $request->input('sku'))
-                ->where('is_deleted', false)->get()
+                ->where('is_deleted', false)
+                ->orderBy('created_at', 'desc')
+                ->get()
                     ->map(function ($inventory) {
 
                     // Format the created_at and updated_at timestamps
@@ -756,12 +760,12 @@ class ExportController extends Controller
 
 
             if (
-                $request->input('sku')
-                || $request->input('status')
-                || $request->input('name')
-                || $request->input('personal_number')
-                || $request->input('created_at')
-                || $request->input('updated_at')
+                $request->has('sku')
+                || $request->has('status')
+                || $request->has('name')
+                || $request->has('personal_number')
+                || $request->has('created_at')
+                || $request->has('updated_at')
             ) {
                 //? one or more of th search based on value filter send
 
@@ -993,7 +997,7 @@ class ExportController extends Controller
      *                 example={
      *                     "sku": {"The SKU field is not in the correct format."},
      *                     "personal_number": {"The personal number field must be between 1 and 7 characters."},
-     *                     
+     *
      *                 }
      *             )
      *         )
@@ -1093,12 +1097,12 @@ class ExportController extends Controller
 
 
             if (
-                $request->input('sku')
-                || $request->input('status')
-                || $request->input('name')
-                || $request->input('personal_number')
-                || $request->input('created_at')
-                || $request->input('updated_at')
+                $request->has('sku')
+                || $request->has('status')
+                || $request->has('name')
+                || $request->has('personal_number')
+                || $request->has('created_at')
+                || $request->has('updated_at')
             ) {
                 //? one or more of th search based on value filter send
                 $distributions = $this->fetchDistributions($request);
@@ -1150,6 +1154,8 @@ class ExportController extends Controller
     private function fetchDistributions(Request $request)
     {
         try {
+
+
             $query = Distribution::query();
 
             if ($request->has('sku')) {
@@ -1188,7 +1194,8 @@ class ExportController extends Controller
             // Ensure is_deleted is 0
             $query->where('is_deleted', 0);
 
-            return $query->get();
+            return $query->orderBy('created_at', 'desc')
+            ->get();
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }

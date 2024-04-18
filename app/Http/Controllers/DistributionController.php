@@ -12,6 +12,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 // use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
@@ -322,8 +323,18 @@ class DistributionController extends Controller
     public function store(StoreDistributionRequest $request)
     {
         try {
+            $user_auth=Auth::user();
 
-            $distribution = Distribution::create($request->validated());
+             Distribution::create([
+
+                'comment' => $request->input('comment'),
+                'status' => $request->input('status') ? $request->input('status')  : DistributionStatus::PENDING->value,
+                'quantity' => $request->input('quantity'),
+                //?set relation
+                'inventory_id' => $request->input('inventory_id'),
+                'department_id' => $request->input('department_id'),
+                'created_by' => $user_auth->id,
+             ]);
 
             return response()->json(['message' => 'שורה נוצרה בהצלחה.'], Response::HTTP_CREATED);
         } catch (\Exception $e) {
