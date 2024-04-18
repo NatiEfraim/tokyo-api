@@ -58,7 +58,7 @@ class DistributionController extends Controller
      *                  @OA\Property(property="detailed_description", type="string", example="Velit ut ipsam neque tempora est dicta. Et distinctio eligendi expedita corporis assumenda aspernatur hic.")
      *              ),
      *              @OA\Property(
-     *                  property="created_by_user",
+     *                  property="created_for_user",
      *                  type="object",
      *                  @OA\Property(property="id", type="integer", example=1),
      *                  @OA\Property(property="name", type="string", example="Percival Schulist"),
@@ -87,7 +87,7 @@ class DistributionController extends Controller
     {
         try {
 
-            $distributions = Distribution::with(['inventory', 'department', 'createdByUser'])
+            $distributions = Distribution::with(['inventory', 'department', 'createdByUser', 'createdForUser'])
                 ->where('is_deleted', 0)
                 ->orderBy('created_at', 'desc')
                 ->get()
@@ -146,7 +146,7 @@ class DistributionController extends Controller
      *                  @OA\Property(property="detailed_description", type="string", example="Velit ut ipsam neque tempora est dicta. Et distinctio eligendi expedita corporis assumenda aspernatur hic.")
      *              ),
      *              @OA\Property(
-     *                  property="created_by_user",
+     *                  property="created_for_user",
      *                  type="object",
      *                  @OA\Property(property="id", type="integer", example=1),
      *                  @OA\Property(property="name", type="string", example="Percival Schulist"),
@@ -186,7 +186,7 @@ class DistributionController extends Controller
 
 
         try {
-            $distribution = Distribution::with(['inventory', 'createdByUser'])
+            $distribution = Distribution::with(['inventory', 'createdByUser', 'createdForUser'])
                 ->where('id', $id)
                 ->where('is_deleted', 0)
                 ->first();
@@ -293,7 +293,8 @@ class DistributionController extends Controller
      *             @OA\Property(property="status", type="integer", example=1),
      *             @OA\Property(property="quantity", type="integer", example=10),
      *             @OA\Property(property="inventory_id", type="integer", example=123),
-     *             @OA\Property(property="department_id", type="integer", example=456)
+     *             @OA\Property(property="department_id", type="integer", example=456),
+     *             @OA\Property(property="user_id", type="integer", example=2)
      *         )
      *     ),
      *     @OA\Response(
@@ -334,6 +335,7 @@ class DistributionController extends Controller
                 'inventory_id' => $request->input('inventory_id'),
                 'department_id' => $request->input('department_id'),
                 'created_by' => $user_auth->id,
+                'user_id' => $request->input('user_id'),
              ]);
 
             return response()->json(['message' => 'שורה נוצרה בהצלחה.'], Response::HTTP_CREATED);
@@ -699,7 +701,7 @@ class DistributionController extends Controller
      *                  @OA\Property(property="detailed_description", type="string", example="Velit ut ipsam neque tempora est dicta. Et distinctio eligendi expedita corporis assumenda aspernatur hic.")
      *              ),
      *              @OA\Property(
-     *                  property="created_by_user",
+     *                  property="created_for_user",
      *                  type="object",
      *                  @OA\Property(property="id", type="integer", example=1),
      *                  @OA\Property(property="name", type="string", example="Percival Schulist"),
@@ -776,7 +778,7 @@ class DistributionController extends Controller
                 }
 
 
-                $distributions = Distribution::with(['inventory', 'department', 'createdByUser'])
+                $distributions = Distribution::with(['inventory', 'department', 'createdByUser', 'createdForUser'])
                     ->where('status', $status_value)->where('is_deleted', false)->get();
 
                 return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
@@ -820,7 +822,7 @@ class DistributionController extends Controller
             if ($id_department->isEmpty() == false) {
                 //?search by name of department
 
-                $distributions = Distribution::with(['inventory', 'department', 'createdByUser'])
+                $distributions = Distribution::with(['inventory', 'department', 'createdByUser', 'createdForUser'])
                     ->where('department_id', $id_department[0])
                     ->where('is_deleted', false)
                     ->get();
@@ -838,7 +840,7 @@ class DistributionController extends Controller
             }
 
             //? search distributions records by item_type inventories records associated.
-            $distributions = Distribution::with(['inventory', 'department', 'createdByUser'])
+            $distributions = Distribution::with(['inventory', 'department', 'createdByUser', 'createdForUser'])
                 ->whereHas('inventory', function ($query) use ($searchQuery) {
                     $query->where('item_type', $searchQuery);
                 })->get();

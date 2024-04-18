@@ -20,6 +20,7 @@ return new class extends Migration
             $table->foreignId('inventory_id');
             $table->foreignId('department_id');
             $table->foreignId('created_by');
+            $table->foreignId('created_for');
 
             $table->boolean('is_deleted')->default('0');
             $table->timestamps();
@@ -29,6 +30,7 @@ return new class extends Migration
             $table->foreign('inventory_id')->references('id')->on('inventories')->onUpdate('cascade')->onDelete('cascade');
             $table->foreign('department_id')->references('id')->on('departments')->onUpdate('cascade')->onDelete('cascade');
             $table->foreign('created_by')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
+            $table->foreign('created_for')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
 
         });
     }

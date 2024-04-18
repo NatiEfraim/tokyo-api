@@ -72,6 +72,12 @@ class Distribution extends Model
             ->select('id', 'name', 'emp_type_id', 'phone', 'email', 'personal_number')->with('employeeType');
     }
 
+    public function createdForUser()
+    {
+        return $this->belongsTo(User::class, 'created_for')
+        ->select('id', 'name', 'emp_type_id', 'phone', 'email', 'personal_number')->with('employeeType');
+    }
+
     // public function updatedByUser()
     // {
     //     return $this->belongsTo(User::class, 'updated_by')

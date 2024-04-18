@@ -784,7 +784,7 @@ class ExportController extends Controller
             }
             else {
                 //? fetch all distributions records.
-                $distributions = Distribution::with(['inventory', 'department', 'createdByUser'])
+                $distributions = Distribution::with(['inventory', 'department', 'createdByUser', 'createdForUser'])
                     ->where('is_deleted', 0)
                     ->orderBy('created_at', 'desc')
                     ->get()
@@ -830,11 +830,11 @@ class ExportController extends Controller
                 $sheet->setCellValue('A' . $row, $distribution->id ?? 'לא קיים');
                 $sheet->setCellValue('B' . $row, $distribution->created_at_date ?? 'לא קיים');
                 $sheet->setCellValue('C' . $row, $distribution->department_id ? $distribution->department->name : 'לא קיים');
-                $sheet->setCellValue('D' . $row, $distribution->created_by ? $distribution->createdByUser->personal_number : 'לא קיים');
-                $sheet->setCellValue('E' . $row, $distribution->created_by ? $distribution->createdByUser->name : 'לא קיים');
-                $sheet->setCellValue('F' . $row, $distribution->created_by ? $distribution->createdByUser->translated_employee_type : 'לא קיים');
-                $sheet->setCellValue('G' . $row, $distribution->created_by ? $distribution->createdByUser->phone : 'לא קיים');
-                $sheet->setCellValue('H' . $row, $distribution->created_by ? $distribution->createdByUser->email : 'לא קיים');
+                $sheet->setCellValue('D' . $row, $distribution->created_for ? $distribution->createdForUser->personal_number : 'לא קיים');
+                $sheet->setCellValue('E' . $row, $distribution->created_for ? $distribution->createdForUser->name : 'לא קיים');
+                $sheet->setCellValue('F' . $row, $distribution->created_for ? $distribution->createdForUser->translated_employee_type : 'לא קיים');
+                $sheet->setCellValue('G' . $row, $distribution->created_for ? $distribution->createdForUser->phone : 'לא קיים');
+                $sheet->setCellValue('H' . $row, $distribution->created_for ? $distribution->createdForUser->email : 'לא קיים');
                 $sheet->setCellValue('I' . $row, $distribution->quantity ?? 'לא קיים');
                 $sheet->setCellValue('J' . $row, $distribution->inventory_id ? $distribution->inventory->sku : 'לא קיים');
                 $sheet->setCellValue('K' . $row, $distribution->inventory_id ? $distribution->inventory->item_type : 'לא קיים');
@@ -1117,7 +1117,7 @@ class ExportController extends Controller
                 }
             } else {
                 //? fetch all distributions records.
-                $distributions = Distribution::with(['inventory', 'department', 'createdByUser'])
+                $distributions = Distribution::with(['inventory', 'department', 'createdByUser', 'createdForUser'])
                 ->where('is_deleted', 0)
                 ->orderBy('created_at', 'desc')
                 ->get()
@@ -1177,7 +1177,7 @@ class ExportController extends Controller
 
             if ($request->has('personal_number')) {
                 // $pnInput = $request->personal_number;
-                $query->whereHas('createdByUser', function ($q) use ($request) {
+                $query->whereHas('createdForUser', function ($q) use ($request) {
                     $q->whereRaw('SUBSTRING(personal_number, 2) LIKE ?', ['%' . $request->input('personal_number') . '%']);
                 });
             }
@@ -1194,7 +1194,8 @@ class ExportController extends Controller
             // Ensure is_deleted is 0
             $query->where('is_deleted', 0);
 
-            return $query->orderBy('created_at', 'desc')
+            return $query->with(['inventory', 'department', 'createdForUser'])
+            ->orderBy('created_at', 'desc')
             ->get();
         } catch (\Exception $e) {
             Log::error($e->getMessage());

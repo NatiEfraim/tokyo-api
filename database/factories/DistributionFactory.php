@@ -40,6 +40,7 @@ class DistributionFactory extends Factory
             'inventory_id' => $randomInventory->id, //set relation
             'department_id' => $randomDepartemnt->id, //set relation
             'created_by' => $randomUser->id, //set relation
+            'created_for' => $randomUser->id, //set relation
 
         ];
     }

@@ -79,11 +79,11 @@
                     <td>{{ $distribution->id ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->created_at_date ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->department_id ? $distribution->department->name : 'לא קיים' }}</td>
-                    <td>{{ $distribution->created_by ? $distribution->createdByUser->personal_number : 'לא קיים' }}</td>
-                    <td>{{ $distribution->created_by ? $distribution->createdByUser->name : 'לא קיים' }}</td>
-                    <td>{{ $distribution->created_by ? $distribution->createdByUser->translated_employee_type : 'לא קיים' }}</td>
-                    <td>{{ $distribution->created_by ? $distribution->createdByUser->phone : 'לא קיים' }}</td>
-                    <td>{{ $distribution->created_by ? $distribution->createdByUser->email : 'לא קיים' }}</td>
+                    <td>{{ $distribution->created_for ? $distribution->createdForUser->personal_number : 'לא קיים' }}</td>
+                    <td>{{ $distribution->created_for ? $distribution->createdForUser->name : 'לא קיים' }}</td>
+                    <td>{{ $distribution->created_for ? $distribution->createdForUser->translated_employee_type : 'לא קיים' }}</td>
+                    <td>{{ $distribution->created_for ? $distribution->createdForUser->phone : 'לא קיים' }}</td>
+                    <td>{{ $distribution->created_for ? $distribution->createdForUser->email : 'לא קיים' }}</td>
                     <td>{{ $distribution->quantity ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->inventory_id ? $distribution->inventory->sku : 'לא קיים' }}</td>
                     <td>{{ $distribution->inventory_id ? $distribution->inventory->item_type : 'לא קיים' }}</td>

@@ -546,7 +546,7 @@
                                             },
                                             "type": "object"
                                         },
-                                        "created_by_user": {
+                                        "created_for_user": {
                                             "properties": {
                                                 "id": {
                                                     "type": "integer",
@@ -687,7 +687,7 @@
                                             },
                                             "type": "object"
                                         },
-                                        "created_by_user": {
+                                        "created_for_user": {
                                             "properties": {
                                                 "id": {
                                                     "type": "integer",
@@ -881,6 +881,10 @@
                                     "department_id": {
                                         "type": "integer",
                                         "example": 456
+                                    },
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 2
                                     }
                                 },
                                 "type": "object"
@@ -1317,7 +1321,7 @@
                                             },
                                             "type": "object"
                                         },
-                                        "created_by_user": {
+                                        "created_for_user": {
                                             "properties": {
                                                 "id": {
                                                     "type": "integer",

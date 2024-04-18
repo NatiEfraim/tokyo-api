@@ -28,6 +28,7 @@ class StoreDistributionRequest extends FormRequest
             'quantity' => 'required|integer|min:0',
             'inventory_id' => 'required|exists:inventories,id,is_deleted,0',
             'department_id' => 'required|exists:departments,id,is_deleted,0',
+            'user_id' => 'required|exists:users,id,is_deleted,0',
         ];
     }
 
