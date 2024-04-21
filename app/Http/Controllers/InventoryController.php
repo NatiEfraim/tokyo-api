@@ -21,6 +21,16 @@ class InventoryController extends Controller
      *      tags={"Inventories"},
      *      summary="Get all inventories",
      *      description="Returns a list of all inventories.",
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Page number",
+     *         required=false,
+     *         @OA\Schema(
+     *             type="integer",
+     *             default=1
+     *         )
+     *     ),
      *      @OA\Response(
      *          response=200,
      *          description="Successful operation",
@@ -50,7 +60,9 @@ class InventoryController extends Controller
     public function index()
     {
         try {
-            $inventories = Inventory::where('is_deleted', 0)->get();
+            $inventories = Inventory::where('is_deleted', 0)
+            ->paginate(10);
+
             return response()->json($inventories, Response::HTTP_OK);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
@@ -478,13 +490,21 @@ class InventoryController extends Controller
      *     tags={"Inventories"},
      *     summary="Search inventory records by SKU or item type",
      *     description="Search inventory records by providing either SKU or item type. Returns matching inventory records.",
-     *     @OA\Parameter(
-     *         name="searchString",
-     *         in="path",
-     *         description="Search string (SKU or item type)",
+     *     @OA\RequestBody(
      *         required=true,
+     *         @OA\JsonContent(
+     *             required={"query"},
+     *             @OA\Property(property="query", type="string", example="Pending")
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Page number",
+     *         required=false,
      *         @OA\Schema(
-     *             type="string"
+     *             type="integer",
+     *             default=1
      *         )
      *     ),
      *      @OA\Response(
@@ -514,45 +534,51 @@ class InventoryController extends Controller
      */
 
 
-    public function searchRecords(string $searchString = null)
+    public function searchRecords(Request $request)
     {
-
 
         try {
 
 
-            if (is_null($searchString)) {
-                return response()->json(['message' => 'חובה לשלוח ערך לחיפוש פריט.'], Response::HTTP_BAD_REQUEST);
+            // set custom error messages in Hebrew
+            $customMessages = [
+                'query.required' => 'יש לשלוח ערך לחיפוש' ,
+                'query.string' => 'ערך שנשלח אינו תקין'
+            ];
+            //set the rules
+            $rules = [
+                'query' => 'required|string',
+            ];
+
+            // validate the request data
+            $validator = Validator::make($request->all(), $rules, $customMessages);
+
+            // Check if validation fails
+            if ($validator->fails()) {
+
+                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-            // Determine if the search string is a numeric value (SKU) or a string (item type)
-            $isSkuSearch = ctype_digit($searchString);
 
-            if ($isSkuSearch) {
+            if (ctype_digit($request->input('query'))) {
 
                 // Search by SKU
-                $inventory = Inventory::where('sku', $searchString)
+                $inventory = Inventory::where('sku', $request->input('query'))
                     ->where('is_deleted', false)
                     ->first();
 
-                if (is_null($inventory)) {
 
-                    return response()->json([], Response::HTTP_OK);
-                }
 
-                return response()->json($inventory, Response::HTTP_OK);
+                return response()->json(is_null($inventory)? []:$inventory, Response::HTTP_OK);
             } else {
 
                 // Search by item type
-                $inventories = Inventory::where('item_type', 'LIKE', '%' . $searchString . '%')
+                $inventories = Inventory::where('item_type', 'LIKE', '%' . $request->input('query') . '%')
                     ->where('is_deleted', false)
-                    ->get();
+                    ->paginate(10);
 
-                if ($inventories->isEmpty()) {
-                    return response()->json([], Response::HTTP_OK);
-                }
 
-                return response()->json($inventories, Response::HTTP_OK);
+                return response()->json($inventories->isEmpty() ? []: $inventories, Response::HTTP_OK);
             }
         } catch (\Exception $e) {
             Log::error($e->getMessage());

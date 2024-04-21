@@ -481,9 +481,21 @@
                 "tags": [
                     "Distributions"
                 ],
-                "summary": "Retrieve all distributions",
-                "description": "Retrieve all distributions.\n\nThis endpoint retrieves all distribution records along with their associated inventory and department.",
+                "summary": "Get all Distributions",
+                "description": "Returns a list of all Distributions.",
                 "operationId": "1c50a7e7560b6a28a8dc55c38f7ed1c1",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successful operation",
@@ -1240,6 +1252,18 @@
                 "summary": "Get distributions records by query",
                 "description": "Get distributions records by query.",
                 "operationId": "b075308bab586236ff4ec09c34d37454",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    }
+                ],
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -1998,6 +2022,18 @@
                 "summary": "Get all inventories",
                 "description": "Returns a list of all inventories.",
                 "operationId": "14778f5d86f3e51cab479d0cf398aac1",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successful operation",
@@ -2535,15 +2571,35 @@
                 "operationId": "14a35d195baef72192b919708219b7a3",
                 "parameters": [
                     {
-                        "name": "searchString",
-                        "in": "path",
-                        "description": "Search string (SKU or item type)",
-                        "required": true,
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
                         "schema": {
-                            "type": "string"
+                            "type": "integer",
+                            "default": 1
                         }
                     }
                 ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "query"
+                                ],
+                                "properties": {
+                                    "query": {
+                                        "type": "string",
+                                        "example": "Pending"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Successful operation",

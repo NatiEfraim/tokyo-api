@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Enums\DistributionStatus;
 use App\Http\Requests\StoreDistributionRequest;
 use App\Http\Requests\UpdateDistributionRequest;
-use App\Models\Department;
+// use App\Models\Department;
 use App\Models\Distribution;
-use App\Models\User;
+// use App\Models\User;
 // use App\Models\Inventory;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -37,6 +37,18 @@ class DistributionController extends Controller
      *     path="/api/distributions",
      *     summary="Retrieve all distributions",
      *     tags={"Distributions"},
+     *      summary="Get all Distributions",
+     *      description="Returns a list of all Distributions.",
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Page number",
+     *         required=false,
+     *         @OA\Schema(
+     *             type="integer",
+     *             default=1
+     *         )
+     *     ),
      *      @OA\Response(
      *          response=200,
      *          description="Successful operation",
@@ -88,9 +100,9 @@ class DistributionController extends Controller
         try {
 
             $distributions = Distribution::with(['inventory', 'department', 'createdForUser'])
-                ->where('is_deleted', 0)
-                ->orderBy('created_at', 'desc')
-                ->get()
+            ->where('is_deleted', 0)
+            ->orderBy('created_at', 'desc')->paginate(10)
+
                 ->map(function ($distribution) {
 
                     // Format the created_at and updated_at timestamps
@@ -680,6 +692,16 @@ class DistributionController extends Controller
      *             @OA\Property(property="query", type="string", example="Pending")
      *         )
      *     ),
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Page number",
+     *         required=false,
+     *         @OA\Schema(
+     *             type="integer",
+     *             default=1
+     *         )
+     *     ),
      *      @OA\Response(
      *          response=200,
      *          description="Successful operation",
@@ -845,90 +867,6 @@ class DistributionController extends Controller
                 });
             }
 
-
-            // $searchQuery = $request->input('query');
-            // if (ctype_digit($searchQuery) && strlen($searchQuery) == self::MIN_LEN) {
-            //     //search by status value.
-            //     $searchQuery = ((int) ($searchQuery));
-            //     $status_value = match ($searchQuery) {
-            //         DistributionStatus::PENDING->value => 0,
-            //         DistributionStatus::APPROVED->value => 1,
-            //         DistributionStatus::CANCELD->value => 2,
-            //         default => false,
-            //     };
-
-            //     if ($status_value == false) {
-            //         return response()->json(['message' => 'יש לשלוח ערך תקין לחיפוש.'], Response::HTTP_BAD_REQUEST);
-            //     }
-
-
-            //     $distributions = Distribution::with(['inventory', 'department', 'createdByUser', 'createdForUser'])
-            //         ->where('status', $status_value)->where('is_deleted', false)->get();
-
-            //     return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
-
-            // }
-
-            // if (ctype_digit($searchQuery) && strlen($searchQuery) == self::MAX_LEN) {
-            //     //? search distributions records - by created_by fileds
-            //     $user_record=User::with(['employeeType'])
-            //         ->whereRaw('SUBSTRING(personal_number, 2) LIKE ?', ['%' . $searchQuery . '%'])
-            //         ->where('is_deleted', false)
-            //         ->first();
-
-
-
-            //     if (is_null($user_record)) {
-            //         return response()->json(['message' => 'משתמש זה אינו קיים במערכת.'], Response::HTTP_CONFLICT);
-            //     }
-
-
-
-            //     $distributions = Distribution::with(['inventory', 'department', 'createdByUser'])
-            //     ->where('created_by', $user_record->id)
-            //     ->where('is_deleted', false)
-            //     ->get();
-
-
-
-            //     return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
-            // }
-
-
-
-
-            // // get id base of department name fileds.
-            // $id_department = Department::where('name', $searchQuery)
-            //     ->where('is_deleted', false)
-            //     ->pluck('id');
-
-
-            // if ($id_department->isEmpty() == false) {
-            //     //?search by name of department
-
-            //     $distributions = Distribution::with(['inventory', 'department', 'createdByUser', 'createdForUser'])
-            //         ->where('department_id', $id_department[0])
-            //         ->where('is_deleted', false)
-            //         ->get();
-
-
-            //     // //? search records with specific name department
-            //     // $distributions = Distribution::with(['inventory', 'department'])
-            //     // ->whereHas('department', function ($query) use ($searchQuery) {
-            //     //     $query->where('name', 'like', '%' . $searchQuery . '%');
-            //     // })->get();
-
-
-            //     return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
-
-            // }
-
-            // //? search distributions records by item_type inventories records associated.
-            // $distributions = Distribution::with(['inventory', 'department', 'createdByUser', 'createdForUser'])
-            //     ->whereHas('inventory', function ($query) use ($searchQuery) {
-            //         $query->where('item_type', $searchQuery);
-            //     })->get();
-
             return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
 
 
@@ -985,8 +923,8 @@ class DistributionController extends Controller
             $query->where('is_deleted', 0);
 
             return $query->with(['inventory', 'department', 'createdForUser'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+            ->orderBy('created_at', 'desc')->paginate(10);
+
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }

@@ -29,9 +29,10 @@ Route::controller(InventoryController::class)
     ->middleware(['auth:api'])
     ->group(function () {
         Route::get('/', 'index');
-        Route::get('/{id?}', 'getRecordById');
         Route::get('/sku-records', 'getSkuRecords');
-        Route::get('/search-records/{searchString?}', 'searchRecords');
+        Route::get('/search-records', 'searchRecords');
+    Route::get('/{id?}', 'getRecordById');
+
         Route::put('/{id?}', 'update');
         Route::post('/', 'store');
         Route::delete('/mass-destroy', 'massDestroy');
