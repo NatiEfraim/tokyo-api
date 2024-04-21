@@ -580,8 +580,7 @@ class InventoryController extends Controller
 
                 // Search by item type
                 $inventories = Inventory::where('item_type', 'LIKE', '%' . $request->input('query') . '%')
-                    ->where('is_deleted', false)
-                    ->paginate(10);
+                    ->where('is_deleted', false)->get();
 
 
                 return response()->json($inventories->isEmpty() ? []: $inventories, Response::HTTP_OK);

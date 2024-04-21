@@ -768,73 +768,18 @@ class DistributionController extends Controller
     {
         try {
 
+
             // set custom error messages in Hebrew
             $customMessages = [
                 'query.required' => 'יש לשלוח שדה לחיפוש',
                 'query.string' => 'ערך השדה שנשלח אינו תקין.',
 
-
-                'users.required' => 'חובה לשלוח משתמש אחד לפחות.',
-                'users.array' => 'שדה משתמש שנשלח אינו תקין.',
-                'users.*.required' => 'שדה זה נדרש.',
-                'users.*.exists' => 'הערך שהוזן לא חוקי.',
-
-
-
-                'sku.string' => 'שדה שהוזן אינו בפורמט תקין',
-                'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
-                'sku.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
-
-
-                'name.string' => 'שדה ערך שם מחלקה אינו תקין.',
-
-                'status.between' => 'שדה הסטטוס אינו תקין.',
-
-
-                'personal_number.min' => 'מספר אישי אינו תקין.',
-                'personal_number.max' => 'מספר אישי אינו תקין.',
-
-
-
-                'created_at.date' => 'שדה תאריך התחלה אינו תקין.',
-                'created_at.exists' => 'שדה תאריך אינו קיים במערכת.',
-                'updated_at.date' => 'שדה תאריך סיום אינו תקין.',
-                'updated_at.exists' => 'שדה תאריך סיום אינו קיים במערכת.',
             ];
             //set the rules
 
             $rules = [
-                // 'query' => 'required|string',
 
-                // 'users' => 'required|array',
-                // 'users.*' => 'required|exists:users,id,is_deleted,0',
-
-                'sku' => 'nullable|string|max:255|exists:inventories,sku,is_deleted,0',
-
-                'status' => 'nullable|integer|between:0,2',
-
-                'name' => 'nullable|string|exists:departments,name,is_deleted,0',
-
-                'personal_number' => 'nullable|min:1|max:7',
-
-
-                'created_at' => [
-                    'nullable',
-                    'date',
-                    // Rule::exists('distributions')->where(function ($query) {
-                    //     return $query->where('is_deleted', 0);
-                    // }),
-                ],
-
-                'updated_at' => [
-                    'nullable',
-                    'date',
-                    // Rule::exists('distributions')->where(function ($query) {
-                    //     return $query->where('is_deleted', 0);
-                    // }),
-                ],
-
-
+                'query' => 'required|string',
             ];
 
             // validate the request data
@@ -847,21 +792,8 @@ class DistributionController extends Controller
             }
 
 
-
-            if (
-                $request->has('sku') ==false
-                && $request->has('status') == false
-                && $request->has('name') == false
-                && $request->has('personal_number') == false
-                && $request->has('created_at') == false
-                && $request->has('updated_at') == false
-            ) {
-
-                return response()->json(['messages' => 'חובה לשלוח ערך לחיפוש.'], Response::HTTP_BAD_REQUEST);
-            }
-
             //? one or more of th search based on value filter send
-            $distributions = $this->fetchDistributions($request);
+            $distributions = $this->fetchDistributions($request);///private function
             if ($distributions) {
 
                 $distributions->map(function ($distribution) {
@@ -888,47 +820,39 @@ class DistributionController extends Controller
     {
         try {
 
+            $query = $request->input('query');
 
-            $query = Distribution::query();
+            return Distribution::with(['inventory', 'department', 'createdForUser'])
+            
+                ->where('is_deleted', 0)
 
-            if ($request->has('sku')) {
-                $query->whereHas('inventory', function ($q) use ($request) {
-                    $q->where('sku', $request->sku);
-                });
-            }
+                ->where(function ($queryBuilder) use ($query) {
 
-            if ($request->has('status')) {
-                $query->where('status', $request->status);
-            }
+                    // Search by personal number
+                    $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
+                        $userQuery->where('personal_number', 'like', "%$query%");
+                    });
 
-            if ($request->has('name')) {
-                $query->whereHas('department', function ($q) use ($request) {
-                    $q->where('name', $request->name);
-                });
-            }
+                    // Search by SKU
+                    $queryBuilder->orWhereHas('inventory', function ($inventoryQuery) use ($query) {
+                        $inventoryQuery->where('sku', 'like', "%$query%");
+                    });
 
-
-            if ($request->has('personal_number')) {
-                // $pnInput = $request->personal_number;
-                $query->whereHas('createdForUser', function ($q) use ($request) {
-                    $q->whereRaw('SUBSTRING(personal_number, 2) LIKE ?', ['%' . $request->input('personal_number') . '%']);
-                });
-            }
+                    // Search by item_type
+                    $queryBuilder->orWhereHas('inventory', function ($inventoryQuery) use ($query) {
+                        $inventoryQuery->where('item_type', 'like', "%$query%");
+                    });
 
 
-            if ($request->has('created_at')) {
-                $query->whereDate('created_at', $request->created_at);
-            }
+                    // Search by full name
+                    $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
+                        $userQuery->where('name', 'like', "%$query%");
+                    });
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-            if ($request->has('updated_at')) {
-                $query->whereDate('updated_at', $request->updated_at);
-            }
 
-            // Ensure is_deleted is 0
-            $query->where('is_deleted', 0);
-
-            return $query->with(['inventory', 'department', 'createdForUser'])
-            ->orderBy('created_at', 'desc')->paginate(10);
 
         } catch (\Exception $e) {
             Log::error($e->getMessage());
