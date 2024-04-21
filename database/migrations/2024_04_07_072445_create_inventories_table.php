@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('sku');
             $table->string('item_type');
             $table->longText('detailed_description');
+            $table->integer('reserved')->default(0);
             $table->boolean('is_deleted')->default('0');
             $table->timestamps();
         });

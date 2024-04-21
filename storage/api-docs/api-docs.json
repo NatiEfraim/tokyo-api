@@ -2062,6 +2062,10 @@
                                             "detailed_description": {
                                                 "type": "string",
                                                 "example": "Neque recusandae corporis totam facere pariatur. Et perspiciatis aut in quia. Placeat quas vero modi magni ut. Voluptas et qui vitae culpa."
+                                            },
+                                            "reserved": {
+                                                "type": "integer",
+                                                "example": 3
                                             }
                                         },
                                         "type": "object"
@@ -2561,14 +2565,14 @@
                 }
             }
         },
-        "/api/inventory/search-records/{searchString}": {
+        "/api/inventory/search-records": {
             "get": {
                 "tags": [
                     "Inventories"
                 ],
                 "summary": "Search inventory records by SKU or item type",
                 "description": "Search inventory records by providing either SKU or item type. Returns matching inventory records.",
-                "operationId": "14a35d195baef72192b919708219b7a3",
+                "operationId": "be216d1d6c36c3965269df6d1f5f53db",
                 "parameters": [
                     {
                         "name": "page",
@@ -2628,6 +2632,10 @@
                                             "detailed_description": {
                                                 "type": "string",
                                                 "example": "Neque recusandae corporis totam facere pariatur. Et perspiciatis aut in quia. Placeat quas vero modi magni ut. Voluptas et qui vitae culpa."
+                                            },
+                                            "reserved": {
+                                                "type": "integer",
+                                                "example": 3
                                             }
                                         },
                                         "type": "object"

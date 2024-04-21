@@ -130,8 +130,9 @@ class ExportController extends Controller
             $sheet->setCellValue('C1', 'מק"ט');
             $sheet->setCellValue('D1', 'סוג פריט');
             $sheet->setCellValue('E1', 'פירוט מורחב');
-            $sheet->setCellValue('F1', 'נוצר בתאריך');
-            $sheet->setCellValue('G1', 'עודכן בתאריך');
+            $sheet->setCellValue('F1', 'שמורים');
+            $sheet->setCellValue('G1', 'נוצר בתאריך');
+            $sheet->setCellValue('H1', 'עודכן בתאריך');
 
             $row = 2;
             foreach ($inventories as $inventory) {
@@ -141,8 +142,9 @@ class ExportController extends Controller
                 $sheet->setCellValue('C' . $row, $inventory->sku ?? 'לא קיים');
                 $sheet->setCellValue('D' . $row, $inventory->item_type ?? 'לא קיים');
                 $sheet->setCellValue('E' . $row, $inventory->detailed_description ?? 'לא קיים');
-                $sheet->setCellValue('F' . $row, $inventory->created_at_date ?? 'לא קיים');
+                $sheet->setCellValue('F' . $row, $inventory->reserved ?? 'לא קיים');
                 $sheet->setCellValue('G' . $row, $inventory->created_at_date ?? 'לא קיים');
+                $sheet->setCellValue('H' . $row, $inventory->created_at_date ?? 'לא קיים');
 
                 $row++;
             }
@@ -170,7 +172,7 @@ class ExportController extends Controller
                 ],
             ];
 
-            $sheet->getStyle('A1:O1')->applyFromArray($headerStyle);
+            $sheet->getStyle('A1:H1')->applyFromArray($headerStyle);
 
             // Set & Style the cells
             $cellStyle = [
@@ -181,10 +183,10 @@ class ExportController extends Controller
             ];
 
             // apply styling to all cells in the sheet
-            $sheet->getStyle('A1:O' . ($row - 1))->applyFromArray($cellStyle);
+            $sheet->getStyle('A1:H' . ($row - 1))->applyFromArray($cellStyle);
 
             // set the size for rest of columns
-            foreach (range('A', 'O') as $column) {
+            foreach (range('A', 'H') as $column) {
                 $sheet->getColumnDimension($column)->setAutoSize(true);
             }
 

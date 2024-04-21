@@ -18,7 +18,8 @@ class InventoryFactory extends Factory
     {
         return [
             //
-            'quantity' => $this->faker->numberBetween(1, 100),
+            'quantity' => $this->faker->numberBetween(80, 100),
+            'reserved' => $this->faker->numberBetween(20,50),
             'sku' => $this->faker->unique()->ean13,
             'item_type' => $this->faker->word,
             'detailed_description' => $this->faker->text,

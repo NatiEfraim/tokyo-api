@@ -7,6 +7,7 @@ use App\Http\Requests\StoreDistributionRequest;
 use App\Http\Requests\UpdateDistributionRequest;
 // use App\Models\Department;
 use App\Models\Distribution;
+use App\Models\Inventory;
 // use App\Models\User;
 // use App\Models\Inventory;
 use Carbon\Carbon;
@@ -336,6 +337,10 @@ class DistributionController extends Controller
     public function store(StoreDistributionRequest $request)
     {
         try {
+
+
+
+
             $user_auth=Auth::user();
 
              Distribution::create([

@@ -42,7 +42,8 @@ class InventoryController extends Controller
      *                  @OA\Property(property="quantity", type="integer", example=33),
      *                  @OA\Property(property="sku", type="string", example="0028221469208"),
      *                  @OA\Property(property="item_type", type="string", example="autem"),
-     *                  @OA\Property(property="detailed_description", type="string", example="Neque recusandae corporis totam facere pariatur. Et perspiciatis aut in quia. Placeat quas vero modi magni ut. Voluptas et qui vitae culpa.")
+     *                  @OA\Property(property="detailed_description", type="string", example="Neque recusandae corporis totam facere pariatur. Et perspiciatis aut in quia. Placeat quas vero modi magni ut. Voluptas et qui vitae culpa."),
+     *                  @OA\Property(property="reserved", type="integer", example=3),
      *              )
      *          )
      *      ),
@@ -292,11 +293,15 @@ class InventoryController extends Controller
     {
         try {
 
+            if ($request->input('reserved') >$request->input('quantity')) {
+                return response()->json(['message' => 'נתוני פריט אינם תקינים.'], Response::HTTP_BAD_REQUEST);
+            }
+
             $inventory = Inventory::create($request->validated());
-            $currentTime = Carbon::now()->toDateTimeString();
-            $inventory->updated_at = $currentTime;
-            $inventory->created_at = $currentTime;
-            $inventory->save();
+            // $currentTime = Carbon::now()->toDateTimeString();
+            // $inventory->updated_at = $currentTime;
+            // $inventory->created_at = $currentTime;
+            // $inventory->save();
 
             return response()->json(['message' => 'שורה נוצרה בהצלחה.'], Response::HTTP_CREATED);
         } catch (\Exception $e) {
@@ -362,13 +367,13 @@ class InventoryController extends Controller
             }
 
 
-            $currentTime = Carbon::now()->toDateTimeString();
+            // $currentTime = Carbon::now()->toDateTimeString();
 
 
             $inventory->update($request->validated());
 
-            $inventory->updated_at = $currentTime;
-            $inventory->save();
+            // $inventory->updated_at = $currentTime;
+            // $inventory->save();
 
             return response()->json(['message' => 'שורה התעדכנה בהצלחה.'], Response::HTTP_OK);
         } catch (\Exception $e) {
@@ -486,7 +491,7 @@ class InventoryController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/inventory/search-records/{searchString}",
+     *     path="/api/inventory/search-records",
      *     tags={"Inventories"},
      *     summary="Search inventory records by SKU or item type",
      *     description="Search inventory records by providing either SKU or item type. Returns matching inventory records.",
@@ -518,7 +523,8 @@ class InventoryController extends Controller
      *                  @OA\Property(property="quantity", type="integer", example=33),
      *                  @OA\Property(property="sku", type="string", example="0028221469208"),
      *                  @OA\Property(property="item_type", type="string", example="autem"),
-     *                  @OA\Property(property="detailed_description", type="string", example="Neque recusandae corporis totam facere pariatur. Et perspiciatis aut in quia. Placeat quas vero modi magni ut. Voluptas et qui vitae culpa.")
+     *                  @OA\Property(property="detailed_description", type="string", example="Neque recusandae corporis totam facere pariatur. Et perspiciatis aut in quia. Placeat quas vero modi magni ut. Voluptas et qui vitae culpa."),
+     *                  @OA\Property(property="reserved", type="integer", example=3),
      *              )
      *          )
      *      ),

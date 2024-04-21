@@ -59,6 +59,7 @@
                 <th>מק"ט</th>
                 <th>סוג פריט</th>
                 <th>פירוט מורחב</th>
+                <th>שמורים</th>
                 <th>נוצר בתאריך</th>
                 <th>עודכן בתאריך</th>
             </tr>
@@ -72,6 +73,7 @@
                     <td>{{ $inventory->sku ?? 'לא קיים' }}</td>
                     <td>{{ $inventory->item_type ?? 'לא קיים' }}</td>
                     <td>{{ $inventory->detailed_description ?? 'לא קיים' }}</td>
+                    <td>{{ $inventory->reserved ?? 'לא קיים' }}</td>
                     <td>{{ $inventory->created_at_date ?? 'לא קיים' }}</td>
                     <td>{{ $inventory->updated_at_date ?? 'לא קיים' }}</td>
                 </tr>
