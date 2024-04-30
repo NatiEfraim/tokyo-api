@@ -578,7 +578,6 @@ class DistributionController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-            $currentTime = Carbon::now()->toDateTimeString();
 
 
             $distribution_record = Distribution::where('id', $id)->where('is_deleted', false)->first();
@@ -587,15 +586,68 @@ class DistributionController extends Controller
                 return response()->json(['message' => 'שורה זו אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
             }
 
+
+
+
+            $inventory = Inventory::where('id', $distribution_record->inventory_id)
+            ->where('is_deleted', false)
+            ->first();
+
+            if (is_null($inventory)) {
+                return response()->json(['message' => 'פריט אני קיים במלאי'], Response::HTTP_BAD_REQUEST);
+            }
+
+            $statusValue=(int)($request->input('status'));
+            $statusValue = match ($statusValue) {
+                DistributionStatus::PENDING->value => 0,
+                DistributionStatus::APPROVED->value => 1,
+                DistributionStatus::CANCELD->value => 2,
+
+                default => throw new \InvalidArgumentException('ערך סטטוס אינו תקין..')
+            };
+
+            $currentTime = Carbon::now()->toDateTimeString();
+            DB::beginTransaction(); // Start a database transaction
+
+
+            //? distribution records has been approved
+
+
+            if ($statusValue == DistributionStatus::APPROVED->value) {
+
+                $inventory->update([
+                    'quantity' => $inventory->quantity - $distribution_record->quantity,
+                    'reserved' => $inventory->reserved - $distribution_record->quantity,
+                    'updated_at' => $currentTime,
+
+                ]);
+             //? distribution records has been canceld
+
+            }elseif ($statusValue==DistributionStatus::CANCELD->value) {
+
+                $inventory->update([
+                    'reserved' => $inventory->reserved - $distribution_record->quantity,
+                    'updated_at' => $currentTime,
+                ]);
+            }
+
+
             $distribution_record->update([
                 'status' => $request->input('status'),
                 'updated_at' => $currentTime,
             ]);
 
+
+
+            DB::commit(); // commit all changes in database.
+
             return response()->json(['message' => 'שורה התעדכנה בהצלחה.'], Response::HTTP_OK);
 
         } catch (\Exception $e) {
+            DB::rollBack(); // Rollback the transaction in case of any error
+
             Log::error($e->getMessage());
+
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
 
@@ -619,7 +671,7 @@ class DistributionController extends Controller
      *         )
      *     ),
      *     @OA\RequestBody(
-     *         required=true,
+     *         required=false,
      *         description="Updated distribution record data",
      *         @OA\JsonContent(
      *             required={"comment"},
@@ -683,6 +735,7 @@ class DistributionController extends Controller
                 return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
             }
 
+            //? fetch distributions records based id.
             $distribution = Distribution::where('is_deleted', 0)
                 ->where('id', $id)
                 ->first();
@@ -692,13 +745,14 @@ class DistributionController extends Controller
                 return response()->json(['message' => 'שורה אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
             }
 
-            $inventory = Inventory::where('id', $request->input('inventory_id'))
+            //? fetch inventory associated records based distrbution->inventory_id
+            $inventory = Inventory::where('id', $distribution->inventory_id)
             ->where('is_deleted', false)
             ->first();
 
 
-            if (($request->input('quantity') > $inventory->quantity - $inventory->reserved) && $request->input('quantity') > $distribution->quantity ) {
-                return response()->json(['message' => 'אין מסםיק מלאי זמין עבור כמות שנשלחה .'], Response::HTTP_BAD_REQUEST);
+            if (($request->input('quantity')) && ($request->input('quantity') > $inventory->quantity - $inventory->reserved) && $request->input('quantity') > $distribution->quantity ) {
+                return response()->json(['message' => 'אין מספיק מלאי זמין עבור כמות שנשלחה .'], Response::HTTP_BAD_REQUEST);
             }
 
             DB::beginTransaction(); // Start a database transaction
@@ -717,16 +771,66 @@ class DistributionController extends Controller
                 ]);
             }
 
+
+
+            if ($request->input('status')) {
+                //? user changed status distribtuons record
+                $inventory = Inventory::where('id', $distribution->inventory_id)
+                ->where('is_deleted', false)
+                ->first();
+
+                if (is_null($inventory)) {
+                    return response()->json(['message' => 'פריט אינו קיים במלאי'], Response::HTTP_BAD_REQUEST);
+                }
+
+                $statusValue = (int)($request->input('status'));
+
+                $statusValue = match ($statusValue) {
+
+                    DistributionStatus::PENDING->value => 0,
+                    DistributionStatus::APPROVED->value => 1,
+                    DistributionStatus::CANCELD->value => 2,
+
+                    default => throw new \InvalidArgumentException('ערך סטטוס אינו תקין..')
+                };
+
+
+                $currentTime = Carbon::now()->toDateTimeString();
+
+
+                //? distribution records has been approved
+
+                if ($statusValue == DistributionStatus::APPROVED->value) {
+
+                    $inventory->update([
+                        'quantity' => $inventory->quantity - $distribution->quantity,
+                        'reserved' => $inventory->reserved - $distribution->quantity,
+                        'updated_at' => $currentTime,
+
+                    ]);
+                    //? distribution records has been canceld
+
+                } elseif ($statusValue == DistributionStatus::CANCELD->value) {
+
+                    $inventory->update([
+                        'reserved' => $inventory->reserved - $distribution->quantity,
+                        'updated_at' => $currentTime,
+                    ]);
+                }
+
+            }
+
+
+
+            //? updated all fileds for distribution record
+
             $distribution->update($request->validated());
+
+
+
 
             DB::commit(); // commit all changes in database.
 
-
-
-            // $currentTime = Carbon::now()->toDateTimeString();
-
-            // $distribution->updated_at = $currentTime;
-            // $distribution->save();
 
             return response()->json(['message' => 'שורה התעדכנה בהצלחה.'], Response::HTTP_OK);
         } catch (\Exception $e) {

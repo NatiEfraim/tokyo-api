@@ -312,7 +312,7 @@ class InventoryController extends Controller
 
 
     /**
-     * @OA\Patch(
+     * @OA\Put(
      *     path="/inventory/{id}",
      *     tags={"Inventories"},
      *     summary="Update an inventory item",
@@ -328,7 +328,7 @@ class InventoryController extends Controller
      *         )
      *     ),
      *     @OA\RequestBody(
-     *         required=true,
+     *         required=false,
      *         description="Inventory object to update",
      *         @OA\JsonContent(
      *             @OA\Property(property="quantity", type="integer", example="10"),

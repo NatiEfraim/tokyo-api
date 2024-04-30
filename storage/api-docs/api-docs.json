@@ -1184,7 +1184,7 @@
                 ],
                 "requestBody": {
                     "description": "Updated distribution record data",
-                    "required": true,
+                    "required": false,
                     "content": {
                         "application/json": {
                             "schema": {
@@ -2397,13 +2397,13 @@
             }
         },
         "/inventory/{id}": {
-            "patch": {
+            "put": {
                 "tags": [
                     "Inventories"
                 ],
                 "summary": "Update an inventory item",
                 "description": "Updates an inventory item with the provided ID.",
-                "operationId": "44bc2e7a15b0b33315c23ad97f34093f",
+                "operationId": "c1dc4af5e91a130dfae8c5f33b8fd48c",
                 "parameters": [
                     {
                         "name": "id",
@@ -2418,7 +2418,7 @@
                 ],
                 "requestBody": {
                     "description": "Inventory object to update",
-                    "required": true,
+                    "required": false,
                     "content": {
                         "application/json": {
                             "schema": {
