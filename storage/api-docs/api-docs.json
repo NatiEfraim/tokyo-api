@@ -894,7 +894,7 @@
                                         "type": "integer",
                                         "example": 456
                                     },
-                                    "user_id": {
+                                    "created_for": {
                                         "type": "integer",
                                         "example": 2
                                     }

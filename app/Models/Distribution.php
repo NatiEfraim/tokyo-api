@@ -21,6 +21,7 @@ class Distribution extends Model
         'inventory_id',
         'department_id',
         'created_by',
+        'created_for',
         'is_deleted',
         'created_at',
         'updated_at'

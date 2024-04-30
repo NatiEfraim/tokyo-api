@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 // use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
@@ -307,7 +308,7 @@ class DistributionController extends Controller
      *             @OA\Property(property="quantity", type="integer", example=10),
      *             @OA\Property(property="inventory_id", type="integer", example=123),
      *             @OA\Property(property="department_id", type="integer", example=456),
-     *             @OA\Property(property="user_id", type="integer", example=2)
+     *             @OA\Property(property="created_for", type="integer", example=2)
      *         )
      *     ),
      *     @OA\Response(
@@ -338,10 +339,24 @@ class DistributionController extends Controller
     {
         try {
 
+            $inventory= Inventory::where('id',$request->input('inventory_id'))
+            ->where('is_deleted',false)
+            ->first();
 
+
+            if ($request->input('quantity')> $inventory->quantity-$inventory->reserved) {
+                return response()->json(['message' => 'אין מסםיק מלאי זמין עבור כמות שנשלחה .'], Response::HTTP_BAD_REQUEST);
+            }
+
+
+
+            DB::beginTransaction(); // Start a database transaction
 
 
             $user_auth=Auth::user();
+
+
+            // Distribution::create($request->validated());
 
              Distribution::create([
 
@@ -352,11 +367,21 @@ class DistributionController extends Controller
                 'inventory_id' => $request->input('inventory_id'),
                 'department_id' => $request->input('department_id'),
                 'created_by' => $user_auth->id,
-                'user_id' => $request->input('user_id'),
+                'created_for' => $request->input('created_for'),
              ]);
+
+             ///update reseved of inventory
+             $inventory->update([
+                'reserved' => $inventory->reserved + $request->input('quantity'),
+                'updated_at' =>  Carbon::now()->toDateTimeString(),
+             ]);
+
+
+            DB::commit(); // commit all changes in database.
 
             return response()->json(['message' => 'שורה נוצרה בהצלחה.'], Response::HTTP_CREATED);
         } catch (\Exception $e) {
+            DB::rollBack(); // Rollback the transaction in case of any error
             Log::error($e->getMessage());
 
         }
@@ -650,30 +675,63 @@ class DistributionController extends Controller
 
     public function update(UpdateDistributionRequest $request, $id = null)
     {
-        if (is_null($id)) {
-            return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
-        }
 
         try {
+
+
+            if (is_null($id)) {
+                return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
+            }
 
             $distribution = Distribution::where('is_deleted', 0)
                 ->where('id', $id)
                 ->first();
+
+
             if (is_null($distribution)) {
                 return response()->json(['message' => 'שורה אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
             }
 
+            $inventory = Inventory::where('id', $request->input('inventory_id'))
+            ->where('is_deleted', false)
+            ->first();
 
-            $currentTime = Carbon::now()->toDateTimeString();
 
+            if (($request->input('quantity') > $inventory->quantity - $inventory->reserved) && $request->input('quantity') > $distribution->quantity ) {
+                return response()->json(['message' => 'אין מסםיק מלאי זמין עבור כמות שנשלחה .'], Response::HTTP_BAD_REQUEST);
+            }
+
+            DB::beginTransaction(); // Start a database transaction
+
+
+            //? update the reserved fileds of inventory
+            if ($request->input('quantity') && $request->input('quantity') > $distribution->quantity) {
+                $inventory->update([
+                    'reserved' => $inventory->reserved + abs($request->input('quantity')- $distribution->quantity),
+                    'updated_at' =>  Carbon::now()->toDateTimeString(),
+                ]);
+            }else if($request->input('quantity') && $request->input('quantity') < $distribution->quantity){
+                $inventory->update([
+                    'reserved' => $inventory->reserved - abs($request->input('quantity') - $distribution->quantity),
+                    'updated_at' =>  Carbon::now()->toDateTimeString(),
+                ]);
+            }
 
             $distribution->update($request->validated());
 
-            $distribution->updated_at = $currentTime;
-            $distribution->save();
+            DB::commit(); // commit all changes in database.
+
+
+
+            // $currentTime = Carbon::now()->toDateTimeString();
+
+            // $distribution->updated_at = $currentTime;
+            // $distribution->save();
 
             return response()->json(['message' => 'שורה התעדכנה בהצלחה.'], Response::HTTP_OK);
         } catch (\Exception $e) {
+            DB::rollBack(); // Rollback the transaction in case of any error
+
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -823,7 +881,7 @@ class DistributionController extends Controller
             $query = $request->input('query');
 
             return Distribution::with(['inventory', 'department', 'createdForUser'])
-            
+
                 ->where('is_deleted', 0)
 
                 ->where(function ($queryBuilder) use ($query) {

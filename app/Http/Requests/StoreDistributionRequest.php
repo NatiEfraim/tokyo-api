@@ -28,7 +28,7 @@ class StoreDistributionRequest extends FormRequest
             'quantity' => 'required|integer|min:0',
             'inventory_id' => 'required|exists:inventories,id,is_deleted,0',
             'department_id' => 'required|exists:departments,id,is_deleted,0',
-            'user_id' => 'required|exists:users,id,is_deleted,0',
+            'created_for' => 'required|exists:users,id,is_deleted,0',
         ];
     }
 
@@ -51,6 +51,9 @@ class StoreDistributionRequest extends FormRequest
             'department_id.required' => 'שדה מזהה המחלקה הוא חובה.',
             'inventory_id.exists' => 'שדה מזהה המלאי אינו קיים במערכת.',
             'department_id.exists' => 'שדה מזהה המחלקה אינו קיים במערכת.',
+
+            'created_for.required' => 'יש לשלוח משתמש קיים במערכת שעבורו נופק הבקשה.',
+            'created_for.exists' => 'משתמש שעבורו נופק הבקשה אינו קיים במערכת.'
         ];
     }
 }
