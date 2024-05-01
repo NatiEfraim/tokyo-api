@@ -2066,6 +2066,10 @@
                                             "reserved": {
                                                 "type": "integer",
                                                 "example": 3
+                                            },
+                                            "available": {
+                                                "type": "integer",
+                                                "example": 3
                                             }
                                         },
                                         "type": "object"
@@ -2263,6 +2267,10 @@
                                         },
                                         "item_type": {
                                             "type": "string",
+                                            "example": "quia"
+                                        },
+                                        "available": {
+                                            "type": "integer",
                                             "example": "quia"
                                         },
                                         "detailed_description": {

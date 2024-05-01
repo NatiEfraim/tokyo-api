@@ -55,7 +55,7 @@
             <tr>
                 <th>מספר שורה</th>
                 <th>מזהה שורה</th>
-                <th>כמות</th>
+                <th>מלאי זמין</th>
                 <th>מק"ט</th>
                 <th>סוג פריט</th>
                 <th>פירוט מורחב</th>
@@ -69,7 +69,7 @@
                 <tr>
                     <td>{{ $key + 1 }}</td>
                     <td>{{ $inventory->id ?? 'לא קיים' }}</td>
-                    <td>{{ $inventory->quantity ?? 'לא קיים' }}</td>
+                    <td>{{ $inventory->available ?? 'לא קיים' }}</td>
                     <td>{{ $inventory->sku ?? 'לא קיים' }}</td>
                     <td>{{ $inventory->item_type ?? 'לא קיים' }}</td>
                     <td>{{ $inventory->detailed_description ?? 'לא קיים' }}</td>

@@ -44,6 +44,7 @@ class InventoryController extends Controller
      *                  @OA\Property(property="item_type", type="string", example="autem"),
      *                  @OA\Property(property="detailed_description", type="string", example="Neque recusandae corporis totam facere pariatur. Et perspiciatis aut in quia. Placeat quas vero modi magni ut. Voluptas et qui vitae culpa."),
      *                  @OA\Property(property="reserved", type="integer", example=3),
+     *                  @OA\Property(property="available", type="integer", example=3),
      *              )
      *          )
      *      ),
@@ -62,7 +63,11 @@ class InventoryController extends Controller
     {
         try {
             $inventories = Inventory::where('is_deleted', 0)
-            ->paginate(10);
+            ->paginate(10)->map(function($inventory){
+                //? added other fileds per each inventory records
+                $inventory->available = $inventory->quantity-$inventory->reserved;
+                return $inventory;
+            });
 
             return response()->json($inventories, Response::HTTP_OK);
         } catch (\Exception $e) {
@@ -132,6 +137,7 @@ class InventoryController extends Controller
      *              @OA\Property(property="quantity", type="integer", example=43),
      *              @OA\Property(property="sku", type="string", example="2216255278905"),
      *              @OA\Property(property="item_type", type="string", example="quia"),
+     *              @OA\Property(property="available", type="integer", example="quia"),
      *              @OA\Property(property="detailed_description", type="string", example="Vel sunt odit quam qui ut suscipit quo. Ipsum dignissimos totam in totam. Veniam voluptas vitae et repellendus dolores consectetur tempora. Placeat atque provident enim sint et qui.")
      *          )
      *      ),
@@ -163,6 +169,9 @@ class InventoryController extends Controller
             $inventory = Inventory::where('is_deleted', 0)
                 ->where('id', $id)
                 ->first();
+
+                $inventory->available=$inventory->quantity-$inventory->reserved;
+
             return response()->json($inventory, Response::HTTP_OK);
         } catch (\Exception $e) {
             Log::error($e->getMessage());

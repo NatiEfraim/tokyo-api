@@ -97,6 +97,7 @@ class ExportController extends Controller
                         // Format the created_at and updated_at timestamps
                         $inventory->created_at_date = $inventory->created_at->format('d/m/Y');
                         $inventory->updated_at_date = $inventory->updated_at->format('d/m/Y');
+                        $inventory->available = $inventory->quantity - $inventory->reserved;
 
                         return $inventory;
                     });
@@ -112,6 +113,8 @@ class ExportController extends Controller
                         // Format the created_at and updated_at timestamps
                         $inventory->created_at_date = $inventory->created_at->format('d/m/Y');
                         $inventory->updated_at_date = $inventory->updated_at->format('d/m/Y');
+                        $inventory->available = $inventory->quantity - $inventory->reserved;
+
 
                         return $inventory;
                     });
@@ -126,7 +129,7 @@ class ExportController extends Controller
 
             // Set headers
             $sheet->setCellValue('A1', 'מזהה שורה');
-            $sheet->setCellValue('B1', 'כמות');
+            $sheet->setCellValue('B1', 'מלאי זמין');
             $sheet->setCellValue('C1', 'מק"ט');
             $sheet->setCellValue('D1', 'סוג פריט');
             $sheet->setCellValue('E1', 'פירוט מורחב');
@@ -138,7 +141,7 @@ class ExportController extends Controller
             foreach ($inventories as $inventory) {
 
                 $sheet->setCellValue('A' . $row, $inventory->id ?? 'לא קיים');
-                $sheet->setCellValue('B' . $row, $inventory->quantity ?? 'לא קיים');
+                $sheet->setCellValue('B' . $row, $inventory->available ?? 'לא קיים');
                 $sheet->setCellValue('C' . $row, $inventory->sku ?? 'לא קיים');
                 $sheet->setCellValue('D' . $row, $inventory->item_type ?? 'לא קיים');
                 $sheet->setCellValue('E' . $row, $inventory->detailed_description ?? 'לא קיים');
@@ -314,6 +317,8 @@ class ExportController extends Controller
                     // Format the created_at and updated_at timestamps
                     $inventory->created_at_date = $inventory->created_at->format('d/m/Y');
                     $inventory->updated_at_date = $inventory->updated_at->format('d/m/Y');
+                    $inventory->available = $inventory->quantity - $inventory->reserved;
+
 
                     return $inventory;
                 });
@@ -329,6 +334,8 @@ class ExportController extends Controller
                     // Format the created_at and updated_at timestamps
                     $inventory->created_at_date = $inventory->created_at->format('d/m/Y');
                     $inventory->updated_at_date = $inventory->updated_at->format('d/m/Y');
+                    $inventory->available = $inventory->quantity - $inventory->reserved;
+
 
                     return $inventory;
                 });

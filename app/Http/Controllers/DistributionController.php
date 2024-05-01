@@ -751,9 +751,17 @@ class DistributionController extends Controller
             ->first();
 
 
+            if (is_null($inventory)) {
+                return response()->json(['message' => 'פריט אינו קיים במלאי'], Response::HTTP_BAD_REQUEST);
+            }
+
+
             if (($request->input('quantity')) && ($request->input('quantity') > $inventory->quantity - $inventory->reserved) && $request->input('quantity') > $distribution->quantity ) {
                 return response()->json(['message' => 'אין מספיק מלאי זמין עבור כמות שנשלחה .'], Response::HTTP_BAD_REQUEST);
             }
+
+
+            $currentTime = Carbon::now()->toDateTimeString();
 
             DB::beginTransaction(); // Start a database transaction
 
@@ -762,12 +770,12 @@ class DistributionController extends Controller
             if ($request->input('quantity') && $request->input('quantity') > $distribution->quantity) {
                 $inventory->update([
                     'reserved' => $inventory->reserved + abs($request->input('quantity')- $distribution->quantity),
-                    'updated_at' =>  Carbon::now()->toDateTimeString(),
+                    'updated_at' =>  $currentTime,
                 ]);
             }else if($request->input('quantity') && $request->input('quantity') < $distribution->quantity){
                 $inventory->update([
                     'reserved' => $inventory->reserved - abs($request->input('quantity') - $distribution->quantity),
-                    'updated_at' =>  Carbon::now()->toDateTimeString(),
+                    'updated_at' =>  $currentTime,
                 ]);
             }
 
@@ -775,13 +783,11 @@ class DistributionController extends Controller
 
             if ($request->input('status')) {
                 //? user changed status distribtuons record
-                $inventory = Inventory::where('id', $distribution->inventory_id)
-                ->where('is_deleted', false)
-                ->first();
+                // $inventory = Inventory::where('id', $distribution->inventory_id)
+                // ->where('is_deleted', false)
+                // ->first();
 
-                if (is_null($inventory)) {
-                    return response()->json(['message' => 'פריט אינו קיים במלאי'], Response::HTTP_BAD_REQUEST);
-                }
+
 
                 $statusValue = (int)($request->input('status'));
 
@@ -795,7 +801,6 @@ class DistributionController extends Controller
                 };
 
 
-                $currentTime = Carbon::now()->toDateTimeString();
 
 
                 //? distribution records has been approved
@@ -828,6 +833,7 @@ class DistributionController extends Controller
 
 
 
+            
 
             DB::commit(); // commit all changes in database.
 
