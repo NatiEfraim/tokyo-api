@@ -103,18 +103,19 @@ class DistributionController extends Controller
 
             $distributions = Distribution::with(['inventory', 'department', 'createdForUser'])
             ->where('is_deleted', 0)
-            ->orderBy('created_at', 'desc')->paginate(10)
+            ->orderBy('created_at','desc')
+            ->paginate(20);
 
-                ->map(function ($distribution) {
-
-                    // Format the created_at and updated_at timestamps
+            $distributions->each(function($distribution){
+                                    // Format the created_at and updated_at timestamps
                     $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
                     $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
 
                     return $distribution;
-                });
+            });
 
             return response()->json($distributions, Response::HTTP_OK);
+
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
