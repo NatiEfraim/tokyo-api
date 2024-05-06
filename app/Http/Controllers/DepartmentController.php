@@ -8,6 +8,10 @@ use Illuminate\Http\Response;
 // use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
+
+
+
 
 class DepartmentController extends Controller
 {
@@ -107,6 +111,8 @@ class DepartmentController extends Controller
     public function store(Request $request)
     {
         try {
+
+
             // Set custom error messages in Hebrew
             $customMessages = [
                 'name.required' => 'שדה השם הוא חובה.',
@@ -116,7 +122,7 @@ class DepartmentController extends Controller
 
             // Set the rules
             $rules = [
-                'name' => 'required|string|unique:departments,name,is_deleted,0',
+                'name' => 'required|unique:departments,name,NULL,id,is_deleted,0',
             ];
 
             // Validate the request data
@@ -127,11 +133,31 @@ class DepartmentController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-            // Create a new department record
-            $department = Department::create($request->only('name'));
+            $currentTime = Carbon::now()->toDateTimeString();
+
+
+            $department=Department::where('name',$request->input('name'))->where('is_deleted',true)->first();
+            if (is_null($department)) {
+                //? create new department record
+                Department::create([
+                    'name' => $request->input('name'),
+                    'created_at' => $currentTime,
+                    'updated_at' => $currentTime,
+                ]);
+            }else {
+                //? updated department records that exist in the depatments table
+                $department->update([
+                    'name' =>  $request->input('name'),
+                    'is_deleted' => 0,
+                    'updated_at' =>  $currentTime,
+                ]);
+            }
+
+
 
             return response()->json(['message' => 'המחלקה נוצרה בהצלחה.'], Response::HTTP_CREATED);
         } catch (\Exception $e) {
+
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחשה תקלה בשרת, נסה שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
