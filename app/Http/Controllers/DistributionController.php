@@ -194,13 +194,15 @@ class DistributionController extends Controller
 
     public function getRecordById($id = null)
     {
-        if (is_null($id)) {
-            return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
-        }
 
 
         try {
-            $distribution = Distribution::with(['inventory','', 'department', 'createdForUser'])
+
+            if (is_null($id)) {
+                return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
+            }
+
+            $distribution = Distribution::with(['inventory','department', 'createdForUser'])
                 ->where('id', $id)
                 ->where('is_deleted', 0)
                 ->first();
@@ -208,6 +210,7 @@ class DistributionController extends Controller
 
             return response()->json($distribution, Response::HTTP_OK);
         } catch (\Exception $e) {
+
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -833,7 +836,7 @@ class DistributionController extends Controller
 
 
 
-            
+
 
             DB::commit(); // commit all changes in database.
 

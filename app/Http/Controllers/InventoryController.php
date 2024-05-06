@@ -62,12 +62,22 @@ class InventoryController extends Controller
     public function index()
     {
         try {
-            $inventories = Inventory::where('is_deleted', 0)
-            ->paginate(10)->map(function($inventory){
-                //? added other fileds per each inventory records
-                $inventory->available = $inventory->quantity-$inventory->reserved;
-                return $inventory;
-            });
+
+
+            // $inventories = Inventory::where('is_deleted', 0)
+            // ->paginate(10)->map(function($inventory){
+            //     //? added other fileds per each inventory records
+            //     $inventory->available = $inventory->quantity-$inventory->reserved;
+            //     return $inventory;
+            // });
+
+            $inventories = Inventory::where('is_deleted', 0)->get()
+                ->map(function ($inventory) {
+                    //? added other fileds per each inventory records
+                    $inventory->available = $inventory->quantity - $inventory->reserved;
+                    return $inventory;
+                });
+
 
             return response()->json($inventories, Response::HTTP_OK);
         } catch (\Exception $e) {

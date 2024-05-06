@@ -22,12 +22,23 @@ class UserController extends Controller
     const MIN_LEN = 1;
     const MAX_LEN = 7;
 
+
     /**
      * @OA\Get(
      *      path="/api/users",
      *      tags={"Users"},
      *      summary="Get all users",
      *      description="Retrieves all users from the system.",
+     *      @OA\Parameter(
+     *          name="page",
+     *          in="query",
+     *          description="Page number for pagination",
+     *          required=false,
+     *          @OA\Schema(
+     *              type="integer",
+     *              default=1
+     *          )
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success response",
@@ -69,14 +80,15 @@ class UserController extends Controller
      * )
      */
 
-
+     
     public function index()
     {
 
         try {
 
             $users = User::with(['employeeType'])
-            ->where('is_deleted', false)->get();
+            ->where('is_deleted', false)
+            ->paginate(10);
 
             return response()->json($users->isEmpty() ? [] :$users, Response::HTTP_OK);
 
