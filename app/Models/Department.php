@@ -15,10 +15,15 @@ class Department extends Model
      *
      * @var array
      */
+
     protected $fillable = [
+
         'name',
+
         'is_deleted',
+
         'created_at',
+        
         'updated_at'
     ];
 
@@ -28,8 +33,11 @@ class Department extends Model
      * @var array
      */
     protected $hidden = [
+
         'is_deleted',
+
         'created_at',
+
         'updated_at',
     ];
 

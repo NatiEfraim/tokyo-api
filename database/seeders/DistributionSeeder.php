@@ -14,6 +14,6 @@ class DistributionSeeder extends Seeder
     public function run(): void
     {
         //
-        Distribution::factory()->count(50)->create();
+        Distribution::factory()->count(100)->create();
     }
 }

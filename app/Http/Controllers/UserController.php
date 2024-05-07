@@ -152,10 +152,11 @@ class UserController extends Controller
             // Extract employee type name
             $employeeTypeName = $user->employeeType ? $user->employeeType->name : null;
 
+
             $uesr_data = [
                 'id' => $user->id,
                 'name' => $user->name,
-                'email' => $user->email,
+                'personal_number' => $user->personal_number,
                 'employee_type' => $employeeTypeName
             ];
 
