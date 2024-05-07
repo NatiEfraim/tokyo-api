@@ -24,6 +24,10 @@ Route::post('/logout', [AuthController::class,'logout'])
 ->middleware(['auth:api']);
 
 
+
+Route::get("/user", [UserController::class, "user"])->middleware(['auth:api']);
+
+
 Route::controller(InventoryController::class)
     ->prefix('inventories')
     ->middleware(['auth:api'])

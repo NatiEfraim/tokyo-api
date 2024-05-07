@@ -80,7 +80,7 @@ class UserController extends Controller
      * )
      */
 
-     
+
     public function index()
     {
 
@@ -97,6 +97,77 @@ class UserController extends Controller
         }
 
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+
+    /**
+     * @OA\Get(
+     *     path="/api/users/getuser",
+     *     summary="Get the current user",
+     *     tags={"Users"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="user", type="object",
+     *                 @OA\Property(property="id", type="integer", example=10),
+     *                 @OA\Property(property="name", type="string", example="Joey Gusikowski"),
+     *                 @OA\Property(property="email", type="string", example="m0489495@army.idf.il"),
+     *                 @OA\Property(property="employee_type", type="string", example="keva")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="משתמש אינו מחובר למערכת.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="אירעה שגיאה בעת ההתחברות.")
+     *         )
+     *     )
+     * )
+     */
+
+    public function user()
+    {
+        try {
+
+            $user = auth()->user();
+
+
+            // Make sure the user has an associated employeeType record
+            if (is_null($user->employeeType)) {
+                return response()->json(['message' => 'המשתמש לא מקושר לסוג עובד.'], Response::HTTP_CONFLICT);
+            }
+
+
+            // Extract employee type name
+            $employeeTypeName = $user->employeeType ? $user->employeeType->name : null;
+
+            $uesr_data = [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'employee_type' => $employeeTypeName
+            ];
+
+            return response()->json($uesr_data, Response::HTTP_OK);
+
+        } catch (\Exception $e) {
+
+            Log::error($e->getMessage());
+
+        }
+
+        return response()->json(['message' => 'אירעה שגיאה בעת ההתחברות.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
 
