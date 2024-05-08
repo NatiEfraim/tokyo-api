@@ -306,13 +306,23 @@ class DistributionController extends Controller
      *     tags={"Distributions"},
      *     @OA\RequestBody(
      *         required=true,
+     *         description="Distribution data",
      *         @OA\JsonContent(
-     *             @OA\Property(property="comment", type="string", example="This is a distribution comment."),
-     *             @OA\Property(property="status", type="integer", example=1),
-     *             @OA\Property(property="quantity", type="integer", example=10),
-     *             @OA\Property(property="inventory_id", type="integer", example=123),
-     *             @OA\Property(property="department_id", type="integer", example=456),
-     *             @OA\Property(property="created_for", type="integer", example=2)
+     *             required={"department_id", "created_for", "items"},
+     *             @OA\Property(property="comment", type="string", example="זהו הערה"),
+     *             @OA\Property(property="department_id", type="integer", example=1),
+     *             @OA\Property(property="created_for", type="integer", example=1),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     required={"item_type", "quantity"},
+     *                     @OA\Property(property="item_type", type="string", example="computer"),
+     *                     @OA\Property(property="quantity", type="integer", example=5),
+     *                     @OA\Property(property="comment", type="string", example="זהו הערה עבור המחשב")
+     *                 )
+     *             )
      *         )
      *     ),
      *     @OA\Response(
@@ -341,47 +351,53 @@ class DistributionController extends Controller
 
     public function store(StoreDistributionRequest $request)
     {
+
         try {
 
-            $inventory= Inventory::where('id',$request->input('inventory_id'))
-            ->where('is_deleted',false)
-            ->first();
+
+            DB::beginTransaction();
+
+            $user_auth = Auth::user();
+
+            // Loop through each item and create distribution records
+            foreach ($request->input('items') as $item) {
+
+                //? save key & value
+                $itemType = $item['item_type'];
+                $quantity = $item['quantity'];
+                $comment = $item['comment'] ?? null; // Get comment or null if not provided
 
 
-            if ($request->input('quantity')> $inventory->quantity-$inventory->reserved) {
-                return response()->json(['message' => 'אין מסםיק מלאי זמין עבור כמות שנשלחה .'], Response::HTTP_BAD_REQUEST);
+
+                // ? fetch the first inventory records based on the item_type
+                $inventory = Inventory::where('item_type', $itemType)
+                ->where('is_deleted', false)
+                ->first();
+
+                if (is_null($inventory)) {
+                    
+
+                    DB::rollBack();
+
+                    return response()->json(['message' => 'אחד או יותר מהפריטים שנשלחו אינם קיימים במערכת.'], Response::HTTP_BAD_REQUEST);
+                }
+
+                Distribution::create([
+                    'comment' => $comment,
+                    'status' =>  DistributionStatus::PENDING->value,
+                    'quantity' => $quantity,
+                    'inventory_id' => $inventory->id,
+                    'department_id' => $request->input('department_id'),
+                    'created_by' => $user_auth->id,
+                    'created_for' => $request->input('created_for'),
+                ]);
+
+                // // Update reserved quantity of inventory
+                // $inventory->reserved += $quantity;
+                // $inventory->save();
             }
 
-
-
-            DB::beginTransaction(); // Start a database transaction
-
-
-            $user_auth=Auth::user();
-
-
-            // Distribution::create($request->validated());
-
-             Distribution::create([
-
-                'comment' => $request->input('comment'),
-                'status' => $request->input('status') ? $request->input('status')  : DistributionStatus::PENDING->value,
-                'quantity' => $request->input('quantity'),
-                //?set relation
-                'inventory_id' => $request->input('inventory_id'),
-                'department_id' => $request->input('department_id'),
-                'created_by' => $user_auth->id,
-                'created_for' => $request->input('created_for'),
-             ]);
-
-             ///update reseved of inventory
-             $inventory->update([
-                'reserved' => $inventory->reserved + $request->input('quantity'),
-                'updated_at' =>  Carbon::now()->toDateTimeString(),
-             ]);
-
-
-            DB::commit(); // commit all changes in database.
+            DB::commit();
 
             return response()->json(['message' => 'שורה נוצרה בהצלחה.'], Response::HTTP_CREATED);
         } catch (\Exception $e) {

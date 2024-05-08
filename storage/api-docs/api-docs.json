@@ -869,34 +869,52 @@
                 "description": "Store a newly created distribution.\n\nThis endpoint creates a new distribution record.",
                 "operationId": "0c48cb63988c3445ad75087001e82224",
                 "requestBody": {
+                    "description": "Distribution data",
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
+                                "required": [
+                                    "department_id",
+                                    "created_for",
+                                    "items"
+                                ],
                                 "properties": {
                                     "comment": {
                                         "type": "string",
-                                        "example": "This is a distribution comment."
-                                    },
-                                    "status": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "quantity": {
-                                        "type": "integer",
-                                        "example": 10
-                                    },
-                                    "inventory_id": {
-                                        "type": "integer",
-                                        "example": 123
+                                        "example": "זהו הערה"
                                     },
                                     "department_id": {
                                         "type": "integer",
-                                        "example": 456
+                                        "example": 1
                                     },
                                     "created_for": {
                                         "type": "integer",
-                                        "example": 2
+                                        "example": 1
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "item_type",
+                                                "quantity"
+                                            ],
+                                            "properties": {
+                                                "item_type": {
+                                                    "type": "string",
+                                                    "example": "computer"
+                                                },
+                                                "quantity": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "comment": {
+                                                    "type": "string",
+                                                    "example": "זהו הערה עבור המחשב"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
                                     }
                                 },
                                 "type": "object"
