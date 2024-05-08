@@ -13,7 +13,11 @@ return new class extends Migration
     {
         Schema::create('distributions', function (Blueprint $table) {
             $table->id();
-            $table->longText('comment')->nullable();
+            // $table->longText('comment')->nullable();
+
+            $table->integer('order_number')->nullable();
+            $table->longText('inventory_comment')->nullable();
+            $table->longText('general_comment')->nullable();
             //? 0--> pendig. 1--> approved. 2 -->canceld
             $table->integer('status')->default(0);
             $table->integer('quantity');

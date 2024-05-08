@@ -15,7 +15,9 @@ class Distribution extends Model
      * @var array
      */
     protected $fillable = [
-        'comment',
+        'general_comment',
+        'inventory_comment',
+        'order_number',
         'status',
         'quantity',
         'inventory_id',

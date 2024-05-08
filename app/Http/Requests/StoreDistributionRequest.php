@@ -23,20 +23,25 @@ class StoreDistributionRequest extends FormRequest
     {
         return [
             //
-            // 'comment' => 'required|string',
-
+            
             // 'status' => 'nullable|integer|between:0,2',
-
+            
             // 'quantity' => 'required|integer|min:0',
-
+            
             // 'inventory_id' => 'required|exists:inventories,id,is_deleted,0',
+            
+
+
+            'general_comment' => 'nullable|string|min:2|max:255',
 
             'department_id' => 'required|exists:departments,id,is_deleted,0',
 
             'created_for' => 'required|exists:users,id,is_deleted,0',
 
             'items' => 'required|array',
+
             'items.*.item_type' => 'required|string|exists:inventories,item_type,is_deleted,0',
+            
             'items.*.quantity' => 'required|integer|min:1', // Adjust min value as needed
             'items.*.comment' => 'nullable|string|max:255', // Nullable string with max length 255
 
@@ -52,7 +57,11 @@ class StoreDistributionRequest extends FormRequest
     {
         return [
 
-            'comment.required' => 'שדה ההערה הוא חובה.',
+            'general_comment.required' => 'שדה ההערה הוא חובה.',
+
+            'general_comment.string' => 'שדה הערה כללית אינה תקינה.',
+            'general_comment.min' => 'שדה הערה כללית אינה תקינה.',
+            'general_comment.max' => 'שדה הערה כללית אינה תקינה.',
 
             'status.between' => 'שדה הסטטוס אינו תקין.',
 

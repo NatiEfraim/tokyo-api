@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 
+use Illuminate\Support\Str;
 
 
 class DistributionController extends Controller
@@ -269,12 +270,16 @@ class DistributionController extends Controller
 
     public function destroy($id = null)
     {
-        if (is_null($id)) {
-            return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
-        }
-
-
+        
+        
         try {
+
+
+            if (is_null($id)) {
+                return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
+            }
+
+
             $distirbution = Distribution::where('is_deleted', 0)
                 ->where('id', $id)
                 ->first();
@@ -309,7 +314,7 @@ class DistributionController extends Controller
      *         description="Distribution data",
      *         @OA\JsonContent(
      *             required={"department_id", "created_for", "items"},
-     *             @OA\Property(property="comment", type="string", example="זהו הערה"),
+     *             @OA\Property(property="general_comment", type="string", example="general comment for all the items"),
      *             @OA\Property(property="department_id", type="integer", example=1),
      *             @OA\Property(property="created_for", type="integer", example=1),
      *             @OA\Property(
@@ -359,6 +364,19 @@ class DistributionController extends Controller
 
             $user_auth = Auth::user();
 
+
+            // Generate a unique 7-digit order number
+            $orderNumber = Str::random(7);
+
+        // Check if the generated order number already exists in the database
+        $existingOrder = DB::table('distributions')->where('order_number', $orderNumber)->exists();
+
+        // If the generated order number already exists, regenerate it until a unique one is found
+        while ($existingOrder) {
+            $orderNumber = Str::random(7);//re generate
+            $existingOrder = DB::table('distributions')->where('order_number', $orderNumber)->exists();
+        }
+
             // Loop through each item and create distribution records
             foreach ($request->input('items') as $item) {
 
@@ -375,7 +393,7 @@ class DistributionController extends Controller
                 ->first();
 
                 if (is_null($inventory)) {
-                    
+
 
                     DB::rollBack();
 
@@ -383,7 +401,9 @@ class DistributionController extends Controller
                 }
 
                 Distribution::create([
-                    'comment' => $comment,
+                    'order_number' => intval($orderNumber),
+                    'general_comment' => $request->input('general_comment') ?? null,
+                    'inventory_comment' => $comment,
                     'status' =>  DistributionStatus::PENDING->value,
                     'quantity' => $quantity,
                     'inventory_id' => $inventory->id,
