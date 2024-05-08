@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\ItemType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -21,7 +22,8 @@ class InventoryFactory extends Factory
             'quantity' => $this->faker->numberBetween(80, 100),
             'reserved' => $this->faker->numberBetween(20,50),
             'sku' => $this->faker->unique()->ean13,
-            'item_type' => $this->faker->word,
+            // 'item_type' => $this->faker->word,
+            'type_id' => ItemType::inRandomOrder()->first()->id,
             'detailed_description' => $this->faker->text,
             'is_deleted' => false,
         ];

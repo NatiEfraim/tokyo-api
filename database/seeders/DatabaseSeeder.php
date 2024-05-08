@@ -17,8 +17,9 @@ class DatabaseSeeder extends Seeder
             EmployeeTypeSeeder::class,
             UserSeeder::class,
             DepartmentSeeder::class,
+            ItemTypeSeeder::class,
             InventorySeeder::class,
-            // DistributionSeeder::class,
+            DistributionSeeder::class,
         ]);
 
         // User::factory(10)->create();
