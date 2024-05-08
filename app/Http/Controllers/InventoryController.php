@@ -64,7 +64,8 @@ class InventoryController extends Controller
         try {
 
 
-            $inventories = Inventory::where('is_deleted', 0)
+            $inventories = Inventory::with(['itemType'])
+            ->where('is_deleted', 0)
             ->orderBy('created_at','desc')
             ->paginate(20);
 
@@ -107,7 +108,8 @@ class InventoryController extends Controller
     public function getSkuRecords()
     {
         try {
-            $inventories = Inventory::where('is_deleted', 0)
+            $inventories = Inventory::with(['itemType'])
+            ->where('is_deleted', 0)
                 ->pluck('sku')->toArray();
             return response()->json($inventories, Response::HTTP_OK);
         } catch (\Exception $e) {
@@ -170,14 +172,20 @@ class InventoryController extends Controller
             return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
         }
         try {
-            $inventory = Inventory::where('is_deleted', 0)
+            $inventory = Inventory::with(['itemType'])
+            ->where('is_deleted', 0)
                 ->where('id', $id)
                 ->first();
+
+            if (is_null($inventory)) {
+                return response()->json([], Response::HTTP_OK);
+            }
 
                 $inventory->available=$inventory->quantity-$inventory->reserved;
 
             return response()->json($inventory, Response::HTTP_OK);
         } catch (\Exception $e) {
+            dd($e->getMessage());
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);

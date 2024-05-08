@@ -8,6 +8,7 @@ use App\Http\Controllers\ExportController;
 // use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\ItemTypeController;
 use App\Http\Controllers\UserController;
 
 
@@ -102,4 +103,15 @@ Route::controller(ExportController::class)
         Route::get('/users-email', 'sendUsersByEmail');
         Route::get('/distributions', 'exportDistributions');
         Route::get('/distributions-email', 'sendDistributionsByEmail');
+    });
+
+
+    Route::controller(ItemTypeController::class)
+    ->prefix('item-type')
+    ->middleware(['auth:api'])
+    ->group(function () {
+        Route::get('/', 'index');
+        Route::post('/', 'store');
+        Route::delete('/{id?}', 'destroy');
+
     });

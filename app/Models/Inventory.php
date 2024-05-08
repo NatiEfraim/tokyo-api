@@ -17,8 +17,9 @@ class Inventory extends Model
     protected $fillable = [
         'quantity',
         'reserved',
-        'sku',
+        // 'sku',
         // 'item_type',
+        'type_id',
         'detailed_description',
         'is_deleted',
         'created_at',
@@ -31,6 +32,7 @@ class Inventory extends Model
      * @var array
      */
     protected $hidden = [
+        // 'type_id',
         'is_deleted',
         'created_at',
         'updated_at',

@@ -16,6 +16,7 @@ class ItemType extends Model
      */
     protected $fillable = [
         'type',
+        'sku',
         'is_deleted',
         'created_at',
         'updated_at'

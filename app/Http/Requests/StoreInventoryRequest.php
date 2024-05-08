@@ -26,8 +26,11 @@ class StoreInventoryRequest extends FormRequest
             'quantity' => 'required|string|min:0',
             'reserved' => 'nullable|string|min:0',
             'sku' => 'required|string|max:255',
-            'item_type' => 'required|string|max:255',
+
+            'type_id' => 'required|string|exists:item_types,id,is_deleted,0',
+
             'detailed_description' => 'required|string',
+            // 'item_type' => 'required|string|max:255',
         ];
     }
 
@@ -52,8 +55,14 @@ class StoreInventoryRequest extends FormRequest
             'sku.required' => 'יש להזין שדה מק"ט',
             'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
 
-            'item_type.required' => 'יש להזין סוג פריט',
-            'item_type.max' => 'אורך שדה סוג פריט חייב להיות לכל היותר 255 תווים',
+            'type_id.required' => 'יש לבחור סוג פריט.',
+            'type_id.string' => 'סוג פריט אינו בפורמט תקין',
+            'type_id.exists' => 'סוג פריט אינו קיים.',
+
+
+            // 'item_type.max' => 'אורך שדה סוג פריט חייב להיות לכל היותר 255 תווים',
+            // 'item_type.max' => 'אורך שדה סוג פריט חייב להיות לכל היותר 255 תווים',
+            // 'item_type.required' => 'יש להזין סוג פריט',
 
             'detailed_description.required' => 'יש להזין תיאור מפורט',
         ];
