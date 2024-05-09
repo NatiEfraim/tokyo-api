@@ -1002,6 +1002,7 @@ class DistributionController extends Controller
 
             //? one or more of th search based on value filter send
             $distributions = $this->fetchDistributions($request);///private function
+
             if ($distributions) {
 
                 $distributions->map(function ($distribution) {
@@ -1021,6 +1022,238 @@ class DistributionController extends Controller
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
+    /**
+     * Get distributions records by filter.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @OA\Get(
+     *     path="/api/distributions/search-by-filter",
+     *     summary="Get distributions records by filter",
+     *     tags={"Distributions"},
+     *     @OA\RequestBody(
+     *         required=false,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="inventory_id", type="string", example="1"),
+     *             @OA\Property(property="status", type="integer", example="1"),
+     *             @OA\Property(property="department_id", type="string", example="2"),
+     *             @OA\Property(property="user_id", type="string", example="3"),
+     *             @OA\Property(property="created_at", type="string", format="date", example="2023-05-01"),
+     *             @OA\Property(property="updated_at", type="string", format="date", example="2023-05-10"),
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="order_number", type="integer", example=5698231),
+     *                 @OA\Property(property="inventory_comment", type="string", example="Voluptates officia accusamus autem ex."),
+     *                 @OA\Property(property="general_comment", type="string", example="Laborum tempora voluptatum repellendus."),
+     *                 @OA\Property(property="status", type="integer", example=0),
+     *                 @OA\Property(property="quantity", type="integer", example=21),
+     *                 @OA\Property(property="inventory_id", type="integer", example=78),
+     *                 @OA\Property(property="department_id", type="integer", example=9),
+     *                 @OA\Property(property="created_by", type="integer", example=2),
+     *                 @OA\Property(property="created_for", type="integer", example=2),
+     *                 @OA\Property(property="created_at_date", type="string", example="09/05/2024"),
+     *                 @OA\Property(property="updated_at_date", type="string", example="09/05/2024"),
+     *                 @OA\Property(
+     *                     property="inventory",
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer", example=78),
+     *                     @OA\Property(property="quantity", type="integer", example=83),
+     *                     @OA\Property(property="sku", type="string", example="8918225192276"),
+     *                     @OA\Property(
+     *                         property="item_type",
+     *                         type="object",
+     *                         @OA\Property(property="id", type="integer", example=1),
+     *                         @OA\Property(property="type", type="string", example="computer"),
+     *                         @OA\Property(property="icon_number", type="string", example="1")
+     *                     ),
+     *                     @OA\Property(property="detailed_description", type="string", example="Nostrum culpa sit blanditiis suscipit placeat eum. Amet aspernatur est et beatae eum aut culpa atque. Amet iusto quaerat nihil enim sed voluptatem reiciendis."),
+     *                 ),
+     *                 @OA\Property(
+     *                     property="department",
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer", example=9),
+     *                     @OA\Property(property="name", type="string", example="ullam"),
+     *                 ),
+     *                 @OA\Property(
+     *                     property="created_for_user",
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer", example=2),
+     *                     @OA\Property(property="name", type="string", example="Cydney Schroeder"),
+     *                     @OA\Property(property="emp_type_id", type="integer", example=3),
+     *                     @OA\Property(property="phone", type="string", example="0580148483"),
+     *                     @OA\Property(
+     *                         property="employee_type",
+     *                         type="object",
+     *                         @OA\Property(property="id", type="integer", example=3),
+     *                         @OA\Property(property="name", type="string", example="sadir"),
+     *                     ),
+     *                 ),
+     *             ),
+     *         ),
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Invalid search value")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Server error occurred")
+     *         )
+     *     )
+     * )
+     */
+
+    //? fetch distributions records - based on filter
+    public function getRecordsByFilter(Request $request)
+    {
+        try {
+
+    
+            // set validation rules
+            $rules = [
+
+
+                // 'sku' => 'nullable|string|max:255|exists:inventories,sku,is_deleted,0',
+                // 'name' => 'nullable|string|exists:departments,name,is_deleted,0',
+                // 'personal_number' => 'nullable|min:1|max:7',
+
+
+                'inventory_id' => 'nullable|string|max:255|exists:inventories,id,is_deleted,0',
+
+                'status' => 'nullable|integer|between:0,3',
+
+                'department_id' => 'nullable|string|exists:departments,id,is_deleted,0',
+
+                'user_id' => 'nullable|string|exists:users,id,is_deleted,0',
+
+
+                'created_at' => [
+                    'nullable',
+                    'date',
+                ],
+
+                'updated_at' => [
+                    'nullable',
+                    'date',
+                ],
+
+
+            ];
+
+            // Define custom error messages
+            $customMessages = [
+
+
+
+                // 'sku.string' => 'שדה שהוזן אינו בפורמט תקין',
+                // 'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
+                // 'sku.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
+                
+                // 'name.string' => 'שדה ערך שם מחלקה אינו תקין.',
+
+                // 'personal_number.min' => 'מספר אישי אינו תקין.',
+                // 'personal_number.max' => 'מספר אישי אינו תקין.',
+
+                'inventory_id.string' => 'שדה שהוזן אינו בפורמט תקין',
+                'inventory_id.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
+                'inventory_id.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
+
+
+                'department_id.exists' => 'מחלקה אינה קיימת במערכת.',
+
+                'status.between' => 'שדה הסטטוס אינו תקין.',
+
+
+                'user_id.exists' => 'משתמש אינו קיים במערכת.',
+
+
+
+                'created_at.date' => 'שדה תאריך התחלה אינו תקין.',
+                'created_at.exists' => 'שדה תאריך אינו קיים במערכת.',
+                'updated_at.date' => 'שדה תאריך סיום אינו תקין.',
+                'updated_at.exists' => 'שדה תאריך סיום אינו קיים במערכת.',
+
+
+            ];
+
+            // validate the request with custom error messages
+            $validator = Validator::make($request->all(), $rules, $customMessages);
+
+
+            // Check if validation fails
+            if ($validator->fails()) {
+                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+
+            if (
+                $request->has('user_id')
+                || $request->has('status')
+                || $request->has('inventory_id')
+                || $request->has('department_id')
+                || $request->has('created_at')
+                || $request->has('updated_at')
+            ) {
+                //? one or more of th search based on value filter send
+
+                $distributions = $this->fetchDistributionsByFilter($request);
+
+                if ($distributions) {
+
+                    $distributions->map(function ($distribution) {
+                        //? format date on each records
+                        $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+                        $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+
+                        return $distribution;
+                    });
+                }
+            } else {
+
+
+                //? fetch all distributions records.
+
+                $distributions = Distribution::with(['inventory', 'department', 'createdForUser'])
+                    ->where('is_deleted', 0)
+                    ->orderBy('created_at', 'desc')
+                    ->get()
+                    ->map(function ($distribution) {
+
+                        // Format the created_at and updated_at timestamps
+                        $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+                        $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+
+                        return $distribution;
+                    });
+            }
+
+
+
+
+            return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
+
+
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
 
 
     //? search based on request->input('query').
@@ -1030,35 +1263,72 @@ class DistributionController extends Controller
 
             $query = $request->input('query');
 
+
             return Distribution::with(['inventory', 'department', 'createdForUser'])
 
-                ->where('is_deleted', 0)
+            ->where('is_deleted', 0)
 
-                ->where(function ($queryBuilder) use ($query) {
-
-                    // Search by personal number
-                    $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
-                        $userQuery->where('personal_number', 'like', "%$query%");
-                    });
-
-                    // Search by SKU
-                    $queryBuilder->orWhereHas('inventory', function ($inventoryQuery) use ($query) {
-                        $inventoryQuery->where('sku', 'like', "%$query%");
-                    });
-
-                    // Search by item_type
-                    $queryBuilder->orWhereHas('inventory', function ($inventoryQuery) use ($query) {
-                        $inventoryQuery->where('item_type', 'like', "%$query%");
-                    });
+            ->where(function ($queryBuilder) use ($query) {
 
 
-                    // Search by full name
-                    $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
-                        $userQuery->where('name', 'like', "%$query%");
-                    });
-                })
-                ->orderBy('created_at', 'desc')
-                ->get();
+                // Search by personal number
+                $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
+                    $userQuery->where('personal_number', 'like', "%$query%");
+                });
+
+                // Search by SKU
+                $queryBuilder->orWhereHas('inventory', function ($inventoryQuery) use ($query) {
+                    $inventoryQuery->where('sku', 'like', "%$query%");
+                });
+
+                // Search by item_type type field
+                $queryBuilder->orWhereHas('inventory.itemType', function ($itemTypeQuery) use ($query) {
+                    $itemTypeQuery->where('type', 'like', "%$query%");
+                });
+
+
+                // Search by order number
+                $queryBuilder->orWhere('order_number', 'like', "%$query%");
+
+                // Search by full name
+                $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
+                    $userQuery->where('name', 'like', "%$query%");
+                });
+
+            
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+            // return Distribution::with(['inventory', 'department', 'createdForUser'])
+
+            //     ->where('is_deleted', 0)
+
+            //     ->where(function ($queryBuilder) use ($query) {
+
+            //         // Search by personal number
+            //         $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
+            //             $userQuery->where('personal_number', 'like', "%$query%");
+            //         });
+
+            //         // Search by SKU
+            //         $queryBuilder->orWhereHas('inventory', function ($inventoryQuery) use ($query) {
+            //             $inventoryQuery->where('sku', 'like', "%$query%");
+            //         });
+
+            //         // Search by item_type
+            //         $queryBuilder->orWhereHas('inventory', function ($inventoryQuery) use ($query) {
+            //             $inventoryQuery->where('item_type', 'like', "%$query%");
+            //         });
+
+
+            //         // Search by full name
+            //         $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
+            //             $userQuery->where('name', 'like', "%$query%");
+            //         });
+            //     })
+            //     ->orderBy('created_at', 'desc')
+            //     ->get();
 
 
 
@@ -1067,5 +1337,56 @@ class DistributionController extends Controller
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
+
+
+    //? fillter & fetch distributions records based on filter input
+    private function fetchDistributionsByFilter(Request $request)
+    {
+        try {
+            $query = Distribution::query();
+
+            // Search by inventory_id
+            if ($request->has('inventory_id')) {
+                $query->where('inventory_id', $request->input('inventory_id')); // Corrected from 'id' to 'inventory_id'
+            }
+
+            // Search by status
+            if ($request->has('status')) {
+                $query->where('status', $request->status);
+            }
+
+            // Search by department_id
+            if ($request->has('department_id')) {
+                $query->where('department_id', $request->input('department_id'));
+            }
+
+            // Search by user_id
+            if ($request->has('user_id')) {
+                $query->where('created_for', $request->input('user_id'));
+            }
+
+            // Search by created_at
+            if ($request->has('created_at')) {
+                $query->whereDate('created_at', $request->created_at);
+            }
+
+            // Search by updated_at
+            if ($request->has('updated_at')) {
+                $query->whereDate('updated_at', $request->updated_at);
+            }
+
+            // Ensure is_deleted is 0
+            $query->where('is_deleted', 0);
+
+            return $query->with(['inventory', 'department', 'createdForUser'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response()->json(['message' => 'התרחשה בעיה בשרת. נסה שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
 
 }

@@ -53,6 +53,7 @@ Route::controller(DistributionController::class)
     ->group(function () {
         Route::get('/', 'index');
         Route::get('/search-by-query', 'getRecordsByQuery');
+        Route::get('/search-by-filter', 'getRecordsByFilter');
         Route::get('/{id?}', 'getRecordById');
         Route::put('/changed-status/{id?}', 'changeStatus');
         Route::put('/{id?}', 'update');

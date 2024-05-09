@@ -1438,6 +1438,236 @@
                 }
             }
         },
+        "/api/distributions/search-by-filter": {
+            "get": {
+                "tags": [
+                    "Distributions"
+                ],
+                "summary": "Get distributions records by filter",
+                "description": "Get distributions records by filter.",
+                "operationId": "31db6cbd0544f88c84f217c6cd2c8c94",
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "inventory_id": {
+                                        "type": "string",
+                                        "example": "1"
+                                    },
+                                    "status": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "department_id": {
+                                        "type": "string",
+                                        "example": "2"
+                                    },
+                                    "user_id": {
+                                        "type": "string",
+                                        "example": "3"
+                                    },
+                                    "created_at": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2023-05-01"
+                                    },
+                                    "updated_at": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2023-05-10"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "order_number": {
+                                                "type": "integer",
+                                                "example": 5698231
+                                            },
+                                            "inventory_comment": {
+                                                "type": "string",
+                                                "example": "Voluptates officia accusamus autem ex."
+                                            },
+                                            "general_comment": {
+                                                "type": "string",
+                                                "example": "Laborum tempora voluptatum repellendus."
+                                            },
+                                            "status": {
+                                                "type": "integer",
+                                                "example": 0
+                                            },
+                                            "quantity": {
+                                                "type": "integer",
+                                                "example": 21
+                                            },
+                                            "inventory_id": {
+                                                "type": "integer",
+                                                "example": 78
+                                            },
+                                            "department_id": {
+                                                "type": "integer",
+                                                "example": 9
+                                            },
+                                            "created_by": {
+                                                "type": "integer",
+                                                "example": 2
+                                            },
+                                            "created_for": {
+                                                "type": "integer",
+                                                "example": 2
+                                            },
+                                            "created_at_date": {
+                                                "type": "string",
+                                                "example": "09/05/2024"
+                                            },
+                                            "updated_at_date": {
+                                                "type": "string",
+                                                "example": "09/05/2024"
+                                            },
+                                            "inventory": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 78
+                                                    },
+                                                    "quantity": {
+                                                        "type": "integer",
+                                                        "example": 83
+                                                    },
+                                                    "sku": {
+                                                        "type": "string",
+                                                        "example": "8918225192276"
+                                                    },
+                                                    "item_type": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "type": {
+                                                                "type": "string",
+                                                                "example": "computer"
+                                                            },
+                                                            "icon_number": {
+                                                                "type": "string",
+                                                                "example": "1"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    },
+                                                    "detailed_description": {
+                                                        "type": "string",
+                                                        "example": "Nostrum culpa sit blanditiis suscipit placeat eum. Amet aspernatur est et beatae eum aut culpa atque. Amet iusto quaerat nihil enim sed voluptatem reiciendis."
+                                                    }
+                                                },
+                                                "type": "object"
+                                            },
+                                            "department": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 9
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "ullam"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            },
+                                            "created_for_user": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 2
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Cydney Schroeder"
+                                                    },
+                                                    "emp_type_id": {
+                                                        "type": "integer",
+                                                        "example": 3
+                                                    },
+                                                    "phone": {
+                                                        "type": "string",
+                                                        "example": "0580148483"
+                                                    },
+                                                    "employee_type": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 3
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "sadir"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid search value"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Server error occurred"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/employeetypes": {
             "get": {
                 "tags": [

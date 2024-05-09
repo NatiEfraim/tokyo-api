@@ -708,12 +708,15 @@ class ExportController extends Controller
 
 
                 'sku' => 'nullable|string|max:255|exists:inventories,sku,is_deleted,0',
+                'inventory_id' => 'nullable|string|max:255|exists:inventories,id,is_deleted,0',
 
                 'status' => 'nullable|integer|between:0,2',
 
                 'name' => 'nullable|string|exists:departments,name,is_deleted,0',
+                'department_id' => 'nullable|string|exists:departments,id,is_deleted,0',
 
                 'personal_number' => 'nullable|min:1|max:7',
+                'user_id' => 'nullable|string|exists:users,id,is_deleted,0',
 
 
                 'created_at' => [
@@ -744,14 +747,20 @@ class ExportController extends Controller
                 'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
                 'sku.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
 
+                'inventory_id.string' => 'שדה שהוזן אינו בפורמט תקין',
+                'inventory_id.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
+                'inventory_id.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
+
 
                 'name.string' => 'שדה ערך שם מחלקה אינו תקין.',
+                'department_id.exists' => 'מחלקה אינה קיימת במערכת.',
 
                 'status.between' => 'שדה הסטטוס אינו תקין.',
 
 
                 'personal_number.min' => 'מספר אישי אינו תקין.',
                 'personal_number.max' => 'מספר אישי אינו תקין.',
+                'user_id.exists' => 'משתמש אינו קיים במערכת.',
 
 
 
@@ -774,10 +783,10 @@ class ExportController extends Controller
 
 
             if (
-                $request->has('sku')
+                $request->has('user_id')
                 || $request->has('status')
-                || $request->has('name')
-                || $request->has('personal_number')
+                || $request->has('inventory_id')
+                || $request->has('department_id')
                 || $request->has('created_at')
                 || $request->has('updated_at')
             ) {
@@ -1174,27 +1183,59 @@ class ExportController extends Controller
 
             $query = Distribution::query();
 
-            if ($request->has('sku')) {
+
+            // ? search by the fileds it selft
+            // if ($request->has('sku')) {
+            //     $query->whereHas('inventory', function ($q) use ($request) {
+            //         $q->where('sku', $request->sku);
+            //     });
+            // }
+
+            // if ($request->has('status')) {
+            //     $query->where('status', $request->status);
+            // }
+
+            // if ($request->has('name')) {
+            //     $query->whereHas('department', function ($q) use ($request) {
+            //         $q->where('name', $request->name);
+            //     });
+            // }
+
+
+            // if ($request->has('personal_number')) {
+            //     // $pnInput = $request->personal_number;
+            //     $query->whereHas('createdForUser', function ($q) use ($request) {
+            //         $q->whereRaw('SUBSTRING(personal_number, 2) LIKE ?', ['%' . $request->input('personal_number') . '%']);
+            //     });
+            // }
+
+
+            //? search by the associated id
+
+            //serach by inventoty_id
+            if ($request->has('inventory_id')) {
                 $query->whereHas('inventory', function ($q) use ($request) {
-                    $q->where('sku', $request->sku);
+                    $q->where('id', $request->input('inventory_id'));
                 });
             }
 
+            //? search by status
             if ($request->has('status')) {
                 $query->where('status', $request->status);
             }
 
-            if ($request->has('name')) {
+            if ($request->has('department_id')) {
                 $query->whereHas('department', function ($q) use ($request) {
-                    $q->where('name', $request->name);
+                    $q->where('id', $request->input('department_id'));
                 });
             }
 
 
-            if ($request->has('personal_number')) {
+            if ($request->has('user_id')) {
                 // $pnInput = $request->personal_number;
                 $query->whereHas('createdForUser', function ($q) use ($request) {
-                    $q->whereRaw('SUBSTRING(personal_number, 2) LIKE ?', ['%' . $request->input('personal_number') . '%']);
+                    // $q->whereRaw('SUBSTRING(personal_number, 2) LIKE ?', ['%' . $request->input('personal_number') . '%']);
+                    $q->where('id', $request->input('iser_id'));
                 });
             }
 
