@@ -1141,6 +1141,8 @@ class DistributionController extends Controller
 
                 'user_id' => 'nullable|string|exists:users,id,is_deleted,0',
 
+                'order_number' => 'nullable|string|exists:distributions,order_number,is_deleted,0',
+
 
                 'created_at' => [
                     'nullable',
@@ -1176,6 +1178,8 @@ class DistributionController extends Controller
 
                 'department_id.exists' => 'מחלקה אינה קיימת במערכת.',
 
+                'order_number.exists' => 'מספר הזמנה אינה קיית במערכת.',
+
                 'status.between' => 'שדה הסטטוס אינו תקין.',
 
 
@@ -1204,6 +1208,7 @@ class DistributionController extends Controller
             if (
                 $request->has('user_id')
                 || $request->has('status')
+                || $request->has('order_number')
                 || $request->has('inventory_id')
                 || $request->has('department_id')
                 || $request->has('created_at')
@@ -1347,8 +1352,14 @@ class DistributionController extends Controller
 
             // Search by inventory_id
             if ($request->has('inventory_id')) {
-                $query->where('inventory_id', $request->input('inventory_id')); // Corrected from 'id' to 'inventory_id'
+                $query->where('inventory_id', $request->input('inventory_id'));
             }
+
+            // Search by order_number
+            if ($request->has('order_number')) {
+                $query->where('order_number', $request->input('order_number')); 
+            }
+
 
             // Search by status
             if ($request->has('status')) {

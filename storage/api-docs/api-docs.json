@@ -2930,10 +2930,15 @@
                                                 "description": "item type ID",
                                                 "type": "integer"
                                             },
-                                            "name": {
+                                            "type": {
                                                 "description": "item type name",
                                                 "type": "string",
                                                 "example": "computer"
+                                            },
+                                            "icon_number": {
+                                                "description": "icon-type",
+                                                "type": "integer",
+                                                "example": "7"
                                             }
                                         },
                                         "type": "object"
@@ -2984,6 +2989,10 @@
                                     "type": {
                                         "type": "string",
                                         "example": "New Department type"
+                                    },
+                                    "icon_number": {
+                                        "type": "integer",
+                                        "example": "2"
                                     }
                                 },
                                 "type": "object"
@@ -3044,6 +3053,62 @@
             }
         },
         "/api/item-type/{id}": {
+            "put": {
+                "tags": [
+                    "Item type"
+                ],
+                "summary": "Update an item-type item",
+                "description": "Updates an item-type item with the provided ID.",
+                "operationId": "67affc97c96f2e899dbf54b15573b800",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the item-type item to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Inventory object to update",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Electronics"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success message",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "שורה התעדכנה בהצלחה."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
             "delete": {
                 "tags": [
                     "Item type"
@@ -3127,6 +3192,84 @@
                                 }
                             }
                         }
+                    }
+                }
+            }
+        },
+        "/api/item-type/search-records": {
+            "get": {
+                "tags": [
+                    "Item type"
+                ],
+                "summary": "Search item-type records item type",
+                "description": "Search item-type records by providing either SKU or item type. Returns matching item-type records.",
+                "operationId": "c4be1eea7dd937ddb9acd54a5dbe438d",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "query"
+                                ],
+                                "properties": {
+                                    "query": {
+                                        "type": "string",
+                                        "example": "computer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "description": "item type ID",
+                                                "type": "integer"
+                                            },
+                                            "type": {
+                                                "description": "item type name",
+                                                "type": "string",
+                                                "example": "computer"
+                                            },
+                                            "icon_number": {
+                                                "description": "icon-type",
+                                                "type": "integer",
+                                                "example": "7"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input"
+                    },
+                    "500": {
+                        "description": "Server error"
                     }
                 }
             }

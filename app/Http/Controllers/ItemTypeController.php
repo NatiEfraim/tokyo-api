@@ -35,7 +35,8 @@ class ItemTypeController extends Controller
      *              @OA\Items(
      *                  type="object",
      *                  @OA\Property(property="id", type="integer", description="item type ID"),
-     *                  @OA\Property(property="name", type="string", example="computer", description="item type name")
+     *                  @OA\Property(property="type", type="string", example="computer", description="item type name"),
+     *                  @OA\Property(property="icon_number", type="integer", example="7", description="icon-type"),
      *              )
      *          )
      *      ),
@@ -80,7 +81,8 @@ class ItemTypeController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             required={"type"},
-     *             @OA\Property(property="type", type="string", example="New Department type")
+     *             @OA\Property(property="type", type="string", example="New Department type"),
+     *             @OA\Property(property="icon_number", type="integer", example="2"),
      *         )
      *     ),
      *     @OA\Response(
@@ -119,17 +121,16 @@ class ItemTypeController extends Controller
                 'type.required' => 'שדה השם הוא חובה.',
                 'type.string' => 'שדה ערך שם מחלקה אינו תקין.',
 
-                'sku.required' => 'שדה מק"ט הוא חובה.',
-                'sku.string' => 'שדה מק"ט אינו תקין.',
-                'sku.exists' => 'שדה מק"ט קיים במערכת.',
-                // 'type.unique' => 'השם שהוזן כבר קיים במערכת.',
+                'icon_number.required' => 'שדה אייקון הוא חובה.',
+                'icon_number.integer' => 'שדה אייקון אינו תקין.',
+                'icon_number.between' => 'שדה אייקון אינו תקין.'
             ];
 
             // Set the rules
             $rules = [
-                // 'type' => 'required|unique:item_types,type,NULL,id,is_deleted,0',
-                'sku' => 'required|exists:item_types,sku,NULL,id,is_deleted,0',
+
                 'type' => 'required|string|min:2|max:255',
+                'icon_number' => 'required|integer|between:1,7',
             ];
 
             // Validate the request data
@@ -148,6 +149,7 @@ class ItemTypeController extends Controller
                 //? create new itemTypeRecord record
                 ItemType::create([
                     'type' => $request->input('type'),
+                    'icon_number' => $request->input('icon_number'),
                     'created_at' => $currentTime,
                     'updated_at' => $currentTime,
                 ]);
@@ -155,6 +157,7 @@ class ItemTypeController extends Controller
                 //? updated itemTypeRecord records that exist in the depatments table
                 $itemTypeRecord->update([
                     'type' =>  $request->input('type'),
+                    'icon_number' => $request->input('icon_number'),
                     'is_deleted' => 0,
                     'updated_at' =>  $currentTime,
                 ]);
@@ -240,5 +243,194 @@ class ItemTypeController extends Controller
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
+
+
+
+    /**
+     * @OA\Put(
+     *     path="/api/item-type/{id}",
+     *     tags={"Item type"},
+     *     summary="Update an item-type item",
+     *     description="Updates an item-type item with the provided ID.",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID of the item-type item to update",
+     *         @OA\Schema(
+     *             type="integer",
+     *             format="int64"
+     *         )
+     *     ),
+     *     @OA\RequestBody(
+     *         required=false,
+     *         description="Inventory object to update",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="type", type="string", maxLength=255, example="Electronics"),
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success message",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="שורה התעדכנה בהצלחה.")
+     *         )
+     *     ),
+     *
+     * )
+     */
+
+    public function update(Request $request, $id = null)
+    {
+  
+
+        try {
+
+            if (is_null($id)) {
+                return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
+            }
+
+
+            // Set custom error messages in Hebrew
+            $customMessages = [
+
+                'type.required' => 'שדה השם הוא חובה.',
+                'type.string' => 'שדה ערך שם מחלקה אינו תקין.',
+                'type.min' => 'שדה ערך שם מחלקה אינו תקין.',
+                'type.max' => 'שדה ערך שם מחלקה אינו תקין.',
+
+
+            ];
+
+            // Set the rules
+            $rules = [
+
+                'type' => 'required|string|min:2|max:255',
+
+            ];
+
+            // Validate the request data
+            $validator = Validator::make($request->all(), $rules, $customMessages);
+
+            // Check if validation fails
+            if ($validator->fails()) {
+                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+            $itemTypeRecord = ItemType::where('is_deleted', 0)
+                ->where('id', $id)
+                ->first();
+
+
+            if (is_null($itemTypeRecord)) {
+                return response()->json(['message' => 'שורה אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
+            }
+
+
+
+            $itemTypeRecord->update($request->validated());
+
+
+
+            return response()->json(['message' => 'שורה התעדכנה בהצלחה.'], Response::HTTP_OK);
+
+        } catch (\Exception $e) {
+
+            Log::error($e->getMessage());
+
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+
+    /**
+     * @OA\Get(
+     *     path="/api/item-type/search-records",
+     *     tags={"Item type"},
+     *     summary="Search item-type records item type",
+     *     description="Search item-type records by providing either SKU or item type. Returns matching item-type records.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"query"},
+     *             @OA\Property(property="query", type="string", example="computer")
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Page number",
+     *         required=false,
+     *         @OA\Schema(
+     *             type="integer",
+     *             default=1
+     *         )
+     *     ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              type="array",
+     *              @OA\Items(
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", description="item type ID"),
+     *                  @OA\Property(property="type", type="string", example="computer", description="item type name"),
+     *                  @OA\Property(property="icon_number", type="integer", example="7", description="icon-type"),
+     *              )
+     *          )
+     *      ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid input"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error"
+     *     )
+     * )
+     */
+
+
+    public function searchRecords(Request $request)
+    {
+
+        try {
+
+
+            // set custom error messages in Hebrew
+            $customMessages = [
+                'query.required' => 'יש לשלוח ערך לחיפוש',
+                'query.string' => 'ערך שנשלח אינו תקין',
+                'query.min' => 'ערך שנשלח אינו תקין',
+                'query.max' => 'ערך שנשלח אינו תקין',
+            ];
+            //set the rules
+            $rules = [
+                'query' => 'required|string|min:1|max:255',
+            ];
+
+            // validate the request data
+            $validator = Validator::make($request->all(), $rules, $customMessages);
+
+            // Check if validation fails
+            if ($validator->fails()) {
+
+                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+
+            // Search by type
+            $itemTypeRecord = ItemType::where('type', 'LIKE', '%' . $request->input('query') . '%')
+            ->where('is_deleted', false)->get();
+
+
+            return response()->json($itemTypeRecord->isEmpty() ? [] : $itemTypeRecord, Response::HTTP_OK);
+         
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
 
 }
