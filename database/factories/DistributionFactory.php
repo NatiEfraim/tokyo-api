@@ -54,7 +54,7 @@ class DistributionFactory extends Factory
             'order_number' => $this->faker->unique()->numberBetween(1000000, 9999999),
             'inventory_comment' => $this->faker->sentence, // Generate inventory comment
             'general_comment' => $this->faker->sentence, // Generate generate comment
-            'status' => $this->faker->numberBetween(0, 2),
+            'status' => $this->faker->numberBetween(0, 3),
             'quantity' => $this->faker->numberBetween(1, 100),
             'inventory_id' => $randomInventory->id, //set relation
             'department_id' => $randomDepartemnt->id, //set relation

@@ -88,7 +88,8 @@ class ExportController extends Controller
 
             if ($request->input('sku')) {
 
-                $inventories = Inventory::where('sku', $request->input('sku'))
+                $inventories = Inventory::with(['itemType'])
+                    ->where('sku', $request->input('sku'))
                     ->where('is_deleted', false)
                     ->orderBy('created_at', 'desc')
                     ->get()
@@ -105,7 +106,8 @@ class ExportController extends Controller
             }else{
 
                 // Fetch all inventories
-                $inventories = Inventory::where('is_deleted', false)
+                $inventories = Inventory::with(['itemType'])
+                    ->where('is_deleted', false)
                     ->orderBy('created_at', 'desc')
                     ->get()
                     ->map(function ($inventory) {
@@ -143,11 +145,13 @@ class ExportController extends Controller
                 $sheet->setCellValue('A' . $row, $inventory->id ?? 'לא קיים');
                 $sheet->setCellValue('B' . $row, $inventory->available ?? 'לא קיים');
                 $sheet->setCellValue('C' . $row, $inventory->sku ?? 'לא קיים');
-                $sheet->setCellValue('D' . $row, $inventory->item_type ?? 'לא קיים');
+                 $sheet->setCellValue('D' . $row, $inventory->itemType->type ?? 'לא קיים');
                 $sheet->setCellValue('E' . $row, $inventory->detailed_description ?? 'לא קיים');
                 $sheet->setCellValue('F' . $row, $inventory->reserved ?? 'לא קיים');
                 $sheet->setCellValue('G' . $row, $inventory->created_at_date ?? 'לא קיים');
                 $sheet->setCellValue('H' . $row, $inventory->created_at_date ?? 'לא קיים');
+
+
 
                 $row++;
             }
@@ -207,6 +211,7 @@ class ExportController extends Controller
 
             return response()->download($filename, $filename, $headers)->deleteFileAfterSend(true);
         } catch (\Exception $e) {
+            
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -846,7 +851,7 @@ class ExportController extends Controller
                 $sheet->setCellValue('H' . $row, $distribution->created_for ? $distribution->createdForUser->email : 'לא קיים');
                 $sheet->setCellValue('I' . $row, $distribution->quantity ?? 'לא קיים');
                 $sheet->setCellValue('J' . $row, $distribution->inventory_id ? $distribution->inventory->sku : 'לא קיים');
-                $sheet->setCellValue('K' . $row, $distribution->inventory_id ? $distribution->inventory->item_type : 'לא קיים');
+                $sheet->setCellValue('K' . $row, $distribution->inventory->itemType->type ?? 'לא קיים');
                 $sheet->setCellValue('L' . $row, $distribution->inventory_id ? $distribution->inventory->detailed_description : 'לא קיים');
                 $sheet->setCellValue('M' . $row, $distribution->comment ?? 'לא קיים');
                 $sheet->setCellValue('N' . $row, $distribution->getStatusTranslation() ?? 'לא קיים');

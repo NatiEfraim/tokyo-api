@@ -17,7 +17,7 @@ class Inventory extends Model
     protected $fillable = [
         'quantity',
         'reserved',
-        // 'sku',
+        'sku',
         // 'item_type',
         'type_id',
         'detailed_description',

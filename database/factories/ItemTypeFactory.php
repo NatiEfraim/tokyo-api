@@ -19,7 +19,7 @@ class ItemTypeFactory extends Factory
         return [
             //
             'type' => $this->faker->unique()->word, // Generate a unique random word for the type
-            'sku' => $this->faker->unique()->ean13,
+            // 'sku' => $this->faker->unique()->ean13,
 
         ];
     }

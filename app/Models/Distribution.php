@@ -60,7 +60,7 @@ class Distribution extends Model
      */
     public function inventory()
     {
-        return $this->belongsTo(Inventory::class);
+        return $this->belongsTo(Inventory::class)->with(['itemType']);
     }
 
 
@@ -103,6 +103,7 @@ class Distribution extends Model
             0 => 'ממתין למשיכה',
             1 =>  'אושר',
             2 => 'בוטל',
+            3 => 'נאסף',
         ];
 
         return $translations[$this->status] ?? 'לא מוגדר';

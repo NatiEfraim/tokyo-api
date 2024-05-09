@@ -180,7 +180,6 @@ class InventoryController extends Controller
             if (is_null($inventory)) {
                 return response()->json([], Response::HTTP_OK);
             }
-
                 $inventory->available=$inventory->quantity-$inventory->reserved;
 
             return response()->json($inventory, Response::HTTP_OK);

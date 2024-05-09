@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('item_types', function (Blueprint $table) {
             $table->id();
-            $table->string('type');
-            $table->string('sku')->unique();
+            $table->string('type')->unique();
+            $table->string('icon_number');
             $table->boolean('is_deleted')->default('0');
             $table->timestamps();
+            // $table->string('sku')->unique();
         });
     }
 
