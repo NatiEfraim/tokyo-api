@@ -57,6 +57,7 @@
                 <th>מספר שורה</th>
                 <th>מזהה שורה</th>
                 <th>תאריך ניפוק</th>
+                <th>מספר הזמנה</th>
                 <th>שם מחלקה</th>
                 <th>מספר אישי</th>
                 <th>שם מלא</th>
@@ -67,7 +68,8 @@
                 <th>מק"ט</th>
                 <th>סוג פריט</th>
                 <th>פירוט מורחב</th>
-                <th>הערות</th>
+                <th>הערות על ההזמנה</th>
+                <th>הערות על הפריט</th>
                 <th>סטטוס</th>
                 <th>תאריך שינוי אחרון</th>
             </tr>
@@ -78,6 +80,7 @@
                     <td>{{ $key + 1 }}</td>
                     <td>{{ $distribution->id ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->created_at_date ?? 'לא קיים' }}</td>
+                    <td>{{ $distribution->order_number ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->department_id ? $distribution->department->name : 'לא קיים' }}</td>
                     <td>{{ $distribution->created_for ? $distribution->createdForUser->personal_number : 'לא קיים' }}</td>
                     <td>{{ $distribution->created_for ? $distribution->createdForUser->name : 'לא קיים' }}</td>
@@ -87,9 +90,11 @@
                     <td>{{ $distribution->quantity ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->inventory_id ? $distribution->inventory->sku : 'לא קיים' }}</td>
                     {{-- <td>{{ $distribution->inventory_id ? $distribution->inventory->item_type : 'לא קיים' }}</td> --}}
-                    <td>{{  $distribution->inventory->itemType->type ?? 'לא קיים' }}</td>
+                    {{-- <td>{{  $distribution->inventory->itemType->type ?? 'לא קיים' }}</td> --}}
+                    <td>{{ $distribution->itemType->type ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->inventory_id ? $distribution->inventory->detailed_description : 'לא קיים' }}</td>
-                    <td>{{ $distribution->comment ?? 'לא קיים' }}</td>
+                    <td>{{ $distribution->general_comment ?? 'לא קיים' }}</td>
+                    <td>{{ $distribution->inventory_comment ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->getStatusTranslation() ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->updated_at_date ?? 'לא קיים' }}</td>
                 </tr>

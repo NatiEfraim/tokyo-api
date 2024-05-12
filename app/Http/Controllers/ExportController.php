@@ -211,7 +211,7 @@ class ExportController extends Controller
 
             return response()->download($filename, $filename, $headers)->deleteFileAfterSend(true);
         } catch (\Exception $e) {
-            
+
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -807,7 +807,7 @@ class ExportController extends Controller
             }
             else {
                 //? fetch all distributions records.
-                $distributions = Distribution::with(['inventory', 'department', 'createdForUser'])
+                $distributions = Distribution::with(['inventory', 'itemType','department', 'createdForUser'])
                     ->where('is_deleted', 0)
                     ->orderBy('created_at', 'desc')
                     ->get()
@@ -832,19 +832,21 @@ class ExportController extends Controller
             // Set headers
             $sheet->setCellValue('A1', 'מזהה שורה');
             $sheet->setCellValue('B1', 'תאריך ניפוק');
-            $sheet->setCellValue('C1', 'שם מחלקה');
-            $sheet->setCellValue('D1', 'מספר אישי');
-            $sheet->setCellValue('E1', 'שם מלא');
-            $sheet->setCellValue('F1', 'סוג עובד');
-            $sheet->setCellValue('G1', 'טלפון');
-            $sheet->setCellValue('H1', 'מייל');
-            $sheet->setCellValue('I1', 'כמות');
-            $sheet->setCellValue('J1', 'מק"ט');
-            $sheet->setCellValue('K1', 'סוג פריט');
-            $sheet->setCellValue('L1', 'פירוט מורחב');
-            $sheet->setCellValue('M1', 'הערות');
-            $sheet->setCellValue('N1', 'סטטוס');
-            $sheet->setCellValue('O1', 'תאריך שינוי אחרון');
+            $sheet->setCellValue('C1', 'מספר הזמנה');
+            $sheet->setCellValue('D1', 'שם מחלקה');
+            $sheet->setCellValue('E1', 'מספר אישי');
+            $sheet->setCellValue('F1', 'שם מלא');
+            $sheet->setCellValue('G1', 'סוג עובד');
+            $sheet->setCellValue('H1', 'טלפון');
+            $sheet->setCellValue('I1', 'מייל');
+            $sheet->setCellValue('J1', 'כמות');
+            $sheet->setCellValue('K1', 'מק"ט');
+            $sheet->setCellValue('L1', 'סוג פריט');
+            $sheet->setCellValue('M1', 'פירוט מורחב');
+            $sheet->setCellValue('N1', 'הערות על ההזמנה');
+            $sheet->setCellValue('O1', 'הערות על הפריט');
+            $sheet->setCellValue('P1', 'סטטוס');
+            $sheet->setCellValue('Q1', 'תאריך שינוי אחרון');
 
             $row = 2;
             foreach ($distributions as $distribution) {
@@ -852,19 +854,21 @@ class ExportController extends Controller
 
                 $sheet->setCellValue('A' . $row, $distribution->id ?? 'לא קיים');
                 $sheet->setCellValue('B' . $row, $distribution->created_at_date ?? 'לא קיים');
-                $sheet->setCellValue('C' . $row, $distribution->department_id ? $distribution->department->name : 'לא קיים');
-                $sheet->setCellValue('D' . $row, $distribution->created_for ? $distribution->createdForUser->personal_number : 'לא קיים');
-                $sheet->setCellValue('E' . $row, $distribution->created_for ? $distribution->createdForUser->name : 'לא קיים');
-                $sheet->setCellValue('F' . $row, $distribution->created_for ? $distribution->createdForUser->translated_employee_type : 'לא קיים');
-                $sheet->setCellValue('G' . $row, $distribution->created_for ? $distribution->createdForUser->phone : 'לא קיים');
-                $sheet->setCellValue('H' . $row, $distribution->created_for ? $distribution->createdForUser->email : 'לא קיים');
-                $sheet->setCellValue('I' . $row, $distribution->quantity ?? 'לא קיים');
-                $sheet->setCellValue('J' . $row, $distribution->inventory_id ? $distribution->inventory->sku : 'לא קיים');
-                $sheet->setCellValue('K' . $row, $distribution->inventory->itemType->type ?? 'לא קיים');
-                $sheet->setCellValue('L' . $row, $distribution->inventory_id ? $distribution->inventory->detailed_description : 'לא קיים');
-                $sheet->setCellValue('M' . $row, $distribution->comment ?? 'לא קיים');
-                $sheet->setCellValue('N' . $row, $distribution->getStatusTranslation() ?? 'לא קיים');
-                $sheet->setCellValue('O' . $row, $distribution->updated_at_date ?? 'לא קיים');
+                $sheet->setCellValue('C' . $row, $distribution->order_number ?? 'לא קיים');
+                $sheet->setCellValue('D' . $row, $distribution->department_id ? $distribution->department->name : 'לא קיים');
+                $sheet->setCellValue('E' . $row, $distribution->created_for ? $distribution->createdForUser->personal_number : 'לא קיים');
+                $sheet->setCellValue('F' . $row, $distribution->created_for ? $distribution->createdForUser->name : 'לא קיים');
+                $sheet->setCellValue('G' . $row, $distribution->created_for ? $distribution->createdForUser->translated_employee_type : 'לא קיים');
+                $sheet->setCellValue('H' . $row, $distribution->created_for ? $distribution->createdForUser->phone : 'לא קיים');
+                $sheet->setCellValue('I' . $row, $distribution->created_for ? $distribution->createdForUser->email : 'לא קיים');
+                $sheet->setCellValue('J' . $row, $distribution->quantity ?? 'לא קיים');
+                $sheet->setCellValue('K' . $row, $distribution->inventory_id ? $distribution->inventory->sku : 'לא קיים');
+                $sheet->setCellValue('L' . $row, $distribution->type_id ? $distribution->itemType->type : 'לא קיים');
+                $sheet->setCellValue('M' . $row, $distribution->inventory_id ? $distribution->inventory->detailed_description : 'לא קיים');
+                $sheet->setCellValue('N' . $row, $distribution->general_comment ?? 'לא קיים');
+                $sheet->setCellValue('O' . $row, $distribution->inventory_comment ?? 'לא קיים');
+                $sheet->setCellValue('P' . $row, $distribution->getStatusTranslation() ?? 'לא קיים');
+                $sheet->setCellValue('Q' . $row, $distribution->updated_at_date ?? 'לא קיים');
 
                 $row++;
             }
@@ -892,7 +896,7 @@ class ExportController extends Controller
                 ],
             ];
 
-            $sheet->getStyle('A1:O1')->applyFromArray($headerStyle);
+            $sheet->getStyle('A1:Q1')->applyFromArray($headerStyle);
 
             // Set & Style the cells
             $cellStyle = [
@@ -903,10 +907,10 @@ class ExportController extends Controller
             ];
 
             // apply styling to all cells in the sheet
-            $sheet->getStyle('A1:O' . ($row - 1))->applyFromArray($cellStyle);
+            $sheet->getStyle('A1:Q' . ($row - 1))->applyFromArray($cellStyle);
 
             // set the size for rest of columns
-            foreach (range('A', 'O') as $column) {
+            foreach (range('A', 'Q') as $column) {
                 $sheet->getColumnDimension($column)->setAutoSize(true);
             }
 
@@ -1224,12 +1228,19 @@ class ExportController extends Controller
                 $query->where('status', $request->status);
             }
 
+
+            //? search by department
             if ($request->has('department_id')) {
                 $query->whereHas('department', function ($q) use ($request) {
                     $q->where('id', $request->input('department_id'));
                 });
             }
 
+
+            // Search by order_number
+            if ($request->has('order_number')) {
+                $query->where('order_number', $request->input('order_number'));
+            }
 
             if ($request->has('user_id')) {
                 // $pnInput = $request->personal_number;
@@ -1251,7 +1262,7 @@ class ExportController extends Controller
             // Ensure is_deleted is 0
             $query->where('is_deleted', 0);
 
-            return $query->with(['inventory', 'department', 'createdForUser'])
+            return $query->with(['inventory', 'department', 'itemType','createdForUser'])
             ->orderBy('created_at', 'desc')
             ->get();
         } catch (\Exception $e) {

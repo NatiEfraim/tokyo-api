@@ -102,10 +102,11 @@ class DistributionController extends Controller
     {
         try {
 
-            $distributions = Distribution::with(['inventory', 'department', 'createdForUser'])
+            $distributions = Distribution::with(['inventory', 'itemType','department', 'createdForUser'])
             ->where('is_deleted', 0)
             ->orderBy('created_at','desc')
             ->paginate(20);
+
 
             $distributions->each(function($distribution){
                                     // Format the created_at and updated_at timestamps
@@ -114,6 +115,7 @@ class DistributionController extends Controller
 
                     return $distribution;
             });
+
 
             return response()->json($distributions, Response::HTTP_OK);
 
@@ -204,7 +206,7 @@ class DistributionController extends Controller
                 return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
             }
 
-            $distribution = Distribution::with(['inventory','department', 'createdForUser'])
+            $distribution = Distribution::with(['inventory', 'itemType','department', 'createdForUser'])
                 ->where('id', $id)
                 ->where('is_deleted', 0)
                 ->first();
@@ -270,8 +272,8 @@ class DistributionController extends Controller
 
     public function destroy($id = null)
     {
-        
-        
+
+
         try {
 
 
@@ -1123,7 +1125,7 @@ class DistributionController extends Controller
     {
         try {
 
-    
+
             // set validation rules
             $rules = [
 
@@ -1165,7 +1167,7 @@ class DistributionController extends Controller
                 // 'sku.string' => 'שדה שהוזן אינו בפורמט תקין',
                 // 'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
                 // 'sku.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
-                
+
                 // 'name.string' => 'שדה ערך שם מחלקה אינו תקין.',
 
                 // 'personal_number.min' => 'מספר אישי אינו תקין.',
@@ -1269,7 +1271,7 @@ class DistributionController extends Controller
             $query = $request->input('query');
 
 
-            return Distribution::with(['inventory', 'department', 'createdForUser'])
+            return Distribution::with(['inventory', 'itemType','department', 'createdForUser'])
 
             ->where('is_deleted', 0)
 
@@ -1300,7 +1302,7 @@ class DistributionController extends Controller
                     $userQuery->where('name', 'like', "%$query%");
                 });
 
-            
+
             })
             ->orderBy('created_at', 'desc')
             ->get();
@@ -1357,7 +1359,7 @@ class DistributionController extends Controller
 
             // Search by order_number
             if ($request->has('order_number')) {
-                $query->where('order_number', $request->input('order_number')); 
+                $query->where('order_number', $request->input('order_number'));
             }
 
 
@@ -1389,7 +1391,7 @@ class DistributionController extends Controller
             // Ensure is_deleted is 0
             $query->where('is_deleted', 0);
 
-            return $query->with(['inventory', 'department', 'createdForUser'])
+            return $query->with(['inventory', 'itemType','department', 'createdForUser'])
                 ->orderBy('created_at', 'desc')
                 ->get();
         } catch (\Exception $e) {
