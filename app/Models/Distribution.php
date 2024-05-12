@@ -21,6 +21,7 @@ class Distribution extends Model
         'status',
         'quantity',
         'inventory_id',
+        'type_id',
         'department_id',
         'created_by',
         'created_for',
@@ -63,6 +64,13 @@ class Distribution extends Model
         return $this->belongsTo(Inventory::class)->with(['itemType']);
     }
 
+    /**
+     * Get the item_type record associated with the distribution.
+     */
+    public function itemType()
+    {
+        return $this->belongsTo(ItemType::class, 'type_id');
+    }
 
     //? set relations function with users table
     public function user()

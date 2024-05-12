@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Department;
 use App\Models\Distribution;
 use App\Models\Inventory;
+use App\Models\ItemType;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\DB;
@@ -45,6 +46,7 @@ class DistributionFactory extends Factory
 
 
         $randomInventory = Inventory::inRandomOrder()->first();
+        $randomType = ItemType::inRandomOrder()->first();
         $randomDepartemnt = Department::inRandomOrder()->first();
         $randomUser = User::inRandomOrder()->first();
 
@@ -57,6 +59,7 @@ class DistributionFactory extends Factory
             'status' => $this->faker->numberBetween(0, 3),
             'quantity' => $this->faker->numberBetween(1, 100),
             'inventory_id' => $randomInventory->id, //set relation
+            'type_id' => $randomType->id, //set relation
             'department_id' => $randomDepartemnt->id, //set relation
             'created_by' => $randomUser->id, //set relation
             'created_for' => $randomUser->id, //set relation

@@ -127,7 +127,7 @@ class AuthController extends Controller
                     ],
                     Response::HTTP_OK,
                 )
-                ->withCookie(Cookie::make('TokyoToken', $token->accessToken));
+                ->withCookie(Cookie::make($tokenName, $token->accessToken));
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }

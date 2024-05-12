@@ -44,4 +44,14 @@ class ItemType extends Model
         return $this->hasMany(Inventory::class,'type_id');
     }
 
+    /**
+     * Get the distribution record associated with the inventory.
+     */
+    public function distribution()
+    {
+        return $this->hasMany(Distribution::class);
+    }
+
+
+
 }

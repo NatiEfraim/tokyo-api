@@ -21,7 +21,8 @@ return new class extends Migration
             //? 0--> pendig. 1--> approved. 2 -->canceld
             $table->integer('status')->default(0);
             $table->integer('quantity');
-            $table->foreignId('inventory_id');
+            $table->foreignId('inventory_id')->nullable();
+            $table->foreignId('type_id');
             $table->foreignId('department_id');
             $table->foreignId('created_by');
             $table->foreignId('created_for');
@@ -32,6 +33,7 @@ return new class extends Migration
 
             //? set relations on others table.
             $table->foreign('inventory_id')->references('id')->on('inventories')->onUpdate('cascade')->onDelete('cascade');
+            $table->foreign('type_id')->references('id')->on('item_types')->onUpdate('cascade')->onDelete('cascade');
             $table->foreign('department_id')->references('id')->on('departments')->onUpdate('cascade')->onDelete('cascade');
             $table->foreign('created_by')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
             $table->foreign('created_for')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
