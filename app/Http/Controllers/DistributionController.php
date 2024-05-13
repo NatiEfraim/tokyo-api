@@ -19,9 +19,7 @@ use Illuminate\Support\Facades\Log;
 // use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
 
-
 use Illuminate\Support\Str;
-
 
 class DistributionController extends Controller
 {
@@ -101,31 +99,25 @@ class DistributionController extends Controller
     public function index()
     {
         try {
+            $distributions = Distribution::with(['inventory', 'itemType', 'department', 'createdForUser'])
+                ->where('is_deleted', 0)
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
 
-            $distributions = Distribution::with(['inventory', 'itemType','department', 'createdForUser'])
-            ->where('is_deleted', 0)
-            ->orderBy('created_at','desc')
-            ->paginate(20);
+            $distributions->each(function ($distribution) {
+                // Format the created_at and updated_at timestamps
+                $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+                $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
 
-
-            $distributions->each(function($distribution){
-                                    // Format the created_at and updated_at timestamps
-                    $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
-                    $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
-
-                    return $distribution;
+                return $distribution;
             });
 
-
             return response()->json($distributions, Response::HTTP_OK);
-
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
-
-
 
     /**
      * @OA\Get(
@@ -198,28 +190,22 @@ class DistributionController extends Controller
 
     public function getRecordById($id = null)
     {
-
-
         try {
-
             if (is_null($id)) {
                 return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
             }
 
-            $distribution = Distribution::with(['inventory', 'itemType','department', 'createdForUser'])
+            $distribution = Distribution::with(['inventory', 'itemType', 'department', 'createdForUser'])
                 ->where('id', $id)
                 ->where('is_deleted', 0)
                 ->first();
 
-
             return response()->json($distribution, Response::HTTP_OK);
         } catch (\Exception $e) {
-
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
-
 
     /**
      * @OA\Delete(
@@ -269,22 +255,14 @@ class DistributionController extends Controller
      * )
      */
 
-
     public function destroy($id = null)
     {
-
-
         try {
-
-
             if (is_null($id)) {
                 return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
             }
 
-
-            $distirbution = Distribution::where('is_deleted', 0)
-                ->where('id', $id)
-                ->first();
+            $distirbution = Distribution::where('is_deleted', 0)->where('id', $id)->first();
             if (is_null($distirbution)) {
                 return response()->json(['message' => 'שורה אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
             }
@@ -297,7 +275,6 @@ class DistributionController extends Controller
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
-
 
     /**
      * Store a newly created distribution.
@@ -324,8 +301,8 @@ class DistributionController extends Controller
      *                 type="array",
      *                 @OA\Items(
      *                     type="object",
-     *                     required={"item_type", "quantity"},
-     *                     @OA\Property(property="item_type", type="string", example="computer"),
+     *                     required={"type_id", "quantity"},
+     *                     @OA\Property(property="type_id", type="integer", example=1),
      *                     @OA\Property(property="quantity", type="integer", example=5),
      *                     @OA\Property(property="comment", type="string", example="זהו הערה עבור המחשב")
      *                 )
@@ -358,65 +335,50 @@ class DistributionController extends Controller
 
     public function store(StoreDistributionRequest $request)
     {
-
         try {
-
-
             DB::beginTransaction();
 
             $user_auth = Auth::user();
 
-
             // Generate a unique 7-digit order number
             $orderNumber = Str::random(7);
 
-        // Check if the generated order number already exists in the database
-        $existingOrder = DB::table('distributions')->where('order_number', $orderNumber)->exists();
+            // Check if the generated order number already exists in the database
+            $existingOrder = Distribution::where('order_number', $orderNumber)->exists();
 
-        // If the generated order number already exists, regenerate it until a unique one is found
-        while ($existingOrder) {
-            $orderNumber = Str::random(7);//re generate
-            $existingOrder = DB::table('distributions')->where('order_number', $orderNumber)->exists();
-        }
+            // If the generated order number already exists, regenerate it until a unique one is found
+            while ($existingOrder) {
+                $orderNumber = Str::random(7); //re generate
+                $existingOrder = Distribution::where('order_number', $orderNumber)->exists();
+            }
+
+            $allQuantity = 0;
+            foreach ($request->input('items') as $item) {
+                $allQuantity += $item['quantity'];
+            }
 
             // Loop through each item and create distribution records
             foreach ($request->input('items') as $item) {
-
                 //? save key & value
-                $itemType = $item['item_type'];
+                $itemType = $item['type_id'];
                 $quantity = $item['quantity'];
                 $comment = $item['comment'] ?? null; // Get comment or null if not provided
 
 
 
-                // ? fetch the first inventory records based on the item_type
-                $inventory = Inventory::where('item_type', $itemType)
-                ->where('is_deleted', false)
-                ->first();
-
-                if (is_null($inventory)) {
-
-
-                    DB::rollBack();
-
-                    return response()->json(['message' => 'אחד או יותר מהפריטים שנשלחו אינם קיימים במערכת.'], Response::HTTP_BAD_REQUEST);
-                }
-
                 Distribution::create([
                     'order_number' => intval($orderNumber),
                     'general_comment' => $request->input('general_comment') ?? null,
                     'inventory_comment' => $comment,
-                    'status' =>  DistributionStatus::PENDING->value,
-                    'quantity' => $quantity,
-                    'inventory_id' => $inventory->id,
+                    'status' => DistributionStatus::PENDING->value,
+                    'quantity' =>  $allQuantity,///all quantity per order_number
+                    // 'inventory_id' => $inventory->id,
+                    'type_id' => $itemType,
                     'department_id' => $request->input('department_id'),
                     'created_by' => $user_auth->id,
                     'created_for' => $request->input('created_for'),
                 ]);
 
-                // // Update reserved quantity of inventory
-                // $inventory->reserved += $quantity;
-                // $inventory->save();
             }
 
             DB::commit();
@@ -425,12 +387,9 @@ class DistributionController extends Controller
         } catch (\Exception $e) {
             DB::rollBack(); // Rollback the transaction in case of any error
             Log::error($e->getMessage());
-
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
-
-
 
     /**
      * Mass delete distributions.
@@ -491,10 +450,6 @@ class DistributionController extends Controller
 
     public function massDestroy(Request $request)
     {
-
-
-
-
         try {
             // set custom error messages in Hebrew
             $customMessages = [
@@ -515,7 +470,6 @@ class DistributionController extends Controller
 
             // Check if validation fails
             if ($validator->fails()) {
-
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
@@ -526,13 +480,11 @@ class DistributionController extends Controller
             Distribution::whereIn('id', $ids)->update(['is_deleted' => 1]);
 
             return response()->json(['message' => 'שורות נמחקו בהצלחה.'], Response::HTTP_OK);
-
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
-
 
     /**
      * @OA\Put(
@@ -588,13 +540,9 @@ class DistributionController extends Controller
      * )
      */
 
-
     public function changeStatus(Request $request, $id = null)
     {
-
-
         try {
-
             if (is_null($id)) {
                 return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה.'], Response::HTTP_BAD_REQUEST);
             }
@@ -608,7 +556,7 @@ class DistributionController extends Controller
 
             //set the rules
             $rules = [
-                'status' => 'required|integer|between:0,2'
+                'status' => 'required|integer|between:0,2',
             ];
 
             // validate the request data
@@ -616,11 +564,8 @@ class DistributionController extends Controller
 
             // Check if validation fails
             if ($validator->fails()) {
-
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
-
-
 
             $distribution_record = Distribution::where('id', $id)->where('is_deleted', false)->first();
 
@@ -628,72 +573,56 @@ class DistributionController extends Controller
                 return response()->json(['message' => 'שורה זו אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
             }
 
-
-
-
             $inventory = Inventory::where('id', $distribution_record->inventory_id)
-            ->where('is_deleted', false)
-            ->first();
+                ->where('is_deleted', false)
+                ->first();
 
             if (is_null($inventory)) {
                 return response()->json(['message' => 'פריט אני קיים במלאי'], Response::HTTP_BAD_REQUEST);
             }
 
-            $statusValue=(int)($request->input('status'));
+            $statusValue = (int) $request->input('status');
             $statusValue = match ($statusValue) {
                 DistributionStatus::PENDING->value => 0,
                 DistributionStatus::APPROVED->value => 1,
                 DistributionStatus::CANCELD->value => 2,
 
-                default => throw new \InvalidArgumentException('ערך סטטוס אינו תקין..')
+                default => throw new \InvalidArgumentException('ערך סטטוס אינו תקין..'),
             };
 
             $currentTime = Carbon::now()->toDateTimeString();
             DB::beginTransaction(); // Start a database transaction
 
-
             //? distribution records has been approved
 
-
             if ($statusValue == DistributionStatus::APPROVED->value) {
-
                 $inventory->update([
                     'quantity' => $inventory->quantity - $distribution_record->quantity,
                     'reserved' => $inventory->reserved - $distribution_record->quantity,
                     'updated_at' => $currentTime,
-
                 ]);
-             //? distribution records has been canceld
-
-            }elseif ($statusValue==DistributionStatus::CANCELD->value) {
-
+                //? distribution records has been canceld
+            } elseif ($statusValue == DistributionStatus::CANCELD->value) {
                 $inventory->update([
                     'reserved' => $inventory->reserved - $distribution_record->quantity,
                     'updated_at' => $currentTime,
                 ]);
             }
-
 
             $distribution_record->update([
                 'status' => $request->input('status'),
                 'updated_at' => $currentTime,
             ]);
 
-
-
             DB::commit(); // commit all changes in database.
 
             return response()->json(['message' => 'שורה התעדכנה בהצלחה.'], Response::HTTP_OK);
-
         } catch (\Exception $e) {
             DB::rollBack(); // Rollback the transaction in case of any error
 
             Log::error($e->getMessage());
-
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
-
-
     }
 
     /**
@@ -769,19 +698,13 @@ class DistributionController extends Controller
 
     public function update(UpdateDistributionRequest $request, $id = null)
     {
-
         try {
-
-
             if (is_null($id)) {
                 return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
             }
 
             //? fetch distributions records based id.
-            $distribution = Distribution::where('is_deleted', 0)
-                ->where('id', $id)
-                ->first();
-
+            $distribution = Distribution::where('is_deleted', 0)->where('id', $id)->first();
 
             if (is_null($distribution)) {
                 return response()->json(['message' => 'שורה אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
@@ -789,39 +712,33 @@ class DistributionController extends Controller
 
             //? fetch inventory associated records based distrbution->inventory_id
             $inventory = Inventory::where('id', $distribution->inventory_id)
-            ->where('is_deleted', false)
-            ->first();
-
+                ->where('is_deleted', false)
+                ->first();
 
             if (is_null($inventory)) {
                 return response()->json(['message' => 'פריט אינו קיים במלאי'], Response::HTTP_BAD_REQUEST);
             }
 
-
-            if (($request->input('quantity')) && ($request->input('quantity') > $inventory->quantity - $inventory->reserved) && $request->input('quantity') > $distribution->quantity ) {
+            if ($request->input('quantity') && $request->input('quantity') > $inventory->quantity - $inventory->reserved && $request->input('quantity') > $distribution->quantity) {
                 return response()->json(['message' => 'אין מספיק מלאי זמין עבור כמות שנשלחה .'], Response::HTTP_BAD_REQUEST);
             }
-
 
             $currentTime = Carbon::now()->toDateTimeString();
 
             DB::beginTransaction(); // Start a database transaction
 
-
             //? update the reserved fileds of inventory
             if ($request->input('quantity') && $request->input('quantity') > $distribution->quantity) {
                 $inventory->update([
-                    'reserved' => $inventory->reserved + abs($request->input('quantity')- $distribution->quantity),
-                    'updated_at' =>  $currentTime,
+                    'reserved' => $inventory->reserved + abs($request->input('quantity') - $distribution->quantity),
+                    'updated_at' => $currentTime,
                 ]);
-            }else if($request->input('quantity') && $request->input('quantity') < $distribution->quantity){
+            } elseif ($request->input('quantity') && $request->input('quantity') < $distribution->quantity) {
                 $inventory->update([
                     'reserved' => $inventory->reserved - abs($request->input('quantity') - $distribution->quantity),
-                    'updated_at' =>  $currentTime,
+                    'updated_at' => $currentTime,
                 ]);
             }
-
-
 
             if ($request->input('status')) {
                 //? user changed status distribtuons record
@@ -829,56 +746,38 @@ class DistributionController extends Controller
                 // ->where('is_deleted', false)
                 // ->first();
 
-
-
-                $statusValue = (int)($request->input('status'));
+                $statusValue = (int) $request->input('status');
 
                 $statusValue = match ($statusValue) {
-
                     DistributionStatus::PENDING->value => 0,
                     DistributionStatus::APPROVED->value => 1,
                     DistributionStatus::CANCELD->value => 2,
 
-                    default => throw new \InvalidArgumentException('ערך סטטוס אינו תקין..')
+                    default => throw new \InvalidArgumentException('ערך סטטוס אינו תקין..'),
                 };
-
-
-
 
                 //? distribution records has been approved
 
                 if ($statusValue == DistributionStatus::APPROVED->value) {
-
                     $inventory->update([
                         'quantity' => $inventory->quantity - $distribution->quantity,
                         'reserved' => $inventory->reserved - $distribution->quantity,
                         'updated_at' => $currentTime,
-
                     ]);
                     //? distribution records has been canceld
-
                 } elseif ($statusValue == DistributionStatus::CANCELD->value) {
-
                     $inventory->update([
                         'reserved' => $inventory->reserved - $distribution->quantity,
                         'updated_at' => $currentTime,
                     ]);
                 }
-
             }
-
-
 
             //? updated all fileds for distribution record
 
             $distribution->update($request->validated());
 
-
-
-
-
             DB::commit(); // commit all changes in database.
-
 
             return response()->json(['message' => 'שורה התעדכנה בהצלחה.'], Response::HTTP_OK);
         } catch (\Exception $e) {
@@ -888,7 +787,6 @@ class DistributionController extends Controller
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
-
 
     /**
      * Get distributions records by query.
@@ -972,23 +870,17 @@ class DistributionController extends Controller
      * )
      */
 
-
-
     public function getRecordsByQuery(Request $request)
     {
         try {
-
-
             // set custom error messages in Hebrew
             $customMessages = [
                 'query.required' => 'יש לשלוח שדה לחיפוש',
                 'query.string' => 'ערך השדה שנשלח אינו תקין.',
-
             ];
             //set the rules
 
             $rules = [
-
                 'query' => 'required|string',
             ];
 
@@ -997,16 +889,13 @@ class DistributionController extends Controller
 
             // Check if validation fails
             if ($validator->fails()) {
-
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-
             //? one or more of th search based on value filter send
-            $distributions = $this->fetchDistributions($request);///private function
+            $distributions = $this->fetchDistributions($request); ///private function
 
             if ($distributions) {
-
                 $distributions->map(function ($distribution) {
                     $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
                     $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
@@ -1016,8 +905,6 @@ class DistributionController extends Controller
             }
 
             return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
-
-
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
@@ -1124,16 +1011,11 @@ class DistributionController extends Controller
     public function getRecordsByFilter(Request $request)
     {
         try {
-
-
             // set validation rules
             $rules = [
-
-
                 // 'sku' => 'nullable|string|max:255|exists:inventories,sku,is_deleted,0',
                 // 'name' => 'nullable|string|exists:departments,name,is_deleted,0',
                 // 'personal_number' => 'nullable|min:1|max:7',
-
 
                 'inventory_id' => 'nullable|string|max:255|exists:inventories,id,is_deleted,0',
 
@@ -1145,25 +1027,13 @@ class DistributionController extends Controller
 
                 'order_number' => 'nullable|string|exists:distributions,order_number,is_deleted,0',
 
+                'created_at' => ['nullable', 'date'],
 
-                'created_at' => [
-                    'nullable',
-                    'date',
-                ],
-
-                'updated_at' => [
-                    'nullable',
-                    'date',
-                ],
-
-
+                'updated_at' => ['nullable', 'date'],
             ];
 
             // Define custom error messages
             $customMessages = [
-
-
-
                 // 'sku.string' => 'שדה שהוזן אינו בפורמט תקין',
                 // 'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
                 // 'sku.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
@@ -1177,51 +1047,34 @@ class DistributionController extends Controller
                 'inventory_id.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
                 'inventory_id.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
 
-
                 'department_id.exists' => 'מחלקה אינה קיימת במערכת.',
 
                 'order_number.exists' => 'מספר הזמנה אינה קיית במערכת.',
 
                 'status.between' => 'שדה הסטטוס אינו תקין.',
 
-
                 'user_id.exists' => 'משתמש אינו קיים במערכת.',
-
-
 
                 'created_at.date' => 'שדה תאריך התחלה אינו תקין.',
                 'created_at.exists' => 'שדה תאריך אינו קיים במערכת.',
                 'updated_at.date' => 'שדה תאריך סיום אינו תקין.',
                 'updated_at.exists' => 'שדה תאריך סיום אינו קיים במערכת.',
-
-
             ];
 
             // validate the request with custom error messages
             $validator = Validator::make($request->all(), $rules, $customMessages);
-
 
             // Check if validation fails
             if ($validator->fails()) {
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-
-            if (
-                $request->has('user_id')
-                || $request->has('status')
-                || $request->has('order_number')
-                || $request->has('inventory_id')
-                || $request->has('department_id')
-                || $request->has('created_at')
-                || $request->has('updated_at')
-            ) {
+            if ($request->has('user_id') || $request->has('status') || $request->has('order_number') || $request->has('inventory_id') || $request->has('department_id') || $request->has('created_at') || $request->has('updated_at')) {
                 //? one or more of th search based on value filter send
 
                 $distributions = $this->fetchDistributionsByFilter($request);
 
                 if ($distributions) {
-
                     $distributions->map(function ($distribution) {
                         //? format date on each records
                         $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
@@ -1231,8 +1084,6 @@ class DistributionController extends Controller
                     });
                 }
             } else {
-
-
                 //? fetch all distributions records.
 
                 $distributions = Distribution::with(['inventory', 'department', 'createdForUser'])
@@ -1240,7 +1091,6 @@ class DistributionController extends Controller
                     ->orderBy('created_at', 'desc')
                     ->get()
                     ->map(function ($distribution) {
-
                         // Format the created_at and updated_at timestamps
                         $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
                         $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
@@ -1249,63 +1099,49 @@ class DistributionController extends Controller
                     });
             }
 
-
-
-
             return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
-
-
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
-
-
     //? search based on request->input('query').
     private function fetchDistributions(Request $request)
     {
         try {
-
             $query = $request->input('query');
 
+            return Distribution::with(['inventory', 'itemType', 'department', 'createdForUser'])
 
-            return Distribution::with(['inventory', 'itemType','department', 'createdForUser'])
+                ->where('is_deleted', 0)
 
-            ->where('is_deleted', 0)
+                ->where(function ($queryBuilder) use ($query) {
+                    // Search by personal number
+                    $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
+                        $userQuery->where('personal_number', 'like', "%$query%");
+                    });
 
-            ->where(function ($queryBuilder) use ($query) {
+                    // Search by SKU
+                    $queryBuilder->orWhereHas('inventory', function ($inventoryQuery) use ($query) {
+                        $inventoryQuery->where('sku', 'like', "%$query%");
+                    });
 
+                    // Search by item_type type field
+                    $queryBuilder->orWhereHas('inventory.itemType', function ($itemTypeQuery) use ($query) {
+                        $itemTypeQuery->where('type', 'like', "%$query%");
+                    });
 
-                // Search by personal number
-                $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
-                    $userQuery->where('personal_number', 'like', "%$query%");
-                });
+                    // Search by order number
+                    $queryBuilder->orWhere('order_number', 'like', "%$query%");
 
-                // Search by SKU
-                $queryBuilder->orWhereHas('inventory', function ($inventoryQuery) use ($query) {
-                    $inventoryQuery->where('sku', 'like', "%$query%");
-                });
-
-                // Search by item_type type field
-                $queryBuilder->orWhereHas('inventory.itemType', function ($itemTypeQuery) use ($query) {
-                    $itemTypeQuery->where('type', 'like', "%$query%");
-                });
-
-
-                // Search by order number
-                $queryBuilder->orWhere('order_number', 'like', "%$query%");
-
-                // Search by full name
-                $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
-                    $userQuery->where('name', 'like', "%$query%");
-                });
-
-
-            })
-            ->orderBy('created_at', 'desc')
-            ->get();
+                    // Search by full name
+                    $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
+                        $userQuery->where('name', 'like', "%$query%");
+                    });
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
 
             // return Distribution::with(['inventory', 'department', 'createdForUser'])
 
@@ -1328,7 +1164,6 @@ class DistributionController extends Controller
             //             $inventoryQuery->where('item_type', 'like', "%$query%");
             //         });
 
-
             //         // Search by full name
             //         $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
             //             $userQuery->where('name', 'like', "%$query%");
@@ -1336,15 +1171,11 @@ class DistributionController extends Controller
             //     })
             //     ->orderBy('created_at', 'desc')
             //     ->get();
-
-
-
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
-
 
     //? fillter & fetch distributions records based on filter input
     private function fetchDistributionsByFilter(Request $request)
@@ -1361,7 +1192,6 @@ class DistributionController extends Controller
             if ($request->has('order_number')) {
                 $query->where('order_number', $request->input('order_number'));
             }
-
 
             // Search by status
             if ($request->has('status')) {
@@ -1391,7 +1221,8 @@ class DistributionController extends Controller
             // Ensure is_deleted is 0
             $query->where('is_deleted', 0);
 
-            return $query->with(['inventory', 'itemType','department', 'createdForUser'])
+            return $query
+                ->with(['inventory', 'itemType', 'department', 'createdForUser'])
                 ->orderBy('created_at', 'desc')
                 ->get();
         } catch (\Exception $e) {
@@ -1399,7 +1230,4 @@ class DistributionController extends Controller
             return response()->json(['message' => 'התרחשה בעיה בשרת. נסה שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
-
-
 }

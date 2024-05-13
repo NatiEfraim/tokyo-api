@@ -71,7 +71,6 @@
                     <td>{{ $inventory->id ?? 'לא קיים' }}</td>
                     <td>{{ $inventory->available ?? 'לא קיים' }}</td>
                     <td>{{ $inventory->sku ?? 'לא קיים' }}</td>
-                    {{-- <td>{{ $inventory->item_type ?? 'לא קיים' }}</td> --}}
                     <td>{{ $inventory->itemType->type ?? 'לא קיים' }}</td>
                     <td>{{ $inventory->detailed_description ?? 'לא קיים' }}</td>
                     <td>{{ $inventory->reserved ?? 'לא קיים' }}</td>

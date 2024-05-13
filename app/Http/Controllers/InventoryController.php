@@ -184,7 +184,6 @@ class InventoryController extends Controller
 
             return response()->json($inventory, Response::HTTP_OK);
         } catch (\Exception $e) {
-            dd($e->getMessage());
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -392,8 +391,6 @@ class InventoryController extends Controller
 
             $inventory->update($request->validated());
 
-            // $inventory->updated_at = $currentTime;
-            // $inventory->save();
 
             return response()->json(['message' => 'שורה התעדכנה בהצלחה.'], Response::HTTP_OK);
         } catch (\Exception $e) {

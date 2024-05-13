@@ -23,13 +23,13 @@ class StoreDistributionRequest extends FormRequest
     {
         return [
             //
-            
+
             // 'status' => 'nullable|integer|between:0,2',
-            
+
             // 'quantity' => 'required|integer|min:0',
-            
+
             // 'inventory_id' => 'required|exists:inventories,id,is_deleted,0',
-            
+
 
 
             'general_comment' => 'nullable|string|min:2|max:255',
@@ -40,8 +40,8 @@ class StoreDistributionRequest extends FormRequest
 
             'items' => 'required|array',
 
-            'items.*.item_type' => 'required|string|exists:inventories,item_type,is_deleted,0',
-            
+            'items.*.type_id' => 'required|exists:item_types,id,is_deleted,0',
+
             'items.*.quantity' => 'required|integer|min:1', // Adjust min value as needed
             'items.*.comment' => 'nullable|string|max:255', // Nullable string with max length 255
 
@@ -79,9 +79,9 @@ class StoreDistributionRequest extends FormRequest
             'items.required' => 'יש לציין פריטים להפצה.',
             'items.array' => 'הפריטים חייבים להיות בפורמט של מערך.',
 
-            'items.*.item_type.required' => 'שדה סוג הפריט הוא שדה חובה.',
-            'items.*.item_type.string' => 'סוג הפריט חייב להיות מחרוזת.',
-            'items.*.item_type.exists' => 'הפריט :value לא קיים או נמחק.',
+
+            'items.*.type_id.required' => 'שדה סוג הפריט הוא שדה חובה.',
+            'items.*.type_id.exists' => 'הפריט :value לא קיים או נמחק.',
 
             'items.*.quantity.required' => 'שדה כמות הפריט הוא שדה חובה.',
             'items.*.quantity.integer' => 'כמות הפריט חייבת להיות מספר שלם.',
@@ -89,6 +89,14 @@ class StoreDistributionRequest extends FormRequest
 
             'items.*.comment.string' => 'הערה עבור הפריט חייבת להיות מחרוזת.',
             'items.*.comment.max' => 'הערה עבור הפריט חייבת להיות לא יותר מ-255 תווים.',
+
+
+
+            // 'items.*.item_type.required' => 'שדה סוג הפריט הוא שדה חובה.',
+            // 'items.*.item_type.string' => 'סוג הפריט חייב להיות מחרוזת.',
+            // 'items.*.item_type.exists' => 'הפריט :value לא קיים או נמחק.',
+            // 'items.*.type_id.string' => 'סוג הפריט חייב להיות מחרוזת.',
+
 
         ];
     }

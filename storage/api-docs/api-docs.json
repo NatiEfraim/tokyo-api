@@ -896,13 +896,13 @@
                                         "type": "array",
                                         "items": {
                                             "required": [
-                                                "item_type",
+                                                "type_id",
                                                 "quantity"
                                             ],
                                             "properties": {
-                                                "item_type": {
-                                                    "type": "string",
-                                                    "example": "computer"
+                                                "type_id": {
+                                                    "type": "integer",
+                                                    "example": 1
                                                 },
                                                 "quantity": {
                                                     "type": "integer",

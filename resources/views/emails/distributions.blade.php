@@ -89,8 +89,6 @@
                     <td>{{ $distribution->created_for ? $distribution->createdForUser->email : 'לא קיים' }}</td>
                     <td>{{ $distribution->quantity ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->inventory_id ? $distribution->inventory->sku : 'לא קיים' }}</td>
-                    {{-- <td>{{ $distribution->inventory_id ? $distribution->inventory->item_type : 'לא קיים' }}</td> --}}
-                    {{-- <td>{{  $distribution->inventory->itemType->type ?? 'לא קיים' }}</td> --}}
                     <td>{{ $distribution->itemType->type ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->inventory_id ? $distribution->inventory->detailed_description : 'לא קיים' }}</td>
                     <td>{{ $distribution->general_comment ?? 'לא קיים' }}</td>
