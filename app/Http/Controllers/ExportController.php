@@ -839,14 +839,15 @@ class ExportController extends Controller
             $sheet->setCellValue('G1', 'סוג עובד');
             $sheet->setCellValue('H1', 'טלפון');
             $sheet->setCellValue('I1', 'מייל');
-            $sheet->setCellValue('J1', 'כמות');
-            $sheet->setCellValue('K1', 'מק"ט');
-            $sheet->setCellValue('L1', 'סוג פריט');
-            $sheet->setCellValue('M1', 'פירוט מורחב');
-            $sheet->setCellValue('N1', 'הערות על ההזמנה');
-            $sheet->setCellValue('O1', 'הערות על הפריט');
-            $sheet->setCellValue('P1', 'סטטוס');
-            $sheet->setCellValue('Q1', 'תאריך שינוי אחרון');
+            $sheet->setCellValue('J1', 'כמות פריט');
+            $sheet->setCellValue('K1', 'כמות סה"כ');
+            $sheet->setCellValue('L1', 'מק"ט');
+            $sheet->setCellValue('M1', 'סוג פריט');
+            $sheet->setCellValue('N1', 'פירוט מורחב');
+            $sheet->setCellValue('O1', 'הערות על ההזמנה');
+            $sheet->setCellValue('P1', 'הערות על הפריט');
+            $sheet->setCellValue('Q1', 'סטטוס');
+            $sheet->setCellValue('R1', 'תאריך שינוי אחרון');
 
             $row = 2;
             foreach ($distributions as $distribution) {
@@ -861,17 +862,19 @@ class ExportController extends Controller
                 $sheet->setCellValue('G' . $row, $distribution->created_for ? $distribution->createdForUser->translated_employee_type : 'לא קיים');
                 $sheet->setCellValue('H' . $row, $distribution->created_for ? $distribution->createdForUser->phone : 'לא קיים');
                 $sheet->setCellValue('I' . $row, $distribution->created_for ? $distribution->createdForUser->email : 'לא קיים');
-                $sheet->setCellValue('J' . $row, $distribution->quantity ?? 'לא קיים');
-                $sheet->setCellValue('K' . $row, $distribution->inventory_id ? $distribution->inventory->sku : 'לא קיים');
-                $sheet->setCellValue('L' . $row, $distribution->type_id ? $distribution->itemType->type : 'לא קיים');
-                $sheet->setCellValue('M' . $row, $distribution->inventory_id ? $distribution->inventory->detailed_description : 'לא קיים');
-                $sheet->setCellValue('N' . $row, $distribution->general_comment ?? 'לא קיים');
-                $sheet->setCellValue('O' . $row, $distribution->inventory_comment ?? 'לא קיים');
-                $sheet->setCellValue('P' . $row, $distribution->getStatusTranslation() ?? 'לא קיים');
-                $sheet->setCellValue('Q' . $row, $distribution->updated_at_date ?? 'לא קיים');
+                $sheet->setCellValue('J' . $row, $distribution->quantity_per_item ?? 'לא קיים');
+                $sheet->setCellValue('K' . $row, $distribution->total_quantity ?? 'לא קיים');
+                $sheet->setCellValue('L' . $row, $distribution->inventory_id ? $distribution->inventory->sku : 'לא קיים');
+                $sheet->setCellValue('M' . $row, $distribution->type_id ? $distribution->itemType->type : 'לא קיים');
+                $sheet->setCellValue('N' . $row, $distribution->inventory_id ? $distribution->inventory->detailed_description : 'לא קיים');
+                $sheet->setCellValue('O' . $row, $distribution->general_comment ?? 'לא קיים');
+                $sheet->setCellValue('P' . $row, $distribution->inventory_comment ?? 'לא קיים');
+                $sheet->setCellValue('Q' . $row, $distribution->getStatusTranslation() ?? 'לא קיים');
+                $sheet->setCellValue('R' . $row, $distribution->updated_at_date ?? 'לא קיים');
 
                 $row++;
             }
+
 
             // Set & Style the header cells
             $headerStyle = [
@@ -896,7 +899,7 @@ class ExportController extends Controller
                 ],
             ];
 
-            $sheet->getStyle('A1:Q1')->applyFromArray($headerStyle);
+            $sheet->getStyle('A1:R1')->applyFromArray($headerStyle);
 
             // Set & Style the cells
             $cellStyle = [
@@ -907,10 +910,10 @@ class ExportController extends Controller
             ];
 
             // apply styling to all cells in the sheet
-            $sheet->getStyle('A1:Q' . ($row - 1))->applyFromArray($cellStyle);
+            $sheet->getStyle('A1:R' . ($row - 1))->applyFromArray($cellStyle);
 
             // set the size for rest of columns
-            foreach (range('A', 'Q') as $column) {
+            foreach (range('A', 'R') as $column) {
                 $sheet->getColumnDimension($column)->setAutoSize(true);
             }
 

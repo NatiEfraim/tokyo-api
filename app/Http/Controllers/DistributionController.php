@@ -340,17 +340,18 @@ class DistributionController extends Controller
 
             $user_auth = Auth::user();
 
+
+
+            // Fetch all existing order numbers
+            $existingOrderNumbersQuery = Distribution::pluck('order_number');
+
             // Generate a unique 7-digit order number
-            $orderNumber = Str::random(7);
+            do {
+                $orderNumber = random_int(1000000, 9999999); // Generates a random integer between 1000000 and 9999999
+            } while ($existingOrderNumbersQuery->contains($orderNumber));
 
-            // Check if the generated order number already exists in the database
-            $existingOrder = Distribution::where('order_number', $orderNumber)->exists();
+            $orderNumber = (int)$orderNumber; // Cast to integer
 
-            // If the generated order number already exists, regenerate it until a unique one is found
-            while ($existingOrder) {
-                $orderNumber = Str::random(7); //re generate
-                $existingOrder = Distribution::where('order_number', $orderNumber)->exists();
-            }
 
             $allQuantity = 0;
             foreach ($request->input('items') as $item) {
@@ -370,13 +371,15 @@ class DistributionController extends Controller
                     'order_number' => intval($orderNumber),
                     'general_comment' => $request->input('general_comment') ?? null,
                     'inventory_comment' => $comment,
+                    'total_quantity' =>  $allQuantity,
+                    'quantity_per_item' =>  $quantity,
                     'status' => DistributionStatus::PENDING->value,
-                    'quantity' =>  $allQuantity,///all quantity per order_number
-                    // 'inventory_id' => $inventory->id,
                     'type_id' => $itemType,
                     'department_id' => $request->input('department_id'),
                     'created_by' => $user_auth->id,
                     'created_for' => $request->input('created_for'),
+                    // 'quantity' =>  $allQuantity,///all quantity per order_number
+                    // 'inventory_id' => $inventory->id,
                 ]);
 
             }
