@@ -52,7 +52,7 @@ Route::controller(DistributionController::class)
     ->prefix('distributions')
     ->middleware(['auth:api'])
     ->group(function () {
-        
+
         Route::get('/', 'index');
 
         Route::get('/search-by-query', 'getRecordsByQuery');
@@ -60,6 +60,8 @@ Route::controller(DistributionController::class)
         Route::get('/search-by-filter', 'getRecordsByFilter');
 
         Route::get('/search-by-order', 'getRecordsByOrder');
+
+        Route::get('/fetch-records-by-order', 'fetchDistributionsRecordsByOrderNumber');
 
 
         Route::get('/{id?}', 'getRecordById');

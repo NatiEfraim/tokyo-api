@@ -24,7 +24,7 @@ class UpdateDistributionRequest extends FormRequest
         return [
             //
             'comment' => 'nullable|string',
-            'status' => 'nullable|integer|between:0,2',
+            'status' => 'nullable|integer|between:0,3',
             'quantity' => 'nullable|integer|min:0',
             'inventory_id' => 'nullable|exists:inventories,id,is_deleted,0',
             'department_id' => 'nullable|exists:departments,id,is_deleted,0',

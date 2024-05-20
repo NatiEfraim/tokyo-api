@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Log;
 // use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
 
-use Illuminate\Support\Str;
+// use Illuminate\Support\Str;
 
 class DistributionController extends Controller
 {
@@ -27,6 +27,9 @@ class DistributionController extends Controller
 
     const MIN_LEN = 1;
     const MAX_LEN = 7;
+
+
+
     /**
      * Retrieve all distributions.
      *
@@ -914,6 +917,137 @@ class DistributionController extends Controller
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
+    /**
+     * Retrieve all distributions group by order_number fileds.
+     *
+     * This endpoint retrieves all distribution records along with their associated inventory and department.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @OA\Get(
+     *     path="/api/distributions/fetch-records-by-order",
+     *     summary="Retrieve all distributions group by order_number fileds",
+     *     tags={"Distributions"},
+     *      summary="Get all Distributions group by order_number",
+     *      description="Returns a list of all Distributions.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"status"},
+     *             @OA\Property(property="status", type="integer", example=2)
+     *         )
+     *     ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="id", type="integer", example=1),
+     *              @OA\Property(property="comment", type="string", example="Velit veritatis quia vel nemo qui. Eaque commodi expedita enim libero ut. Porro ducimus repellendus tenetur."),
+     *              @OA\Property(property="status", type="integer", example=1),
+     *              @OA\Property(property="quantity", type="integer", example=44),
+     *              @OA\Property(property="inventory_id", type="integer", example=24),
+     *              @OA\Property(property="created_at", type="string", format="date-time", example="2024-04-07T11:42:45.000000Z"),
+     *              @OA\Property(property="updated_at", type="string", format="date-time", example="2024-04-07T11:42:45.000000Z"),
+     *              @OA\Property(
+     *                  property="inventory",
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=24),
+     *                  @OA\Property(property="quantity", type="integer", example=10),
+     *                  @OA\Property(property="sku", type="string", example="1359395842801"),
+     *                  @OA\Property(property="item_type", type="string", example="magni"),
+     *                  @OA\Property(property="detailed_description", type="string", example="Velit ut ipsam neque tempora est dicta. Et distinctio eligendi expedita corporis assumenda aspernatur hic.")
+     *              ),
+     *              @OA\Property(
+     *                  property="created_for_user",
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="name", type="string", example="Percival Schulist"),
+     *                  @OA\Property(property="emp_type_id", type="integer", example=2),
+     *                  @OA\Property(property="phone", type="string", example="0556926412"),
+     *                  @OA\Property(
+     *                      property="employee_type",
+     *                      type="object",
+     *                      @OA\Property(property="id", type="integer", example=2),
+     *                      @OA\Property(property="name", type="string", example="miluim")
+     *                  )
+     *              )
+     *          )
+     *      ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="התרחש בעיית שרת יש לנסות שוב מאוחר יותר.")
+     *         )
+     *     )
+     * )
+     */
+
+
+    public function fetchDistributionsRecordsByOrderNumber(Request $request)
+    {
+        try {
+
+            // set custom error messages in Hebrew
+            $customMessages = [
+
+                'status.required' => 'יש לשלוח שדה לחיפוש',
+                'order_number.integer' => 'ערך השדה שנשלח אינו תקין.',
+                'order_number.between' => 'ערך השדה שנשלח אינו תקין.',
+
+            ];
+
+
+            //set the rules
+            $rules = [
+
+                'status' => 'required|integer|between:0,3',
+
+            ];
+
+            // validate the request data
+            $validator = Validator::make($request->all(), $rules, $customMessages);
+
+            // Check if validation fails
+            if ($validator->fails()) {
+                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+
+            // Fetch all distribution records with their relations
+            $distributions = Distribution::with(['inventory', 'itemType', 'department', 'createdForUser'])
+                ->where('status', $request->input('status'))
+                ->where('is_deleted', 0)
+                ->get();
+
+            // Create a new collection to store unique distributions by order_number
+            $uniqueDistributions = collect();
+
+
+
+            // Create a set to track seen order_numbers
+            $seenOrderNumbers = [];
+
+            // Loop through the fetched distributions
+            foreach ($distributions as $distribution) {
+                // make sure the order_number has been seen before
+                if (!in_array($distribution->order_number, $seenOrderNumbers)) {
+                    $uniqueDistributions->push($distribution);
+                    // Mark this order_number as seen
+                    $seenOrderNumbers[] = $distribution->order_number;
+                }
+            }
+
+            return response()->json($uniqueDistributions, Response::HTTP_OK);
+
+
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response()->json(['message' => 'Server error, please try again later.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
 
     /**
      * Get distributions records by query.
@@ -997,7 +1131,7 @@ class DistributionController extends Controller
      * )
      */
 
-     
+
     public function getRecordsByOrder(Request $request)
     {
         try {
@@ -1148,9 +1282,7 @@ class DistributionController extends Controller
         try {
             // set validation rules
             $rules = [
-                // 'sku' => 'nullable|string|max:255|exists:inventories,sku,is_deleted,0',
-                // 'name' => 'nullable|string|exists:departments,name,is_deleted,0',
-                // 'personal_number' => 'nullable|min:1|max:7',
+
 
                 'inventory_id' => 'nullable|string|max:255|exists:inventories,id,is_deleted,0',
 
@@ -1169,14 +1301,7 @@ class DistributionController extends Controller
 
             // Define custom error messages
             $customMessages = [
-                // 'sku.string' => 'שדה שהוזן אינו בפורמט תקין',
-                // 'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
-                // 'sku.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
 
-                // 'name.string' => 'שדה ערך שם מחלקה אינו תקין.',
-
-                // 'personal_number.min' => 'מספר אישי אינו תקין.',
-                // 'personal_number.max' => 'מספר אישי אינו תקין.',
 
                 'inventory_id.string' => 'שדה שהוזן אינו בפורמט תקין',
                 'inventory_id.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
@@ -1241,6 +1366,9 @@ class DistributionController extends Controller
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
+
+
+
     //? search based on request->input('query').
     private function fetchDistributions(Request $request)
     {
@@ -1278,39 +1406,14 @@ class DistributionController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
 
-            // return Distribution::with(['inventory', 'department', 'createdForUser'])
-
-            //     ->where('is_deleted', 0)
-
-            //     ->where(function ($queryBuilder) use ($query) {
-
-            //         // Search by personal number
-            //         $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
-            //             $userQuery->where('personal_number', 'like', "%$query%");
-            //         });
-
-            //         // Search by SKU
-            //         $queryBuilder->orWhereHas('inventory', function ($inventoryQuery) use ($query) {
-            //             $inventoryQuery->where('sku', 'like', "%$query%");
-            //         });
-
-            //         // Search by item_type
-            //         $queryBuilder->orWhereHas('inventory', function ($inventoryQuery) use ($query) {
-            //             $inventoryQuery->where('item_type', 'like', "%$query%");
-            //         });
-
-            //         // Search by full name
-            //         $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
-            //             $userQuery->where('name', 'like', "%$query%");
-            //         });
-            //     })
-            //     ->orderBy('created_at', 'desc')
-            //     ->get();
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
+
+
+
 
     //? fillter & fetch distributions records based on filter input
     private function fetchDistributionsByFilter(Request $request)
@@ -1365,4 +1468,7 @@ class DistributionController extends Controller
             return response()->json(['message' => 'התרחשה בעיה בשרת. נסה שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+
+
 }
