@@ -1784,6 +1784,10 @@
                                         "type": "integer",
                                         "example": "1"
                                     },
+                                    "year": {
+                                        "type": "integer",
+                                        "example": "2017"
+                                    },
                                     "department_id": {
                                         "type": "string",
                                         "example": "2"

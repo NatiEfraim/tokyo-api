@@ -339,6 +339,10 @@ class DistributionController extends Controller
     public function store(StoreDistributionRequest $request)
     {
         try {
+
+
+
+
             DB::beginTransaction();
 
             $user_auth = Auth::user();
@@ -361,6 +365,11 @@ class DistributionController extends Controller
                 $allQuantity += $item['quantity'];
             }
 
+
+            // Get the current year
+            $currentYear = Carbon::now()->year;
+
+
             // Loop through each item and create distribution records
             foreach ($request->input('items') as $item) {
                 //? save key & value
@@ -378,6 +387,7 @@ class DistributionController extends Controller
                     'quantity_per_item' =>  $quantity,
                     'status' => DistributionStatus::PENDING->value,
                     'type_id' => $itemType,
+                    'year' =>  $currentYear,
                     'department_id' => $request->input('department_id'),
                     'created_by' => $user_auth->id,
                     'created_for' => $request->input('created_for'),
@@ -747,10 +757,7 @@ class DistributionController extends Controller
             }
 
             if ($request->input('status')) {
-                //? user changed status distribtuons record
-                // $inventory = Inventory::where('id', $distribution->inventory_id)
-                // ->where('is_deleted', false)
-                // ->first();
+         
 
                 $statusValue = (int) $request->input('status');
 
@@ -1195,6 +1202,7 @@ class DistributionController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="inventory_id", type="string", example="1"),
      *             @OA\Property(property="status", type="integer", example="1"),
+     *             @OA\Property(property="year", type="integer", example="2017"),
      *             @OA\Property(property="department_id", type="string", example="2"),
      *             @OA\Property(property="user_id", type="string", example="3"),
      *             @OA\Property(property="created_at", type="string", format="date", example="2023-05-01"),
@@ -1294,6 +1302,8 @@ class DistributionController extends Controller
 
                 'order_number' => 'nullable|string|exists:distributions,order_number,is_deleted,0',
 
+                'year' => 'nullable|integer|between:1948,2099',
+
                 'created_at' => ['nullable', 'date'],
 
                 'updated_at' => ['nullable', 'date'],
@@ -1302,6 +1312,8 @@ class DistributionController extends Controller
             // Define custom error messages
             $customMessages = [
 
+                'year.integer' => 'שדה שנה אינו תקין.',
+                'year.between' => 'שדה שנה אינו תקין.',
 
                 'inventory_id.string' => 'שדה שהוזן אינו בפורמט תקין',
                 'inventory_id.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
@@ -1398,6 +1410,9 @@ class DistributionController extends Controller
                     // Search by order number
                     $queryBuilder->orWhere('order_number', 'like', "%$query%");
 
+                    // Search by year 
+                    $queryBuilder->orWhere('year', 'like', "%$query%");
+
                     // Search by full name
                     $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
                         $userQuery->where('name', 'like', "%$query%");
@@ -1439,6 +1454,11 @@ class DistributionController extends Controller
             // Search by department_id
             if ($request->has('department_id')) {
                 $query->where('department_id', $request->input('department_id'));
+            }
+
+            // Search by year
+            if ($request->has('year')) {
+                $query->where('year', $request->input('year'));
             }
 
             // Search by user_id
