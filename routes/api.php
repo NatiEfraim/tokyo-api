@@ -36,7 +36,8 @@ Route::controller(InventoryController::class)
         Route::get('/', 'index');
         Route::get('/sku-records', 'getSkuRecords');
         Route::get('/search-records', 'searchRecords');
-    Route::get('/{id?}', 'getRecordById');
+        Route::get('/fetch-by-type', 'fetchByType');
+        Route::get('/{id?}', 'getRecordById');
 
         Route::put('/{id?}', 'update');
         Route::post('/', 'store');
@@ -51,10 +52,18 @@ Route::controller(DistributionController::class)
     ->prefix('distributions')
     ->middleware(['auth:api'])
     ->group(function () {
+        
         Route::get('/', 'index');
+
         Route::get('/search-by-query', 'getRecordsByQuery');
+
         Route::get('/search-by-filter', 'getRecordsByFilter');
+
+        Route::get('/search-by-order', 'getRecordsByOrder');
+
+
         Route::get('/{id?}', 'getRecordById');
+
         Route::put('/changed-status/{id?}', 'changeStatus');
         Route::put('/{id?}', 'update');
         Route::post('/', 'store');

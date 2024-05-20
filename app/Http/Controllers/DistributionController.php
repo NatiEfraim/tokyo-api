@@ -914,6 +914,138 @@ class DistributionController extends Controller
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
+
+    /**
+     * Get distributions records by query.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @OA\Get(
+     *     path="/api/distributions/search-by-order",
+     *     summary="Get distributions records by order_numbe fileds",
+     *     tags={"Distributions"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"order_number"},
+     *             @OA\Property(property="order_number", type="string", example="425134")
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Page number",
+     *         required=false,
+     *         @OA\Schema(
+     *             type="integer",
+     *             default=1
+     *         )
+     *     ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="id", type="integer", example=1),
+     *              @OA\Property(property="comment", type="string", example="Velit veritatis quia vel nemo qui. Eaque commodi expedita enim libero ut. Porro ducimus repellendus tenetur."),
+     *              @OA\Property(property="status", type="integer", example=1),
+     *              @OA\Property(property="quantity", type="integer", example=44),
+     *              @OA\Property(property="inventory_id", type="integer", example=24),
+     *              @OA\Property(property="created_at", type="string", format="date-time", example="2024-04-07T11:42:45.000000Z"),
+     *              @OA\Property(property="updated_at", type="string", format="date-time", example="2024-04-07T11:42:45.000000Z"),
+     *              @OA\Property(
+     *                  property="inventory",
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=24),
+     *                  @OA\Property(property="quantity", type="integer", example=10),
+     *                  @OA\Property(property="sku", type="string", example="1359395842801"),
+     *                  @OA\Property(property="item_type", type="string", example="magni"),
+     *                  @OA\Property(property="detailed_description", type="string", example="Velit ut ipsam neque tempora est dicta. Et distinctio eligendi expedita corporis assumenda aspernatur hic.")
+     *              ),
+     *              @OA\Property(
+     *                  property="created_for_user",
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="name", type="string", example="Percival Schulist"),
+     *                  @OA\Property(property="emp_type_id", type="integer", example=2),
+     *                  @OA\Property(property="phone", type="string", example="0556926412"),
+     *                  @OA\Property(
+     *                      property="employee_type",
+     *                      type="object",
+     *                      @OA\Property(property="id", type="integer", example=2),
+     *                      @OA\Property(property="name", type="string", example="miluim")
+     *                  )
+     *              )
+     *          )
+     *      ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Invalid search value")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Server error occurred")
+     *         )
+     *     )
+     * )
+     */
+
+     
+    public function getRecordsByOrder(Request $request)
+    {
+        try {
+
+
+            // set custom error messages in Hebrew
+            $customMessages = [
+
+                'order_number.required' => 'יש לשלוח שדה לחיפוש',
+                'order_number.string' => 'ערך השדה שנשלח אינו תקין.',
+                'order_number.exists' => 'מספר הזמנה אינה קיימת.',
+
+            ];
+
+
+            //set the rules
+            $rules = [
+
+                'order_number' => 'required|string|exists:distributions,order_number,is_deleted,0',
+
+            ];
+
+            // validate the request data
+            $validator = Validator::make($request->all(), $rules, $customMessages);
+
+            // Check if validation fails
+            if ($validator->fails()) {
+                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+            //? fetch all distribution records based on order_number
+            $distributions= Distribution::with(['inventory', 'itemType', 'department', 'createdForUser'])
+                ->where('order_number', $request->input('order_number'))
+                ->where('is_deleted',0)
+                ->get();
+
+            return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
+        } catch (\Exception $e) {
+
+            Log::error($e->getMessage());
+
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+
+
+
     /**
      * Get distributions records by filter.
      *

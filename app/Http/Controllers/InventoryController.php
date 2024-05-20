@@ -608,4 +608,95 @@ class InventoryController extends Controller
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
+
+    
+    /**
+     * @OA\Get(
+     *     path="/api/inventory/fetch-by-type",
+     *     tags={"Inventories"},
+     *     summary="Search inventory records by type_id",
+     *     description="Search inventory records by providing  type_id. Returns matching inventory records.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"type_id"},
+     *             @OA\Property(property="type_id", type="integer", example=1)
+     *         )
+     *     ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              type="array",
+     *              @OA\Items(
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="quantity", type="integer", example=33),
+     *                  @OA\Property(property="sku", type="string", example="0028221469208"),
+     *                  @OA\Property(property="item_type", type="string", example="autem"),
+     *                  @OA\Property(property="detailed_description", type="string", example="Neque recusandae corporis totam facere pariatur. Et perspiciatis aut in quia. Placeat quas vero modi magni ut. Voluptas et qui vitae culpa."),
+     *                  @OA\Property(property="reserved", type="integer", example=3),
+     *              )
+     *          )
+     *      ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid input"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error"
+     *     )
+     * )
+     */
+
+
+
+
+    public function fetchByType(Request $request)
+    {
+        try {
+
+
+            // set validation rules
+            $rules = [
+
+
+                'type_id' => 'required|integer|exists:item_types,id,is_deleted,0',
+
+            ];
+
+            // Define custom error messages
+            $customMessages = [
+
+
+                'type_id.required' => 'חובה לשלוח מספר פריט.',
+                'type_id.integer' => 'ערך הקלט שנשלח אינו תקין.',
+                'type_id.exists' => 'סוג פריט שנשלח אינו קיים במערכת.',
+            ];
+
+            // validate the request with custom error messages
+            $validator = Validator::make($request->all(), $rules, $customMessages);
+
+            // Check if validation fails
+            if ($validator->fails()) {
+                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+   
+
+            $inventories = Inventory::with(['itemType'])
+            ->where('type_id',$request->input('type_id'))
+            ->where('is_deleted', 0)
+            ->get();
+
+
+            return response()->json($inventories, Response::HTTP_OK);
+
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
 }
