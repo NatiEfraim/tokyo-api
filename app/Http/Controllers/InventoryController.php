@@ -109,11 +109,17 @@ class InventoryController extends Controller
     {
         try {
 
-            $inventories = Inventory::select('id','sku')
-            ->where('is_deleted', 0)
-            ->get();
-               
 
+
+            $inventories = Inventory::select('id', 'sku')
+                ->where('is_deleted', 0)
+                ->get()
+                ->map(function ($inventory) {
+                    return [
+                        'id' => $inventory->id,
+                        'name' => $inventory->sku
+                    ];
+                });
 
             return response()->json($inventories, Response::HTTP_OK);
         } catch (\Exception $e) {

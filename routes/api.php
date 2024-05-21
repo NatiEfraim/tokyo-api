@@ -34,6 +34,9 @@ Route::controller(InventoryController::class)
     ->middleware(['auth:api'])
     ->group(function () {
         Route::get('/', 'index');
+
+
+        //? fetch sku & id only
         Route::get('/sku-records', 'getSkuRecords');
         Route::get('/search-records', 'searchRecords');
         Route::get('/fetch-by-type', 'fetchByType');
@@ -62,6 +65,9 @@ Route::controller(DistributionController::class)
         Route::get('/search-by-order', 'getRecordsByOrder');
 
         Route::get('/fetch-records-by-order', 'fetchDistributionsRecordsByOrderNumber');
+
+        //?sprt & fetch by quering
+        Route::get('/sortByQuery', 'sortByQuery');
 
 
         Route::get('/{id?}', 'getRecordById');

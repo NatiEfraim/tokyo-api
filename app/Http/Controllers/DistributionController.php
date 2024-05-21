@@ -1028,14 +1028,16 @@ class DistributionController extends Controller
                 ->paginate(20);
 
 
+            // if ($distributions) {
+            //     $distributions->each(function ($distribution) {
+            //         // Format the created_at and updated_at timestamps
+            //         $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+            //         $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
 
-            $distributions->map(function ($distribution) {
-                // Format the created_at and updated_at timestamps
-                $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
-                $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+            //         return $distribution;
+            //     });
+            // }
 
-                return $distribution;
-            });
 
 
             // Create a new collection to store unique distributions by order_number
@@ -1388,6 +1390,78 @@ class DistributionController extends Controller
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
+
+
+    //? fetch distributions records based on sort query and paginate
+    public function sortByQuery(Request $request)
+    {
+
+        try {
+
+        // Define the valid fields that can be used for sorting
+        $validFields = [
+            'order_number',
+            'year',
+            'inventory_id',
+            'type_id',
+            'department_id',
+
+        ];
+
+        // Validate the input to ensure the query parameter is valid
+        $validator = Validator::make($request->all(), [
+            'sort_by' => ['required', 'string', 'in:' . implode(',', $validFields)],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['messages' => 'הנתונים למיון שגויים.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Retrieve the sort_by parameter
+        $sortBy = $request->input('sort_by');
+
+        // Initialize the query builder
+        $query = Distribution::query();
+
+        // Add joins if sorting by a related field
+        if ($sortBy == 'department_id') {
+            $query->join('departments', 'distributions.department_id', '=', 'departments.id')
+            ->select('distributions.*')
+            ->orderBy('departments.name'); // order by name depratment records
+        } 
+        if ($sortBy == 'inventory_id') {
+            $query->join('inventories', 'distributions.inventory_id', '=', 'departments.id')
+            ->select('inventories.*')
+            ->orderBy('inventories.sku'); // order by sku depratment records
+        } 
+        if ($sortBy == 'type_id') {
+            $query->join('item_types', 'distributions.type_id', '=', 'item_types.id')
+            ->select('distributions.*')
+            ->orderBy('item_types.type '); // order by type item_type records
+        } 
+        if($sortBy=='year' || $sortBy=='order_number') {
+            $query->orderBy($sortBy);
+        }
+
+        // Define the number of records per page
+        $perPage = 5;
+
+        // Fetch the sorted records with pagination
+        $distributions = $query->with(['inventory', 'itemType', 'department', 'createdForUser'])
+                               ->paginate($perPage);
+        // // Fetch the sorted records
+        // $distributions = $query->with(['inventory', 'itemType', 'department', 'createdForUser'])->get();
+
+        return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
+
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+    }
+
+
 
 
 
