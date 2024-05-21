@@ -108,9 +108,13 @@ class InventoryController extends Controller
     public function getSkuRecords()
     {
         try {
-            $inventories = Inventory::with(['itemType'])
+
+            $inventories = Inventory::select('id','sku')
             ->where('is_deleted', 0)
-                ->pluck('sku')->toArray();
+            ->get();
+               
+
+
             return response()->json($inventories, Response::HTTP_OK);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
@@ -317,10 +321,7 @@ class InventoryController extends Controller
             }
 
             $inventory = Inventory::create($request->validated());
-            // $currentTime = Carbon::now()->toDateTimeString();
-            // $inventory->updated_at = $currentTime;
-            // $inventory->created_at = $currentTime;
-            // $inventory->save();
+
 
             return response()->json(['message' => 'שורה נוצרה בהצלחה.'], Response::HTTP_CREATED);
         } catch (\Exception $e) {
@@ -583,25 +584,23 @@ class InventoryController extends Controller
             }
 
 
-            if (ctype_digit($request->input('query'))) {
+            $inventories = $this->fetchInventories($request);
 
-                // Search by SKU
-                $inventory = Inventory::where('sku', $request->input('query'))
-                    ->where('is_deleted', false)
-                    ->first();
+            if ($inventories) {
 
 
+                $inventories->each(function ($inventory) {
 
-                return response()->json(is_null($inventory)? []:$inventory, Response::HTTP_OK);
-            } else {
-
-                // Search by item type
-                $inventories = Inventory::where('item_type', 'LIKE', '%' . $request->input('query') . '%')
-                    ->where('is_deleted', false)->get();
+                    $inventory->available = $inventory->quantity - $inventory->reserved;
+                });
 
 
-                return response()->json($inventories->isEmpty() ? []: $inventories, Response::HTTP_OK);
             }
+
+            return response()->json($inventories->isEmpty() ? [] : $inventories, Response::HTTP_OK);
+
+
+
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
@@ -698,5 +697,42 @@ class InventoryController extends Controller
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
+
+
+
+    //? search based on request->input('query').
+    private function fetchInventories(Request $request)
+    {
+        try {
+            $query = $request->input('query');
+
+            return Inventory::with([ 'itemType'])
+
+                ->where('is_deleted', 0)
+
+                ->where(function ($queryBuilder) use ($query) {
+
+
+                    // Search by item_type type field
+                    $queryBuilder->orWhereHas('itemType', function ($itemTypeQuery) use ($query) {
+                        $itemTypeQuery->where('type', 'like', "%$query%");
+                    });
+
+                    // Search by order sku
+                    $queryBuilder->orWhere('sku', 'like', "%$query%");
+
+                    // Search by order sku
+                    $queryBuilder->orWhere('detailed_description', 'like', "%$query%");
+
+                })
+
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
 
 }

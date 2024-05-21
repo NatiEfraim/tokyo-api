@@ -326,9 +326,12 @@ class ItemTypeController extends Controller
                 return response()->json(['message' => 'שורה אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
             }
 
+            $currentTime = Carbon::now()->toDateTimeString();
 
-
-            $itemTypeRecord->update($request->validated());
+            $itemTypeRecord->update([
+                'type' =>$request->input('type'),
+                'updated_at' =>   $currentTime
+            ]);
 
 
 
