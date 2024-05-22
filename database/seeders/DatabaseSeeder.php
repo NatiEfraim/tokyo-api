@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             ItemTypeSeeder::class,
             InventorySeeder::class,
             DistributionSeeder::class,
+            ReportSeeder::class,
         ]);
 
         // User::factory(10)->create();
