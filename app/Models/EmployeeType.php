@@ -31,4 +31,10 @@ class EmployeeType extends Model
         return $this->hasMany(User::class, 'emp_type_id');
     }
 
+    //set the relation
+    public function client()
+    {
+        return $this->hasMany(Client::class, 'emp_type_id');
+    }
+
 }

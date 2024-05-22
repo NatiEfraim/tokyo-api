@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             InventorySeeder::class,
             DistributionSeeder::class,
             ReportSeeder::class,
+            ClientSeeder::class,
         ]);
 
         // User::factory(10)->create();

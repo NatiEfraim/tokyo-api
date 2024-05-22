@@ -53,7 +53,6 @@ class DistributionFactory extends Factory
             'created_for' => $randomUser->id, //set relation
             'quantity_per_item' => $this->faker->numberBetween(1, 100), // Generate quantity per item
             'total_quantity' => $this->faker->numberBetween(1, 100), // Generate total quantity
-            // 'quantity' => $this->faker->numberBetween(1, 100),
 
         ];
     }
