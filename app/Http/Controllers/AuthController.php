@@ -72,7 +72,7 @@ class AuthController extends Controller
         try {
             // set validation rules
             $rules = [
-                'personal_number' => 'required|regex:/^[cms][0-9]{7}$/',
+                'personal_number' => 'required|regex:/^[0-9]{7}$/',
             ];
 
             // Define custom error messages

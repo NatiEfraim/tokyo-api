@@ -27,15 +27,22 @@ class UserFactory extends Factory
         $randomEmpType = EmployeeType::inRandomOrder()->first();
         $faker = \Faker\Factory::create('he_IL');
         //* generate random personl_number
-        $pn = $faker->unique()->regexify('[scm]\d{7}');
+        
+    // Generate a unique 7-digit personal number
+    $pn = $faker->unique()->numberBetween(1000000, 9999999);
+
+    // Array of letters to choose from
+    $letters = ['s', 'c', 'm'];
+
+    // Pick a random letter from the array
+    $randomLetter = $faker->randomElement($letters);
 
         return [
             'name' => fake()->name(),
-            'email' => "$pn@army.idf.il",
+            'email' => "{$randomLetter}{$pn}@army.idf.il",
             'personal_number' => $pn,
             'emp_type_id' => $randomEmpType->id, //set realtion
             'phone' => $faker->unique()->regexify('05\d{8}'),
-            // 'email' => fake()->unique()->safeEmail(),
             // 'email_verified_at' => now(),
             // 'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
