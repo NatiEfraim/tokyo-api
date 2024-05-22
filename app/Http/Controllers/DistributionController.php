@@ -1354,7 +1354,7 @@ class DistributionController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-            if ($request->has('user_id') || $request->has('status') || $request->has('order_number') || $request->has('inventory_id') || $request->has('department_id') || $request->has('created_at') || $request->has('updated_at')) {
+            if ($request->has('user_id') || $request->has('year')  || $request->has('status') || $request->has('order_number') || $request->has('inventory_id') || $request->has('department_id') || $request->has('created_at') || $request->has('updated_at')) {
                 //? one or more of th search based on value filter send
 
                 $distributions = $this->fetchDistributionsByFilter($request);
@@ -1444,13 +1444,11 @@ class DistributionController extends Controller
         }
 
         // Define the number of records per page
-        $perPage = 5;
+        $perPage = 20;
 
         // Fetch the sorted records with pagination
         $distributions = $query->with(['inventory', 'itemType', 'department', 'createdForUser'])
                                ->paginate($perPage);
-        // // Fetch the sorted records
-        // $distributions = $query->with(['inventory', 'itemType', 'department', 'createdForUser'])->get();
 
         return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
 
@@ -1518,46 +1516,50 @@ class DistributionController extends Controller
     //? fillter & fetch distributions records based on filter input
     private function fetchDistributionsByFilter(Request $request)
     {
+
         try {
+
+
             $query = Distribution::query();
 
             // Search by inventory_id
-            if ($request->has('inventory_id')) {
+            if ($request->has('inventory_id') && empty($request->input('inventory_id'))==false) {
                 $query->where('inventory_id', $request->input('inventory_id'));
             }
 
             // Search by order_number
-            if ($request->has('order_number')) {
+            if ($request->has('order_number') && empty($request->input('order_number'))==false) {
                 $query->where('order_number', $request->input('order_number'));
             }
 
             // Search by status
-            if ($request->has('status')) {
+            if ($request->has('status')  && empty($request->input('status'))==false) {
                 $query->where('status', $request->status);
             }
 
+
             // Search by department_id
-            if ($request->has('department_id')) {
+            if ($request->has('department_id') && empty($request->input('department_id'))==false) {
                 $query->where('department_id', $request->input('department_id'));
             }
 
             // Search by year
-            if ($request->has('year')) {
+            if ($request->has('year') && empty($request->input('year'))==false) {
                 $query->where('year', $request->input('year'));
             }
 
             // Search by user_id
-            if ($request->has('user_id')) {
+            if ($request->has('user_id') && empty($request->input('user_id'))==false) {
                 $query->where('created_for', $request->input('user_id'));
             }
 
             // Search by created_at
-            if ($request->has('created_at')) {
+            if ($request->has('created_at') && empty($request->input('created_at'))==false) {
                 $query->whereDate('created_at', $request->created_at);
             }
 
             // Search by updated_at
-            if ($request->has('updated_at')) {
+            if ($request->has('updated_at') && empty($request->input('updated_at'))==false) {
                 $query->whereDate('updated_at', $request->updated_at);
             }
 
