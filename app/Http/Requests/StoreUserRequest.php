@@ -44,6 +44,7 @@ class StoreUserRequest extends FormRequest
     public function messages()
     {
         return [
+            
             'name.required' => 'שם הוא שדה חובה',
             'name.string' => 'שדה שם אינו בפורמט תקין.',
             'name.min' => 'השם חייב להיות לפחות 2 תווים',

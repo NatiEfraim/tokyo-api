@@ -17,11 +17,11 @@ class DatabaseSeeder extends Seeder
             EmployeeTypeSeeder::class,
             UserSeeder::class,
             DepartmentSeeder::class,
+            ClientSeeder::class,
             ItemTypeSeeder::class,
             InventorySeeder::class,
             DistributionSeeder::class,
             ReportSeeder::class,
-            ClientSeeder::class,
         ]);
 
         // User::factory(10)->create();

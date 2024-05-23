@@ -888,6 +888,22 @@
                                         "type": "integer",
                                         "example": 1
                                     },
+                                    "employee_type": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "05326514585"
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Momo"
+                                    },
+                                    "personal_number": {
+                                        "type": "string",
+                                        "example": "6548525"
+                                    },
                                     "created_for": {
                                         "type": "integer",
                                         "example": 1

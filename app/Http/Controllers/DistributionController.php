@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\EmployeeType;
+
 use App\Enums\DistributionStatus;
 use App\Http\Requests\StoreDistributionRequest;
 use App\Http\Requests\UpdateDistributionRequest;
+use App\Models\Client;
 // use App\Models\Department;
 use App\Models\Distribution;
 use App\Models\Inventory;
@@ -298,6 +301,10 @@ class DistributionController extends Controller
      *             required={"department_id", "created_for", "items"},
      *             @OA\Property(property="general_comment", type="string", example="general comment for all the items"),
      *             @OA\Property(property="department_id", type="integer", example=1),
+     *             @OA\Property(property="employee_type", type="integer", example=1),
+     *             @OA\Property(property="phone", type="string", example="05326514585"),
+     *             @OA\Property(property="name", type="string", example="Momo"),
+     *             @OA\Property(property="personal_number", type="string", example="6548525"),
      *             @OA\Property(property="created_for", type="integer", example=1),
      *             @OA\Property(
      *                 property="items",
@@ -342,10 +349,40 @@ class DistributionController extends Controller
 
 
 
-
             DB::beginTransaction();
 
             $user_auth = Auth::user();
+
+
+            //? create new clients records. - and get the client_id
+
+
+            //casting the value.
+            $emp_type = (int) $request->input('employee_type');
+
+
+            //set the first letter for the persnal_number
+            $personal_number = match ($emp_type) {
+                EmployeeType::KEVA->value, EmployeeType::SADIR->value => 's' . $request->personal_number,
+                EmployeeType::MILUIM->value => 'm' . $request->personal_number,
+                EmployeeType::OVED_TZAHAL->value => 'c' . $request->personal_number,
+                default => throw new \InvalidArgumentException('סוג עובד לא תקין.')
+            };
+
+
+
+            // Create a new client record
+            $client = Client::create([
+                'name' => $request->input('name'),
+                'personal_number' => $request->input('personal_number'),
+                'email' => "{$personal_number}@army.idf.il",
+                'phone' => $request->input('phone'),
+                'emp_type_id' =>  $request->input('employee_type'),
+                'department_id' => $request->input('department_id'),
+            ]);
+
+
+
 
 
 
@@ -390,17 +427,20 @@ class DistributionController extends Controller
                     'year' =>  $currentYear,
                     'department_id' => $request->input('department_id'),
                     'created_by' => $user_auth->id,
-                    'created_for' => $request->input('created_for'),
-                    // 'quantity' =>  $allQuantity,///all quantity per order_number
-                    // 'inventory_id' => $inventory->id,
+                    'created_for' =>  $client->id,
+        
                 ]);
 
             }
+
+
+
 
             DB::commit();
 
             return response()->json(['message' => 'שורה נוצרה בהצלחה.'], Response::HTTP_CREATED);
         } catch (\Exception $e) {
+
             DB::rollBack(); // Rollback the transaction in case of any error
             Log::error($e->getMessage());
         }

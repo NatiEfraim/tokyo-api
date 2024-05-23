@@ -22,8 +22,9 @@ class Client extends Model
         'phone',
         'personal_number',
         'email',
-        'remember_token',
-        'password',
+        'department_id',
+        // 'remember_token',
+        // 'password',
     ];
 
     /**
@@ -44,6 +45,12 @@ class Client extends Model
     public function employeeType()
     {
         return $this->belongsTo(EmployeeType::class, 'emp_type_id');
+    }
+
+    
+    public function distribution()
+    {
+        return $this->hasMany(Distribution::class);
     }
 
     public function getTranslatedEmployeeTypeAttribute()

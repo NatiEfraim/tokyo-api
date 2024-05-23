@@ -24,27 +24,32 @@ class StoreDistributionRequest extends FormRequest
         return [
             //
 
-            // 'status' => 'nullable|integer|between:0,2',
-
-            // 'quantity' => 'required|integer|min:0',
-
-            // 'inventory_id' => 'required|exists:inventories,id,is_deleted,0',
 
 
+            'name' => 'required|string|min:2|max:255',
+            'personal_number' => [
+                'required',
+                'regex:/^\d{7}$/', // Ensure the value is exactly 7 digits
+                'unique:clients,personal_number,NULL,id,is_deleted,0', // Custom unique rule
+            ],
+
+            'phone' => 'required|string|unique:users|regex:/^05\d{8}$/',
+
+            'employee_type' => 'required|exists:employee_types,id,is_deleted,0',
 
             'general_comment' => 'nullable|string|min:2|max:255',
 
             'department_id' => 'required|exists:departments,id,is_deleted,0',
 
-            'created_for' => 'required|exists:users,id,is_deleted,0',
-
+            
             'items' => 'required|array',
-
+            
             'items.*.type_id' => 'required|exists:item_types,id,is_deleted,0',
-
+            
             'items.*.quantity' => 'required|integer|min:1', // Adjust min value as needed
             'items.*.comment' => 'nullable|string|max:255', // Nullable string with max length 255
-
+            
+            // 'created_for' => 'required|exists:users,id,is_deleted,0',
         ];
     }
 
@@ -57,6 +62,28 @@ class StoreDistributionRequest extends FormRequest
     {
         return [
 
+            //? clients comments
+            'name.required' => 'שם הוא שדה חובה',
+            'name.string' => 'שדה שם אינו בפורמט תקין.',
+            'name.min' => 'השם חייב להיות לפחות 2 תווים',
+            'name.max' => 'השם יכול להכיל מקסימום 255 תווים',
+
+            'personal_number.required' => 'מספר אישי הוא שדה חובה',
+
+            'personal_number.regex' => 'מספר אישי חייב להיות בפורמט תקין',
+            'personal_number.unique' => 'מספר אישי קיים במערכת.',
+
+
+
+            'phone.required' => 'מספר הטלפון הוא שדה חובה',
+            'phone.string' => 'מספר הטלפון אינו בפורמט תקין',
+            'phone.unique' => 'מספר הטלפון כבר קיים במערכת',
+            'phone.regex' => 'מספר הטלפון חייב להיות בפורמט תקין של מספר ישראלי',
+            'employee_type.required' => 'סוג העובד הוא שדה חובה',
+            'employee_type.exists' => 'סוג העובד אינו קיים במערכת',
+
+
+            //? items comments
             'general_comment.required' => 'שדה ההערה הוא חובה.',
 
             'general_comment.string' => 'שדה הערה כללית אינה תקינה.',

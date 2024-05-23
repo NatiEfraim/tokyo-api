@@ -24,6 +24,7 @@ class Distribution extends Model
         // 'quantity',
         'inventory_id',
         'type_id',
+        'year',
         'department_id',
         'created_by',
         'created_for',
@@ -88,7 +89,7 @@ class Distribution extends Model
 
     public function createdForUser()
     {
-        return $this->belongsTo(User::class, 'created_for')
+        return $this->belongsTo(Client::class, 'created_for')
         ->select('id', 'name', 'emp_type_id', 'phone', 'email', 'personal_number')->with('employeeType');
     }
 

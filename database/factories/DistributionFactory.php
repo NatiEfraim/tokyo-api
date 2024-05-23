@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Client;
 use App\Models\Department;
 use App\Models\Distribution;
 use App\Models\Inventory;
@@ -37,6 +38,7 @@ class DistributionFactory extends Factory
         $randomType = ItemType::inRandomOrder()->first();
         $randomDepartemnt = Department::inRandomOrder()->first();
         $randomUser = User::inRandomOrder()->first();
+        $randomClient = Client::inRandomOrder()->first();
 
         return [
             //
@@ -50,7 +52,7 @@ class DistributionFactory extends Factory
             'type_id' => $randomType->id, //set relation
             'department_id' => $randomDepartemnt->id, //set relation
             'created_by' => $randomUser->id, //set relation
-            'created_for' => $randomUser->id, //set relation
+            'created_for' =>  $randomClient->id, //set relation
             'quantity_per_item' => $this->faker->numberBetween(1, 100), // Generate quantity per item
             'total_quantity' => $this->faker->numberBetween(1, 100), // Generate total quantity
 
