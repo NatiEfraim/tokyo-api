@@ -690,11 +690,17 @@ class InventoryController extends Controller
 
    
 
-            $inventories = Inventory::with(['itemType'])
-            ->where('type_id',$request->input('type_id'))
+            $inventories = Inventory::where('type_id',$request->input('type_id'))
             ->where('is_deleted', 0)
+            ->select('id','sku', 'type_id', 'quantity', 'reserved')
             ->get();
 
+            $inventories->each(function ($inventory) {
+
+                $inventory->available = $inventory->quantity - $inventory->reserved;
+                // Hide the fields 'type', 'quantity', and 'reserved'
+                $inventory->makeHidden(['quantity', 'reserved', 'type_id']);
+            });
 
             return response()->json($inventories, Response::HTTP_OK);
 

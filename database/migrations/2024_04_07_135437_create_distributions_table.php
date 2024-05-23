@@ -23,6 +23,8 @@ return new class extends Migration
             // $table->integer('quantity');
             $table->integer('quantity_per_item'); //  column to store quantity per item
             $table->integer('total_quantity'); //  column to store total quantity per order
+            // New JSON column to store the inventory items
+            $table->json('inventory_items')->nullable();
             $table->integer('year');
             $table->foreignId('inventory_id')->nullable();
             $table->foreignId('type_id');

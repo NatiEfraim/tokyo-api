@@ -599,20 +599,33 @@ class DistributionController extends Controller
     public function changeStatus(Request $request, $id = null)
     {
         try {
+
             if (is_null($id)) {
                 return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה.'], Response::HTTP_BAD_REQUEST);
             }
 
             // set custom error messages in Hebrew
             $customMessages = [
+
                 'status.required' => 'חובה לשלוח שדה סטטוס לעידכון.',
                 'status.integer' => 'שדה סטטוס שנשלח אינו בפורמט תקין.',
                 'status.between' => 'ערך הסטטוס שנשלח אינו תקין.',
+
+                'inventory_items.array' => 'נתון שנשלח אינו תקין.',
+                'inventory_items.*.inventory_id.required' => 'חובה לשלוח מזהה פריט במערך הפריטים.',
+                'inventory_items.*.inventory_id.exists' => 'מזהה הפריט שנשלח במערך אינו קיים או נמחק.',
+                'inventory_items.*.quantity.required' => 'חובה לשלוח כמות לכל פריט במערך.',
+                'inventory_items.*.quantity.integer' => 'הכמות שנשלחה עבור פריט במערך אינה בפורמט תקין.',
+                'inventory_items.*.quantity.min' => 'הכמות שנשלחה עבור פריט במערך חייבת להיות גדולה או שווה ל-0.',
             ];
 
             //set the rules
             $rules = [
-                'status' => 'required|integer|between:0,2',
+
+                'status' => 'required|integer|between:1,2',
+                'inventory_items' => 'nullable|array',
+                'inventory_items.*.inventory_id' => 'required|exists:inventories,id,is_deleted,0',
+                'inventory_items.*.quantity' => 'required|integer|min:0',
             ];
 
             // validate the request data
@@ -623,28 +636,27 @@ class DistributionController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
+            if (is_null($request->input('inventory_items')) && $request->input('inventory_items')==DistributionStatus::APPROVED->value) {
+                return response()->json(['message' => 'נתונים אינם תקינים.'], Response::HTTP_BAD_REQUEST);
+            }
+
+
             $distribution_record = Distribution::where('id', $id)->where('is_deleted', false)->first();
 
             if (is_null($distribution_record)) {
                 return response()->json(['message' => 'שורה זו אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
             }
 
-            $inventory = Inventory::where('id', $distribution_record->inventory_id)
-                ->where('is_deleted', false)
-                ->first();
-
-            if (is_null($inventory)) {
-                return response()->json(['message' => 'פריט אני קיים במלאי'], Response::HTTP_BAD_REQUEST);
-            }
 
             $statusValue = (int) $request->input('status');
             $statusValue = match ($statusValue) {
-                DistributionStatus::PENDING->value => 0,
                 DistributionStatus::APPROVED->value => 1,
                 DistributionStatus::CANCELD->value => 2,
 
                 default => throw new \InvalidArgumentException('ערך סטטוס אינו תקין..'),
             };
+
+
 
             $currentTime = Carbon::now()->toDateTimeString();
             DB::beginTransaction(); // Start a database transaction
@@ -652,30 +664,66 @@ class DistributionController extends Controller
             //? distribution records has been approved
 
             if ($statusValue == DistributionStatus::APPROVED->value) {
-                $inventory->update([
-                    'quantity' => $inventory->quantity - $distribution_record->quantity,
-                    'reserved' => $inventory->reserved - $distribution_record->quantity,
-                    'updated_at' => $currentTime,
-                ]);
+
+                foreach ($request->inventory_items as $invetories) {
+
+                    $idInvetory = $invetories['inventory_id']; //save the invetory_id records
+                    $quantity = $invetories['quantity'];
+
+
+
+                    $inventory = Inventory::where('id',  $idInvetory)
+                        ->where('is_deleted', false)
+                        ->first();
+
+                    $available = $inventory->quantity - $inventory->reserved;
+
+
+                    if ($inventory->type_id !== $distribution_record->type_id) {
+                        DB::rollBack(); // Rollback the transaction 
+                        return response()->json(['message' => 'פריט עבור מק"ט' . $inventory->sku . '.אינו תקין'], Response::HTTP_OK);
+                    }
+
+                    if ($quantity< $available) {
+                        DB::rollBack(); // Rollback the transaction 
+                        return response()->json(['message' => 'כמות שנשלח עבור'. $inventory->sku .' חסרה במלאי.'], Response::HTTP_OK);
+                    }
+
+                    //? update invetory records based on invetory_id
+                    $inventory->update([
+                        // 'quantity' => $inventory->quantity - $quantity,
+                        'reserved' => $inventory->reserved - $quantity,
+                        'updated_at' => $currentTime,
+                    ]);
+
+                }
+
+                   $distribution_record->update([
+                        'inventory_items' => json_encode($request->inventory_items),
+                        'updated_at' => $currentTime,
+
+                   ]);
+
+
                 //? distribution records has been canceld
             } elseif ($statusValue == DistributionStatus::CANCELD->value) {
-                $inventory->update([
-                    'reserved' => $inventory->reserved - $distribution_record->quantity,
+
+  
+
+                $distribution_record->update([
+                    'status' => DistributionStatus::CANCELD->value,
                     'updated_at' => $currentTime,
+
                 ]);
+
             }
 
-            $distribution_record->update([
-                'status' => $request->input('status'),
-                'updated_at' => $currentTime,
-            ]);
-
+ 
             DB::commit(); // commit all changes in database.
 
             return response()->json(['message' => 'שורה התעדכנה בהצלחה.'], Response::HTTP_OK);
         } catch (\Exception $e) {
             DB::rollBack(); // Rollback the transaction in case of any error
-
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
