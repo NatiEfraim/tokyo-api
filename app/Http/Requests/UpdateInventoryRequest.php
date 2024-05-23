@@ -23,11 +23,12 @@ class UpdateInventoryRequest extends FormRequest
     {
         return [
             //
-            // 'quantity' => 'nullable|integer|min:0',
+            'quantity' => 'nullable|integer|min:0',
             
             'sku' => 'nullable|string|max:255',
 
-            'item_type' => 'nullable|string|max:255',
+            'type_id' => 'required|string|exists:item_types,id,is_deleted,0',
+
 
             'detailed_description' => 'nullable|string',
         ];
@@ -50,7 +51,9 @@ class UpdateInventoryRequest extends FormRequest
 
             'sku.max' => 'שדה מק"ט יכול להכיל עד 255 תווים',
 
-            'item_type.max' => 'אורך שדה סוג הפריט חייב להיות לכל היותר 255 תווים.',
+            'type_id.required' => 'יש לבחור סוג פריט.',
+            'type_id.string' => 'סוג פריט אינו בפורמט תקין',
+            'type_id.exists' => 'סוג פריט אינו קיים.',
 
         ];
     }

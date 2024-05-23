@@ -9,7 +9,10 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use App\Models\Inventory;
+use App\Models\Report;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class InventoryController extends Controller
 {
@@ -383,6 +386,7 @@ class InventoryController extends Controller
 
         try {
 
+            $authUser = Auth::user();
 
             $inventory = Inventory::where('is_deleted', 0)
 
@@ -396,12 +400,31 @@ class InventoryController extends Controller
             // $currentTime = Carbon::now()->toDateTimeString();
 
 
+            DB::beginTransaction();
+
+            if ($request->input('quantity')) {
+                    //? created new reports records
+                Report::create([
+                    
+                    'hour' => Carbon::now()->format('H:i'), // Current hour and minutes in 'HH:MM' format
+                    'created_by' => $authUser->id,
+                    'last_quantity' => $inventory->quantity, 
+                    'new_quantity' => $request->input('quantity'),
+                    'sku' => $inventory->sku,
+                ]);
+             
+            }
+
             $inventory->update($request->validated());
+
+            DB::commit();
 
 
             return response()->json(['message' => 'שורה התעדכנה בהצלחה.'], Response::HTTP_OK);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
+            DB::rollBack(); // Rollback the transaction in case of any error
+
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }

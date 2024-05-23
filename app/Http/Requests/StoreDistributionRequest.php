@@ -49,7 +49,6 @@ class StoreDistributionRequest extends FormRequest
             'items.*.quantity' => 'required|integer|min:1', // Adjust min value as needed
             'items.*.comment' => 'nullable|string|max:255', // Nullable string with max length 255
             
-            // 'created_for' => 'required|exists:users,id,is_deleted,0',
         ];
     }
 

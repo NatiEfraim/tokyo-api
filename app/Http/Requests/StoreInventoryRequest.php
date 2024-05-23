@@ -60,10 +60,6 @@ class StoreInventoryRequest extends FormRequest
             'type_id.exists' => 'סוג פריט אינו קיים.',
 
 
-            // 'item_type.max' => 'אורך שדה סוג פריט חייב להיות לכל היותר 255 תווים',
-            // 'item_type.max' => 'אורך שדה סוג פריט חייב להיות לכל היותר 255 תווים',
-            // 'item_type.required' => 'יש להזין סוג פריט',
-
             'detailed_description.required' => 'יש להזין תיאור מפורט',
         ];
     }
