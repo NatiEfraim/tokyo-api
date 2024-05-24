@@ -10,6 +10,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
 
     $middleware->prepend([VerifyCookie::class]);
+    // Add permission middleware here
     // $middleware->append([VerifyCookie::class]);
     // $middleware->alias([
     //     'verify.cookie' => VerifyCookie::class

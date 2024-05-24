@@ -67,6 +67,15 @@ class InventoryController extends Controller
         try {
 
 
+        // Fetch authenticated user
+        $authUser = Auth::user();
+        
+        // Fetch associated roles for the authenticated user
+        $userRoles = $authUser->roles->first()->name;
+
+
+
+
             $inventories = Inventory::with(['itemType'])
             ->where('is_deleted', 0)
             ->orderBy('created_at','desc')

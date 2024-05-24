@@ -27,15 +27,15 @@ class UserFactory extends Factory
         $randomEmpType = EmployeeType::inRandomOrder()->first();
         $faker = \Faker\Factory::create('he_IL');
         //* generate random personl_number
-        
-    // Generate a unique 7-digit personal number
-    $pn = $faker->unique()->numberBetween(1000000, 9999999);
 
-    // Array of letters to choose from
-    $letters = ['s', 'c', 'm'];
+        // Generate a unique 7-digit personal number
+        $pn = $faker->unique()->numberBetween(1000000, 9999999);
 
-    // Pick a random letter from the array
-    $randomLetter = $faker->randomElement($letters);
+        // Array of letters to choose from
+        $letters = ['s', 'c', 'm'];
+
+        // Pick a random letter from the array
+        $randomLetter = $faker->randomElement($letters);
 
         return [
             'name' => fake()->name(),
@@ -54,8 +54,10 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
-        ]);
+        return $this->state(
+            fn(array $attributes) => [
+                'email_verified_at' => null,
+            ],
+        );
     }
 }

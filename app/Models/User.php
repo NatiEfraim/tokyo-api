@@ -7,13 +7,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
-
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Traits\HasRoles;
 
 
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable , HasApiTokens;
+    use HasFactory, Notifiable, HasApiTokens, HasRoles;
 
     protected string $guard_name = "passport";
 
@@ -62,11 +63,26 @@ class User extends Authenticatable
         ];
     }
 
-
+   /**
+     * Get the employee type associated with the user.
+     */
     public function employeeType()
     {
         return $this->belongsTo(EmployeeType::class, 'emp_type_id');
     }
+
+       /**
+     * Get the roles for the user.
+     */
+    // public function roles()
+    // {
+    //     return $this->belongsToMany(Role::class, 'model_has_roles', 'model_id', 'role_id')
+    //                 ->where('model_type', self::class);
+    // }
+
+  /**
+     * Get the translated employee type attribute.
+     */
 
     public function getTranslatedEmployeeTypeAttribute()
     {
@@ -80,12 +96,18 @@ class User extends Authenticatable
         return $employeeTypes[$this->employeeType->name] ?? 'חסר';
     }
 
+        /**
+     * Get the distributions for the user.
+     */
 
     public function distribution()
     {
         return $this->hasMany(Distribution::class);
     }
 
+       /**
+     * Get the reports for the user.
+     */
     public function report()
     {
         return $this->hasMany(Report::class);

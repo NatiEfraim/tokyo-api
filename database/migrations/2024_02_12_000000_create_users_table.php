@@ -22,12 +22,12 @@ return new class extends Migration
             $table->foreignId('emp_type_id');
             $table->boolean('is_deleted')->default(false);
 
-            // $table->timestamp('email_verified_at')->nullable();
-            // $table->string('password');
-            $table->rememberToken();
             $table->timestamps();
             //? set relations on other table
             $table->foreign('emp_type_id')->references('id')->on('employee_types')->onUpdate('cascade')->onDelete('cascade');
+            // $table->timestamp('email_verified_at')->nullable();
+            // $table->string('password');
+            // $table->rememberToken();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

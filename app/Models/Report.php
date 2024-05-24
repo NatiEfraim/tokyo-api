@@ -27,9 +27,9 @@ class Report extends Model
     ];
 
 
-    protected $casts = [
-        'hour' => 'time',
-    ];
+    // protected $casts = [
+    //     'hour' => 'time',
+    // ];
 
     /**
      * The attributes that should be hidden for arrays.

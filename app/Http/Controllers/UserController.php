@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 use Illuminate\Support\Facades\Validator;
 
@@ -407,7 +408,7 @@ class UserController extends Controller
                 ]);
             } else {
                 //create a new uesr from scretch
-                User::create([
+                $newUser =User::create([
                     'name' => $request->input('name'),
                     'phone' => $request->input('phone'),
                     'personal_number' => $personal_number,
@@ -415,6 +416,27 @@ class UserController extends Controller
                     'emp_type_id' => $request->input('employee_type'), //set the relation
                     'remember_token' => Str::random(10),
                 ]);
+
+
+                
+            // // Assign role based on the received value.
+            // switch ($request->input('role_value')) {
+            //     case 1:
+            //         $role = Role::where('name', 'admin')->firstOrFail();
+            //         break;
+            //     case 2:
+            //         $role = Role::where('name', 'user')->firstOrFail();
+            //         break;
+            //     case 3:
+            //         $role = Role::where('name', 'quartermaster')->firstOrFail();
+            //         break;
+            //     default:
+            //         throw new \InvalidArgumentException('Invalid role value.');
+            // }
+
+            // // Assign the role to the new user.
+            // $newUser->assignRole($role);
+
 
             }
             return response()->json(['message' => 'משתמש נשמר במערכת'], Response::HTTP_CREATED  );

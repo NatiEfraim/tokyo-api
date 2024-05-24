@@ -70,6 +70,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         try {
+
             // set validation rules
             $rules = [
                 'personal_number' => 'required|regex:/^[0-9]{7}$/',
@@ -91,10 +92,16 @@ class AuthController extends Controller
 
             $pn = $request->personal_number;
 
-            $user = User::with(['employeeType'])
-                ->where('personal_number', $pn)
-                ->where('is_deleted', false)
-                ->first();
+            $user = User::with(['employeeType', 'roles'])
+            ->where('personal_number', $pn)
+            ->where('is_deleted', false)
+            ->first();
+
+
+            // $user = User::with(['employeeType'])
+            //     ->where('personal_number', $pn)
+            //     ->where('is_deleted', false)
+            //     ->first();
 
             ///validate the user exsist and has emp_type and permission.
             if (is_null($user)) {
@@ -113,6 +120,9 @@ class AuthController extends Controller
             // Create new token
             $token = $user->createToken($tokenName);
 
+            // Get user roles
+            $roles = $user->roles->pluck('name'); // Extract the role names
+
             // // Clear all previous cookies and set only the TokyoToken cookie
             // Cookie::forget('MashaToken');
 
@@ -121,8 +131,10 @@ class AuthController extends Controller
             return response()
                 ->json(
                     [
+          
                         'name' => $user->name,
                         'employee_type_name' => optional($user->employeeType)->name,
+                        'role' => $user->roles->first()->name?? null,
                         // 'token' => $token->accessToken,
                     ],
                     Response::HTTP_OK,
