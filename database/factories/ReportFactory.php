@@ -23,11 +23,14 @@ class ReportFactory extends Factory
     public function definition(): array
     {
         $randomUser = User::inRandomOrder()->first();
+        $randomInventory = Inventory::inRandomOrder()->first();
+
 
         return [
             //
-            'sku' =>  Inventory::factory()->create()->sku,
+            'sku' =>  $randomInventory->sku,
             'new_quantity' => $this->faker->numberBetween(1, 100),
+            'inventory_id' => $randomInventory->id, //set relation
             'last_quantity' => $this->faker->numberBetween(1, 100),
             'created_by' =>  $randomUser->id,
             'hour' => $this->faker->time('H:i'), // Set default value to current time using Carbon

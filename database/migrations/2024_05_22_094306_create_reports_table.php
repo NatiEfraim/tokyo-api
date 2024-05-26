@@ -18,12 +18,16 @@ return new class extends Migration
             $table->integer('new_quantity');
             $table->integer('last_quantity');
             $table->foreignId('created_by');
+            $table->foreignId('inventory_id');
 
             $table->boolean('is_deleted')->default('0');
             $table->time('hour');
             $table->timestamps();
 
+            //? set relation
             $table->foreign('created_by')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
+            $table->foreign('inventory_id')->references('id')->on('inventories')->onUpdate('cascade')->onDelete('cascade');
+
 
         });
     }

@@ -445,15 +445,42 @@ class InventoryController extends Controller
         try {
             
 
-            $reports = Report::where('sku',$request->input('sku'))
+            // set custom error messages in Hebrew
+            $customMessages = [
+                'inventory_id.required' => 'יש לשלוח מוצר פריט.',
+                'inventory_id.integer' => 'יש לשלוח בפורמט תקין.',
+                'inventory_id.exists' => 'מוצר פריט לא קיים במלאי.',
+
+            ];
+            //set the rules
+            $rules = [
+
+                'inventory_id' => 'required|integer|exists:inventories,id,is_deleted,0',
+            ];
+
+            // validate the request data
+            $validator = Validator::make($request->all(), $rules, $customMessages);
+
+            // Check if validation fails
+            if ($validator->fails()) {
+                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+            $reports = Report::with(['createdByUser'])
+            ->where('inventory_id',$request->input('inventory_id'))
             ->where('is_deleted', false)
             ->get();
+
 
 
                      $reports->each(function ($report) {
                 // Format the created_at and updated_at timestamps
                 $report->created_at_date = $report->created_at->format('d/m/Y');
                 $report->updated_at_date = $report->updated_at->format('d/m/Y');
+                $report->makeHidden(['inventory_id','created_by','sku']);
+                    
+
+
 
                 return $report;
             });

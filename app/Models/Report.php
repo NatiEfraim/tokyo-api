@@ -42,10 +42,23 @@ class Report extends Model
     ];
 
 
+        /**
+     * Get the user record associated with the reports.
+     */
+
     public function createdByUser()
     {
         return $this->belongsTo(User::class, 'created_by')
-            ->select('id', 'name', 'emp_type_id', 'phone', 'email', 'personal_number')->with('employeeType');
+            ->select('id', 'name');
+    }
+
+
+        /**
+     * Get the inventory record associated with the reports.
+     */
+    public function inventory()
+    {
+        return $this->belongsTo(Inventory::class,'inventory_id')->with(['itemType']);
     }
 
 }

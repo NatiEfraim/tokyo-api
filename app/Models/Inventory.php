@@ -48,6 +48,14 @@ class Inventory extends Model
         return $this->hasMany(Distribution::class);
     }
 
+    /**
+     * Get the report record associated with the inventory.
+     */
+    public function report()
+    {
+        return $this->hasMany(Report::class);
+    }
+
 
     /**
      * Get the item_type record associated with the distribution.
