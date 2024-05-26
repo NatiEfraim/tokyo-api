@@ -133,8 +133,8 @@ class AuthController extends Controller
                     [
           
                         'name' => $user->name,
-                        'employee_type_name' => optional($user->employeeType)->name,
                         'role' => $user->roles->first()->name?? null,
+                        // 'employee_type_name' => optional($user->employeeType)->name,
                         // 'token' => $token->accessToken,
                     ],
                     Response::HTTP_OK,

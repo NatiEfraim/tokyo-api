@@ -170,9 +170,10 @@ class UserController extends Controller
             $uesr_data = [
 
                 
-                        'name' => $user->name,
-                        'employee_type_name' => optional($user->employeeType)->name,
-                        'role' => $user->roles->first()->name?? null,
+            'name' => $user->name,
+            'personal_number' => $user->personal_number,
+            'role' => $user->roles->first()->name?? null,
+            // 'employee_type_name' => optional($user->employeeType)->name,
 
             ];
 
