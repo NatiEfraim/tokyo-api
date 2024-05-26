@@ -49,7 +49,7 @@ Route::controller(InventoryController::class)
         
         //? fetch all reports records by sku of invetory records (property sku:5487415).
         Route::get('/history', 'fetchReport')->middleware(['role:admin']);
-        
+
         Route::get('/{id?}', 'getRecordById');
         
 
@@ -129,7 +129,8 @@ Route::controller(UserController::class)
 
 
         Route::post('/', 'store')->middleware(['role:admin']);
-        // Route::put('/{id?}', 'update');
+        Route::put('/{id?}', 'update')->middleware(['role:admin']);
+        
         Route::delete('/mass-destroy', 'massDestroy')->middleware(['role:admin']);
         Route::delete('/{id?}', 'destroy')->middleware(['role:admin']);
     });

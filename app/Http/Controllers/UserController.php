@@ -163,15 +163,17 @@ class UserController extends Controller
             }
 
 
-            // Extract employee type name
-            $employeeTypeName = $user->employeeType ? $user->employeeType->name : null;
+            // // Extract employee type name
+            // $employeeTypeName = $user->employeeType ? $user->employeeType->name : null;
 
 
             $uesr_data = [
-                'id' => $user->id,
-                'name' => $user->name,
-                'personal_number' => $user->personal_number,
-                'employee_type' => $employeeTypeName
+
+                
+                        'name' => $user->name,
+                        'employee_type_name' => optional($user->employeeType)->name,
+                        'role' => $user->roles->first()->name?? null,
+
             ];
 
             return response()->json($uesr_data, Response::HTTP_OK);
@@ -328,6 +330,7 @@ class UserController extends Controller
      *              @OA\Property(property="name", type="string"),
      *              @OA\Property(property="personal_number", type="string", format="numeric", pattern="^\d{7}$"),
      *              @OA\Property(property="employee_type", type="integer", format="int32", minimum=1, maximum=4),
+     *              @OA\Property(property="role", type="integer", format="int32", minimum=1, maximum=3),
      *          ),
      *      ),
      *      @OA\Response(
@@ -419,40 +422,135 @@ class UserController extends Controller
                     'remember_token' => Str::random(10),
                     'is_deleted' => 0, //back to false.
                 ]);
+
+
+            // // // Assign role based on the received value.
+            switch ($request->input('role')) {
+                case 1:
+                    $role = Role::where('name', 'admin')->first();
+                    break;
+                case 2:
+                    $role = Role::where('name', 'user')->first();
+                    break;
+                case 3:
+                    $role = Role::where('name', 'quartermaster')->first();
+                    break;
+                default:
+                    throw new \InvalidArgumentException('Invalid role value.');
+            }
+
+            // Assign the role to the new user.
+            $user_exsist->assignRole($role);
+
+
+
+
             } else {
-                //create a new uesr from scretch
+                //?create a new uesr from scretch
                 $newUser =User::create([
                     'name' => $request->input('name'),
                     'phone' => $request->input('phone'),
                     'personal_number' => $personal_number,
                     'email' => "{$personal_number}@army.idf.il",
                     'emp_type_id' => $request->input('employee_type'), //set the relation
-                    'remember_token' => Str::random(10),
+                    // 'remember_token' => Str::random(10),
                 ]);
 
 
                 
-            // // Assign role based on the received value.
-            // switch ($request->input('role_value')) {
-            //     case 1:
-            //         $role = Role::where('name', 'admin')->firstOrFail();
-            //         break;
-            //     case 2:
-            //         $role = Role::where('name', 'user')->firstOrFail();
-            //         break;
-            //     case 3:
-            //         $role = Role::where('name', 'quartermaster')->firstOrFail();
-            //         break;
-            //     default:
-            //         throw new \InvalidArgumentException('Invalid role value.');
-            // }
+            // // // Assign role based on the received value.
+            switch ($request->input('role')) {
+                case 1:
+                    $role = Role::where('name', 'admin')->first();
+                    break;
+                case 2:
+                    $role = Role::where('name', 'user')->first();
+                    break;
+                case 3:
+                    $role = Role::where('name', 'quartermaster')->first();
+                    break;
+                default:
+                    throw new \InvalidArgumentException('Invalid role value.');
+            }
 
-            // // Assign the role to the new user.
-            // $newUser->assignRole($role);
+            // Assign the role to the new user.
+            $newUser->assignRole($role);
 
 
             }
+
             return response()->json(['message' => 'משתמש נשמר במערכת'], Response::HTTP_CREATED  );
+
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+
+    public function update(Request $request,$id=null)
+    {
+        try {
+
+
+            if (is_null($id)) {
+                return response()->json(['message' => 'יש לשלוח משתמש.'], Response::HTTP_BAD_REQUEST);
+            }
+
+
+            // set validation rules
+            $rules = [
+
+                'role' => 'required|integer|exists:roles,id',
+
+            ];
+
+            // Define custom error messages
+            $customMessages = [
+
+                'role.required' => 'יש לשלוח שדה תקיד עבור משתמש.',
+                'role.integer' => 'שדה תפקיד אינו תקין',
+                'role.exists' => 'שדה תפקיד שנשלח אינו קיים במערכת.',
+
+            ];
+
+            // validate the request with custom error messages
+            $validator = Validator::make($request->all(), $rules, $customMessages);
+
+
+            // Check if validation fails
+            if ($validator->fails()) {
+                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+            $user_exsist = User::where('id', $request->input('id'))->where('is_deleted', false)->first();
+
+            if (is_null($user_exsist)==false) {
+                return response()->json(['message' => 'משתמש אינו קיים במערכת.'], Response::HTTP_BAD_REQUEST);
+            }
+
+
+            // ?Assign role based on the received value.
+            switch ($request->input('role')) {
+                case 1:
+                    $role = Role::where('name', 'admin')->first();
+                    break;
+                case 2:
+                    $role = Role::where('name', 'user')->first();
+                    break;
+                case 3:
+                    $role = Role::where('name', 'quartermaster')->first();
+                    break;
+                default:
+                    throw new \InvalidArgumentException('Invalid role value.');
+            }
+
+            // Assign the role to the new user.
+            $user_exsist->assignRole($role);
+
+
+            return response()->json(['message' => 'שינויים עבור המשתמש נשמרו במערכת.'], Response::HTTP_CREATED  );
 
         } catch (\Exception $e) {
             Log::error($e->getMessage());

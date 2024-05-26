@@ -3067,6 +3067,118 @@
                 }
             }
         },
+        "/api/reports": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Fetch reports by inventory ID",
+                "description": "Retrieve reports associated with a specific inventory ID",
+                "operationId": "eb27437329ef1eba6ac8d91c1d42120e",
+                "parameters": [
+                    {
+                        "name": "inventory_id",
+                        "in": "query",
+                        "description": "ID of the inventory",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 18
+                                            },
+                                            "new_quantity": {
+                                                "type": "integer",
+                                                "example": 20
+                                            },
+                                            "last_quantity": {
+                                                "type": "integer",
+                                                "example": 29
+                                            },
+                                            "hour": {
+                                                "type": "string",
+                                                "example": "03:48:00"
+                                            },
+                                            "created_at_date": {
+                                                "type": "string",
+                                                "example": "26/05/2024"
+                                            },
+                                            "updated_at_date": {
+                                                "type": "string",
+                                                "example": "26/05/2024"
+                                            },
+                                            "created_by_user": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 6
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "ארנולד גורדון"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "messages": {
+                                            "type": "object",
+                                            "example": {
+                                                "inventory_id": [
+                                                    "יש לשלוח מוצר פריט."
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "התרחש בעיית שרת יש לנסות שוב מאוחר יותר."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/inventories/mass-destroy": {
             "delete": {
                 "tags": [
@@ -3833,6 +3945,12 @@
                                         "type": "integer",
                                         "format": "int32",
                                         "maximum": 4,
+                                        "minimum": 1
+                                    },
+                                    "role": {
+                                        "type": "integer",
+                                        "format": "int32",
+                                        "maximum": 3,
                                         "minimum": 1
                                     }
                                 },

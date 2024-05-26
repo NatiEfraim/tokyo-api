@@ -29,8 +29,14 @@ class StoreUserRequest extends FormRequest
                 'regex:/^\d{7}$/', // Ensure the value is exactly 7 digits
                 'unique:users,personal_number,NULL,id,is_deleted,0', // Custom unique rule
             ],
+
             'phone' => 'required|string|unique:users|regex:/^05\d{8}$/',
+
             'employee_type' => 'required|exists:employee_types,id,is_deleted,0',
+
+            // 'role' => 'required|between:0,3',
+            'role' => 'required|integer|exists:roles,id',
+
         ];
     }
 
@@ -55,6 +61,12 @@ class StoreUserRequest extends FormRequest
             'personal_number.regex' => 'מספר אישי חייב להיות בפורמט תקין',
             'personal_number.unique' => 'מספר אישי קיים במערכת.',
 
+            // 'role.required' => 'יש לבחור שדה תפקיד',
+            // 'role.between' => 'שדה תפקיד אינו תקין.',
+
+                            'role.required' => 'יש לשלוח שדה תקיד עבור משתמש.',
+                'role.integer' => 'שדה תפקיד אינו תקין',
+                'role.exists' => 'שדה תפקיד שנשלח אינו קיים במערכת.',
 
 
             'phone.required' => 'מספר הטלפון הוא שדה חובה',
