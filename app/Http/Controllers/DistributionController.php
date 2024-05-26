@@ -616,6 +616,10 @@ class DistributionController extends Controller
                 'status.integer' => 'שדה סטטוס שנשלח אינו בפורמט תקין.',
                 'status.between' => 'ערך הסטטוס שנשלח אינו תקין.',
 
+                'general_comment.string' => 'אחת מהשדות שנשלחו אינם תקינים.',
+                'general_comment.min' => 'אחת מהשדות שנשלחו אינם תקינים.',
+                'general_comment.max' => 'אחת מהשדות שנשלחו אינם תקינים.',
+
                 'inventory_items.array' => 'נתון שנשלח אינו תקין.',
                 'inventory_items.*.inventory_id.required' => 'חובה לשלוח מזהה פריט במערך הפריטים.',
                 'inventory_items.*.inventory_id.exists' => 'מזהה הפריט שנשלח במערך אינו קיים או נמחק.',
@@ -628,6 +632,7 @@ class DistributionController extends Controller
             $rules = [
 
                 'status' => 'required|integer|between:1,2',
+                'general_comment' => 'nullable|string|min:2|max:255',
                 'inventory_items' => 'nullable|array',
                 'inventory_items.*.inventory_id' => 'required|exists:inventories,id,is_deleted,0',
                 'inventory_items.*.quantity' => 'required|integer|min:0',
@@ -641,10 +646,13 @@ class DistributionController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-            if (is_null($request->input('inventory_items')) && $request->input('inventory_items')==DistributionStatus::APPROVED->value) {
+            if (is_null($request->input('inventory_items')) && $request->input('status')==DistributionStatus::APPROVED->value) {
                 return response()->json(['message' => 'נתונים אינם תקינים.'], Response::HTTP_BAD_REQUEST);
             }
 
+            if (is_null($request->input('general_comment')) && $request->input('status')==DistributionStatus::CANCELD->value) {
+                return response()->json(['message' => 'חובה לשלוח סיבת ביטול.'], Response::HTTP_BAD_REQUEST);
+            }
 
             $distribution_record = Distribution::where('id', $id)->where('is_deleted', false)->first();
 
@@ -717,6 +725,7 @@ class DistributionController extends Controller
 
                 $distribution_record->update([
                     'status' => DistributionStatus::CANCELD->value,
+                    'general_comment'=> $request->input('general_comment'),
                     'updated_at' => $currentTime,
 
                 ]);

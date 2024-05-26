@@ -83,11 +83,11 @@ Route::controller(DistributionController::class)
 
         Route::get('/{id?}', 'getRecordById');
 
-        Route::put('/changed-status/{id?}', 'changeStatus');
+        Route::put('/changed-status/{id?}', 'changeStatus')->middleware(['role:admin']);
         Route::put('/{id?}', 'update');
         Route::post('/', 'store');
-        Route::delete('/mass-destroy', 'massDestroy');
-        Route::delete('/{id?}', 'destroy');
+        Route::delete('/mass-destroy', 'massDestroy')->middleware(['role:admin']);
+        Route::delete('/{id?}', 'destroy')->middleware(['role:admin']);
     });
 
 Route::controller(DepartmentController::class)
