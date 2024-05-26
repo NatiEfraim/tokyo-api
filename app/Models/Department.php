@@ -46,4 +46,9 @@ class Department extends Model
         return $this->hasMany(Distribution::class);
     }
 
+    public function client()
+    {
+        return $this->hasMany(Client::class);
+    }
+
 }

@@ -34,21 +34,26 @@ Route::controller(InventoryController::class)
     ->middleware(['auth:api'])
     ->group(function () {
 
+
+
+        
         Route::get('/', 'index');
-
-
+        
+        
         //? fetch sku & id only
         Route::get('/sku-records', 'getSkuRecords');
-
+        
         Route::get('/search-records', 'searchRecords');
-
+        
         Route::get('/fetch-by-type', 'fetchByType');
-
+        
         //? fetch all reports records by sku of invetory records (property sku:5487415).
-        Route::get('/history', 'fetchReport');
-
-
+        Route::get('/history', 'fetchReport')->middleware(['role:admin']);
+        
         Route::get('/{id?}', 'getRecordById');
+        
+
+
 
         Route::put('/{id?}', 'update')->middleware(['role:admin|quartermaster']);
 
@@ -84,9 +89,13 @@ Route::controller(DistributionController::class)
         Route::get('/{id?}', 'getRecordById');
 
         Route::put('/changed-status/{id?}', 'changeStatus')->middleware(['role:admin']);
-        Route::put('/{id?}', 'update');
-        Route::post('/', 'store');
+
+        Route::put('/{id?}', 'update')->middleware(['role:admin|quartermaster']);
+
+        Route::post('/', 'store')->middleware(['role:admin|user']);
+
         Route::delete('/mass-destroy', 'massDestroy')->middleware(['role:admin']);
+
         Route::delete('/{id?}', 'destroy')->middleware(['role:admin']);
     });
 
@@ -95,9 +104,9 @@ Route::controller(DepartmentController::class)
     ->middleware(['auth:api'])
     ->group(function () {
         Route::get('/', 'index');
-        Route::post('/', 'store');
-        Route::delete('/mass-destroy', 'massDestroy');
-        Route::delete('/{id?}', 'destroy');
+        Route::post('/', 'store')->middleware(['role:admin']);
+        Route::delete('/mass-destroy', 'massDestroy')->middleware(['role:admin']);
+        Route::delete('/{id?}', 'destroy')->middleware(['role:admin']);
     });
 
 Route::controller(EmployeeTypeController::class)
@@ -112,17 +121,17 @@ Route::controller(UserController::class)
     ->middleware(['auth:api'])
     ->group(function () {
 
-        Route::get('/', 'index');
+        Route::get('/', 'index')->middleware(['role:admin']);
 
-        Route::get('/search', 'searchUser');
+        Route::get('/search', 'searchUser')->middleware(['role:admin']);
 
         Route::get('/roles', 'getRoles')->middleware(['role:admin']);
 
 
-        Route::post('/', 'store');
+        Route::post('/', 'store')->middleware(['role:admin']);
         // Route::put('/{id?}', 'update');
-        Route::delete('/mass-destroy', 'massDestroy');
-        Route::delete('/{id?}', 'destroy');
+        Route::delete('/mass-destroy', 'massDestroy')->middleware(['role:admin']);
+        Route::delete('/{id?}', 'destroy')->middleware(['role:admin']);
     });
 
 ///Export tables to Excel.

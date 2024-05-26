@@ -56,7 +56,7 @@ class Distribution extends Model
      */
     public function department()
     {
-        return $this->belongsTo(Department::class);
+        return $this->belongsTo(Department::class,'department_id');
     }
 
     /**
@@ -84,14 +84,10 @@ class Distribution extends Model
     public function createdByUser()
     {
         return $this->belongsTo(User::class, 'created_by')
-            ->select('id', 'name', 'emp_type_id', 'phone', 'email', 'personal_number')->with('employeeType');
+            ->select('id', 'name', 'emp_type_id', 'phone', 'email', 'personal_number')->with(['employeeType']);
     }
 
-    public function createdForUser()
-    {
-        return $this->belongsTo(Client::class, 'created_for')
-        ->select('id', 'name', 'emp_type_id', 'phone', 'email', 'personal_number')->with('employeeType');
-    }
+
 
     // public function updatedByUser()
     // {

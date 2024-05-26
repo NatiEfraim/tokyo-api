@@ -53,6 +53,16 @@ class Client extends Model
         return $this->hasMany(Distribution::class);
     }
 
+
+        /**
+     * Get the depratment record associated with the distribution.
+     */
+    public function department()
+    {
+        return $this->belongsTo(Department::class,'department_id');
+    }
+
+
     public function getTranslatedEmployeeTypeAttribute()
     {
         $employeeTypes = [

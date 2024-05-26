@@ -437,7 +437,59 @@ class InventoryController extends Controller
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
-    
+        /**
+     * @OA\Get(
+     *     path="/api/reports",
+     *     summary="Fetch reports by inventory ID",
+     *     description="Retrieve reports associated with a specific inventory ID",
+     *     tags={"Reports"},
+     *     @OA\Parameter(
+     *         name="inventory_id",
+     *         in="query",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer",
+     *             example=1
+     *         ),
+     *         description="ID of the inventory"
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful response",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 @OA\Property(property="id", type="integer", example=18),
+     *                 @OA\Property(property="new_quantity", type="integer", example=20),
+     *                 @OA\Property(property="last_quantity", type="integer", example=29),
+     *                 @OA\Property(property="hour", type="string", example="03:48:00"),
+     *                 @OA\Property(property="created_at_date", type="string", example="26/05/2024"),
+     *                 @OA\Property(property="updated_at_date", type="string", example="26/05/2024"),
+     *                 @OA\Property(
+     *                     property="created_by_user",
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer", example=6),
+     *                     @OA\Property(property="name", type="string", example="ארנולד גורדון")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="messages", type="object", example={"inventory_id": {"יש לשלוח מוצר פריט."}})
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="התרחש בעיית שרת יש לנסות שוב מאוחר יותר.")
+     *         )
+     *     )
+     * )
+     */
 
     public function fetchReport(Request $request)
     {
@@ -466,6 +518,7 @@ class InventoryController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
+
             $reports = Report::with(['createdByUser'])
             ->where('inventory_id',$request->input('inventory_id'))
             ->where('is_deleted', false)
@@ -487,11 +540,7 @@ class InventoryController extends Controller
 
             return response()->json($reports->isEmpty() ? [] :$reports, Response::HTTP_OK);
 
-     
-
-
-
-
+    
         } catch (\Exception $e) {
 
             Log::error($e->getMessage());
