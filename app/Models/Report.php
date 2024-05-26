@@ -27,10 +27,7 @@ class Report extends Model
     ];
 
 
-    // protected $casts = [
-    //     'hour' => 'time',
-    // ];
-
+ 
     /**
      * The attributes that should be hidden for arrays.
      *
@@ -40,7 +37,7 @@ class Report extends Model
 
         'is_deleted',
         'created_at',
-        'updated_at'
+        'updated_at',
         
     ];
 

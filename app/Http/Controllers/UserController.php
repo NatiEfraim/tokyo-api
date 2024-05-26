@@ -101,6 +101,19 @@ class UserController extends Controller
     }
 
 
+    public function getRoles()
+    {
+        try {
+            $roles = Role::all(['id','name']);
+            return response()->json($roles, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+
+
     /**
      * @OA\Get(
      *     path="/api/users/getuser",

@@ -354,6 +354,11 @@ class DistributionController extends Controller
             $user_auth = Auth::user();
 
 
+        
+        // // Fetch associated roles for the authenticated user
+        // $userRoles = $user_auth->roles->first()->name;
+
+
             //? create new clients records. - and get the client_id
 
 

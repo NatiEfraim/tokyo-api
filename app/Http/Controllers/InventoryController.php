@@ -67,15 +67,6 @@ class InventoryController extends Controller
         try {
 
 
-        // Fetch authenticated user
-        $authUser = Auth::user();
-        
-        // Fetch associated roles for the authenticated user
-        $userRoles = $authUser->roles->first()->name;
-
-
-
-
             $inventories = Inventory::with(['itemType'])
             ->where('is_deleted', 0)
             ->orderBy('created_at','desc')
@@ -190,10 +181,14 @@ class InventoryController extends Controller
 
     public function getRecordById($id = null)
     {
-        if (is_null($id)) {
-            return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
-        }
+
+
         try {
+            
+            if (is_null($id)) {
+                return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
+            }
+
             $inventory = Inventory::with(['itemType'])
             ->where('is_deleted', 0)
                 ->where('id', $id)
@@ -262,11 +257,13 @@ class InventoryController extends Controller
 
     public function destroy($id = null)
     {
-        if (is_null($id)) {
-            return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
-        }
-
+        
         try {
+
+            if (is_null($id)) {
+                return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
+            }
+
             $inventory = Inventory::where('is_deleted', 0)
                 ->where('id', $id)
                 ->first();
@@ -389,13 +386,15 @@ class InventoryController extends Controller
 
     public function update(UpdateInventoryRequest $request, $id = null)
     {
-        if (is_null($id)) {
-            return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
-        }
-
+        
         try {
+            
+            if (is_null($id)) {
+                return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
+            }
 
             $authUser = Auth::user();
+
 
             $inventory = Inventory::where('is_deleted', 0)
 
@@ -434,6 +433,43 @@ class InventoryController extends Controller
             Log::error($e->getMessage());
             DB::rollBack(); // Rollback the transaction in case of any error
 
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+    
+
+    public function fetchReport(Request $request)
+    {
+        
+        try {
+            
+
+            $reports = Report::where('sku',$request->input('sku'))
+            ->where('is_deleted', false)
+            ->get();
+
+
+                     $reports->each(function ($report) {
+                // Format the created_at and updated_at timestamps
+                $report->created_at_date = $report->created_at->format('d/m/Y');
+                $report->updated_at_date = $report->updated_at->format('d/m/Y');
+
+                return $report;
+            });
+
+            return response()->json($reports->isEmpty() ? [] :$reports, Response::HTTP_OK);
+
+     
+
+
+
+
+        } catch (\Exception $e) {
+
+            Log::error($e->getMessage());
+
+            
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }

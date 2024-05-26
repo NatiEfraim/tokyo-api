@@ -9,9 +9,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
-
-
-
+use Illuminate\Support\Facades\Auth;
 
 class DepartmentController extends Controller
 {
@@ -111,6 +109,11 @@ class DepartmentController extends Controller
     public function store(Request $request)
     {
         try {
+
+            $user_auth = Auth::user();
+
+            $roles = $user_auth->roles->first()->name; // Extract the role names
+
 
 
             // Set custom error messages in Hebrew
