@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('order_number')->nullable();
             $table->longText('inventory_comment')->nullable();
             $table->longText('general_comment')->nullable();
+
             //? 0--> pendig. 1--> approved. 2 -->canceld. 3 --> collected
             $table->integer('status')->default(0);
             // $table->integer('quantity');
@@ -25,6 +26,9 @@ return new class extends Migration
             $table->integer('total_quantity'); //  column to store total quantity per order
             // New JSON column to store the inventory items
             $table->json('inventory_items')->nullable();
+            $table->longText('user_comment')->nullable();
+            $table->longText('admin_comment')->nullable();
+            $table->longText('quartermaster_comment')->nullable();
             $table->integer('year');
             $table->foreignId('inventory_id')->nullable();
             $table->foreignId('type_id');

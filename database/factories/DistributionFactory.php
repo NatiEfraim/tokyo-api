@@ -47,6 +47,9 @@ class DistributionFactory extends Factory
             'year' => $this->faker->year,
             'inventory_comment' => $this->faker->sentence, // Generate inventory comment
             'general_comment' => $this->faker->sentence, // Generate generate comment
+            'quartermaster_comment' => $this->faker->sentence, // Generate generate comment for quartermaster_comment
+            'admin_comment' => $this->faker->sentence, // Generate generate comment for adamin
+            'user_comment' => $this->faker->sentence, // Generate generate comment for user
             'status' => $this->faker->numberBetween(0, 3),
             'inventory_id' => $randomInventory->id, //set relation
             'type_id' => $randomType->id, //set relation
