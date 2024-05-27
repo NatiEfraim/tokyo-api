@@ -354,7 +354,7 @@ class DistributionController extends Controller
             $user_auth = Auth::user();
 
 
-        
+
         // // Fetch associated roles for the authenticated user
         // $userRoles = $user_auth->roles->first()->name;
 
@@ -375,17 +375,43 @@ class DistributionController extends Controller
             };
 
 
+            $client=Client::where('personal_number',$request->input('personal_number'))
+            ->where('is_deleted',1)->first();
 
-            // Create a new client record
-            $client = Client::create([
-                'name' => $request->input('name'),
-                'personal_number' => $request->input('personal_number'),
-                'email' => "{$personal_number}@army.idf.il",
-                'phone' => $request->input('phone'),
-                'emp_type_id' =>  $request->input('employee_type'),
-                'department_id' => $request->input('department_id'),
-            ]);
+            if($client)
+            {
+                //? update client that has been deleted
+               $client->update([
+                    'name' => $request->input('name'),
+                   'personal_number' => $request->input('personal_number'),
+                   'email' => "{$personal_number}@army.idf.il",
+                   'phone' => $request->input('phone'),
+                   'emp_type_id' =>  $request->input('employee_type'),
+                   'department_id' => $request->input('department_id'),
+                   'is_deleted' => '0',
 
+               ]); 
+            }
+
+            $client=Client::where('personal_number',$request->input('personal_number'))
+            ->where('is_deleted',0)
+            ->first();
+
+             if(is_null($client)){
+
+                //? update client records - from scratch
+                $client = Client::create([
+                    'name' => $request->input('name'),
+                   'personal_number' => $request->input('personal_number'),
+                   'email' => "{$personal_number}@army.idf.il",
+                   'phone' => $request->input('phone'),
+                   'emp_type_id' =>  $request->input('employee_type'),
+                   'department_id' => $request->input('department_id'),
+    
+                ]);
+            }
+            
+            
 
 
 
@@ -433,7 +459,7 @@ class DistributionController extends Controller
                     'department_id' => $request->input('department_id'),
                     'created_by' => $user_auth->id,
                     'created_for' =>  $client->id,
-        
+
                 ]);
 
             }
@@ -693,12 +719,12 @@ class DistributionController extends Controller
 
 
                     if ($inventory->type_id !== $distribution_record->type_id) {
-                        DB::rollBack(); // Rollback the transaction 
+                        DB::rollBack(); // Rollback the transaction
                         return response()->json(['message' => 'פריט עבור מק"ט' . $inventory->sku . '.אינו תקין'], Response::HTTP_OK);
                     }
 
                     if ($quantity< $available) {
-                        DB::rollBack(); // Rollback the transaction 
+                        DB::rollBack(); // Rollback the transaction
                         return response()->json(['message' => 'כמות שנשלח עבור'. $inventory->sku .' חסרה במלאי.'], Response::HTTP_OK);
                     }
 
@@ -721,7 +747,7 @@ class DistributionController extends Controller
                 //? distribution records has been canceld
             } elseif ($statusValue == DistributionStatus::CANCELD->value) {
 
-  
+
 
                 $distribution_record->update([
                     'status' => DistributionStatus::CANCELD->value,
@@ -732,7 +758,7 @@ class DistributionController extends Controller
 
             }
 
- 
+
             DB::commit(); // commit all changes in database.
 
             return response()->json(['message' => 'שורה התעדכנה בהצלחה.'], Response::HTTP_OK);
@@ -859,7 +885,7 @@ class DistributionController extends Controller
             }
 
             if ($request->input('status')) {
-         
+
 
                 $statusValue = (int) $request->input('status');
 
@@ -1530,17 +1556,17 @@ class DistributionController extends Controller
             $query->join('departments', 'distributions.department_id', '=', 'departments.id')
             ->select('distributions.*')
             ->orderBy('departments.name'); // order by name depratment records
-        } 
+        }
         if ($sortBy == 'inventory_id') {
             $query->join('inventories', 'distributions.inventory_id', '=', 'departments.id')
             ->select('inventories.*')
             ->orderBy('inventories.sku'); // order by sku depratment records
-        } 
+        }
         if ($sortBy == 'type_id') {
             $query->join('item_types', 'distributions.type_id', '=', 'item_types.id')
             ->select('distributions.*')
             ->orderBy('item_types.type '); // order by type item_type records
-        } 
+        }
         if($sortBy=='year' || $sortBy=='order_number') {
             $query->orderBy($sortBy);
         }
@@ -1595,7 +1621,7 @@ class DistributionController extends Controller
                     // Search by order number
                     $queryBuilder->orWhere('order_number', 'like', "%$query%");
 
-                    // Search by year 
+                    // Search by year
                     $queryBuilder->orWhere('year', 'like', "%$query%");
 
                     // Search by full name
