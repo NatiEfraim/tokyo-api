@@ -45,8 +45,8 @@ class DistributionFactory extends Factory
 
             'order_number' => $this->faker->unique()->numberBetween(1000000, 9999999),
             'year' => $this->faker->year,
-            'inventory_comment' => $this->faker->sentence, // Generate inventory comment
-            'general_comment' => $this->faker->sentence, // Generate generate comment
+            'type_comment' => $this->faker->sentence, // Generate inventory comment
+            // 'general_comment' => $this->faker->sentence, // Generate generate comment
             'quartermaster_comment' => $this->faker->sentence, // Generate generate comment for quartermaster_comment
             'admin_comment' => $this->faker->sentence, // Generate generate comment for adamin
             'user_comment' => $this->faker->sentence, // Generate generate comment for user

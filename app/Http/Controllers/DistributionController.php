@@ -449,16 +449,16 @@ class DistributionController extends Controller
 
                 Distribution::create([
                     'order_number' => intval($orderNumber),
-                    'general_comment' => $request->input('general_comment') ?? null,
-                    'inventory_comment' => $comment,
+                    'user_comment' => $request->input('user_comment') ?? null,
+                    'type_comment' => $comment,//comment per type order
                     'total_quantity' =>  $allQuantity,
                     'quantity_per_item' =>  $quantity,
                     'status' => DistributionStatus::PENDING->value,
                     'type_id' => $itemType,
                     'year' =>  $currentYear,
                     'department_id' => $request->input('department_id'),
-                    'created_by' => $user_auth->id,
-                    'created_for' =>  $client->id,
+                    'created_by' => $user_auth->id,//set relation
+                    'created_for' =>  $client->id,//set relation
 
                 ]);
 
@@ -642,9 +642,9 @@ class DistributionController extends Controller
                 'status.integer' => 'שדה סטטוס שנשלח אינו בפורמט תקין.',
                 'status.between' => 'ערך הסטטוס שנשלח אינו תקין.',
 
-                'general_comment.string' => 'אחת מהשדות שנשלחו אינם תקינים.',
-                'general_comment.min' => 'אחת מהשדות שנשלחו אינם תקינים.',
-                'general_comment.max' => 'אחת מהשדות שנשלחו אינם תקינים.',
+                'admin_comment.string' => 'אחת מהשדות שנשלחו אינם תקינים.',
+                'admin_comment.min' => 'אחת מהשדות שנשלחו אינם תקינים.',
+                'admin_comment.max' => 'אחת מהשדות שנשלחו אינם תקינים.',
 
                 'inventory_items.array' => 'נתון שנשלח אינו תקין.',
                 'inventory_items.*.inventory_id.required' => 'חובה לשלוח מזהה פריט במערך הפריטים.',
@@ -658,7 +658,7 @@ class DistributionController extends Controller
             $rules = [
 
                 'status' => 'required|integer|between:1,2',
-                'general_comment' => 'nullable|string|min:2|max:255',
+                'admin_comment' => 'nullable|string|min:2|max:255',
                 'inventory_items' => 'nullable|array',
                 'inventory_items.*.inventory_id' => 'required|exists:inventories,id,is_deleted,0',
                 'inventory_items.*.quantity' => 'required|integer|min:0',
@@ -676,7 +676,7 @@ class DistributionController extends Controller
                 return response()->json(['message' => 'נתונים אינם תקינים.'], Response::HTTP_BAD_REQUEST);
             }
 
-            if (is_null($request->input('general_comment')) && $request->input('status')==DistributionStatus::CANCELD->value) {
+            if (is_null($request->input('admin_comment')) && $request->input('status')==DistributionStatus::CANCELD->value) {
                 return response()->json(['message' => 'חובה לשלוח סיבת ביטול.'], Response::HTTP_BAD_REQUEST);
             }
 
@@ -751,7 +751,7 @@ class DistributionController extends Controller
 
                 $distribution_record->update([
                     'status' => DistributionStatus::CANCELD->value,
-                    'general_comment'=> $request->input('general_comment'),
+                    'admin_comment'=> $request->input('admin_comment'),
                     'updated_at' => $currentTime,
 
                 ]);
@@ -840,10 +840,13 @@ class DistributionController extends Controller
      * )
      */
 
+     //? that function route for quartermaster - to update of collected or baeck to admin for approved
     public function update(UpdateDistributionRequest $request, $id = null)
     {
         try {
+        
             if (is_null($id)) {
+                
                 return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
             }
 
@@ -871,48 +874,52 @@ class DistributionController extends Controller
 
             DB::beginTransaction(); // Start a database transaction
 
-            //? update the reserved fileds of inventory
-            if ($request->input('quantity') && $request->input('quantity') > $distribution->quantity) {
-                $inventory->update([
-                    'reserved' => $inventory->reserved + abs($request->input('quantity') - $distribution->quantity),
-                    'updated_at' => $currentTime,
-                ]);
-            } elseif ($request->input('quantity') && $request->input('quantity') < $distribution->quantity) {
-                $inventory->update([
-                    'reserved' => $inventory->reserved - abs($request->input('quantity') - $distribution->quantity),
-                    'updated_at' => $currentTime,
-                ]);
-            }
-
-            if ($request->input('status')) {
+            // //? update the reserved fileds of inventory
+            // if ($request->input('quantity') && $request->input('quantity') > $distribution->quantity) {
+            //     $inventory->update([
+            //         'reserved' => $inventory->reserved + abs($request->input('quantity') - $distribution->quantity),
+            //         'updated_at' => $currentTime,
+            //     ]);
+            // } elseif ($request->input('quantity') && $request->input('quantity') < $distribution->quantity) {
+            //     $inventory->update([
+            //         'reserved' => $inventory->reserved - abs($request->input('quantity') - $distribution->quantity),
+            //         'updated_at' => $currentTime,
+            //     ]);
+            // }
 
 
-                $statusValue = (int) $request->input('status');
 
-                $statusValue = match ($statusValue) {
-                    DistributionStatus::PENDING->value => 0,
-                    DistributionStatus::APPROVED->value => 1,
-                    DistributionStatus::CANCELD->value => 2,
+            
+            // if ($request->input('status')) {
 
-                    default => throw new \InvalidArgumentException('ערך סטטוס אינו תקין..'),
-                };
 
-                //? distribution records has been approved
+            //     // $statusValue = (int) $request->input('status');
 
-                if ($statusValue == DistributionStatus::APPROVED->value) {
-                    $inventory->update([
-                        'quantity' => $inventory->quantity - $distribution->quantity,
-                        'reserved' => $inventory->reserved - $distribution->quantity,
-                        'updated_at' => $currentTime,
-                    ]);
-                    //? distribution records has been canceld
-                } elseif ($statusValue == DistributionStatus::CANCELD->value) {
-                    $inventory->update([
-                        'reserved' => $inventory->reserved - $distribution->quantity,
-                        'updated_at' => $currentTime,
-                    ]);
-                }
-            }
+            //     // $statusValue = match ($statusValue) {
+            //     //     DistributionStatus::PENDING->value => 0,
+            //     //     // DistributionStatus::APPROVED->value => 1,
+            //     //     // DistributionStatus::CANCELD->value => 2,
+            //     //     DistributionStatus::COLLECTED->value => 3,
+
+            //     //     default => throw new \InvalidArgumentException('ערך סטטוס אינו תקין..'),
+            //     // };
+
+            //     //? distribution records has been approved
+
+            //     // if ($statusValue == DistributionStatus::APPROVED->value) {
+            //     //     $inventory->update([
+            //     //         'quantity' => $inventory->quantity - $distribution->quantity,
+            //     //         'reserved' => $inventory->reserved - $distribution->quantity,
+            //     //         'updated_at' => $currentTime,
+            //     //     ]);
+            //     //     //? distribution records has been canceld
+            //     // } elseif ($statusValue == DistributionStatus::CANCELD->value) {
+            //     //     $inventory->update([
+            //     //         'reserved' => $inventory->reserved - $distribution->quantity,
+            //     //         'updated_at' => $currentTime,
+            //     //     ]);
+            //     // }
+            // }
 
             //? updated all fileds for distribution record
 
