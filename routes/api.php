@@ -36,22 +36,22 @@ Route::controller(InventoryController::class)
 
 
 
-        
+
         Route::get('/', 'index');
-        
-        
+
+
         //? fetch sku & id only
         Route::get('/sku-records', 'getSkuRecords');
-        
+
         Route::get('/search-records', 'searchRecords');
-        
+
         Route::get('/fetch-by-type', 'fetchByType');
-        
+
         //? fetch all reports records by sku of invetory records (property sku:5487415).
         Route::get('/history', 'fetchReport')->middleware(['role:admin']);
 
         Route::get('/{id?}', 'getRecordById');
-        
+
 
 
 
@@ -121,16 +121,16 @@ Route::controller(UserController::class)
     ->middleware(['auth:api'])
     ->group(function () {
 
-        Route::get('/', 'index')->middleware(['role:admin']);
+        Route::get('/', 'index')->middleware(['role:admin|quartermaster']);
 
-        Route::get('/search', 'searchUser')->middleware(['role:admin']);
+        Route::get('/search', 'searchUser')->middleware(['role:admin|quartermaster']);
 
         Route::get('/roles', 'getRoles')->middleware(['role:admin']);
 
 
         Route::post('/', 'store')->middleware(['role:admin']);
         Route::put('/{id?}', 'update')->middleware(['role:admin']);
-        
+
         Route::delete('/mass-destroy', 'massDestroy')->middleware(['role:admin']);
         Route::delete('/{id?}', 'destroy')->middleware(['role:admin']);
     });

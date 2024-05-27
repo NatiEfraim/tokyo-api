@@ -96,6 +96,30 @@ class User extends Authenticatable
         return $employeeTypes[$this->employeeType->name] ?? 'חסר';
     }
 
+
+
+    /**
+     * Translate the user's primary role to Hebrew.
+     *
+     * @return string|null
+     */
+    public function translateRoleAttribute()
+    {
+        $role = $this->roles->first();
+
+        if (!$role) {
+            return null;
+        }
+
+        $translations = [
+            'admin' => 'מנהל',
+            'quartermaster' => 'אפסנאי',
+            'user' => 'ראש מדור',
+        ];
+
+        return $translations[$role->name] ?? $role->name;
+    }
+
         /**
      * Get the distributions for the user.
      */

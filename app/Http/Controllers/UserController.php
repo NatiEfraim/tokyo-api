@@ -87,11 +87,42 @@ class UserController extends Controller
 
         try {
 
-            $users = User::with(['employeeType'])
+       // Fetch users with their employeeType and roles
+        $users = User::with(['employeeType', 'roles'])
             ->where('is_deleted', false)
             ->paginate(10);
 
-            return response()->json($users->isEmpty() ? [] :$users, Response::HTTP_OK);
+            // Initialize an empty array to hold the formatted users
+            $formattedUsers = [];
+
+            // Use foreach to format the users data to include role name
+            foreach ($users as $user) {
+                $formattedUsers[] = [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'personal_number' => $user->personal_number,
+                        'email' => $user->email,
+                        'phone' => $user->phone,
+                        'emp_type_id' => $user->emp_type_id,
+                        'employee_type' => $user->employeeType,
+                        'role' => $user->roles->first()->name ?? null,//set asscoiae
+                    ];
+            }
+
+        return response()->json([
+            'data' => $formattedUsers,
+            'current_page' => $users->currentPage(),
+            'last_page' => $users->lastPage(),
+            'per_page' => $users->perPage(),
+            'total' => $users->total(),
+        ], Response::HTTP_OK);
+
+
+            // $users = User::with(['employeeType'])
+            // ->where('is_deleted', false)
+            // ->paginate(10);
+
+            // return response()->json($users->isEmpty() ? [] :$users, Response::HTTP_OK);
 
         } catch (\Exception $e) {
             Log::error($e->getMessage());
@@ -169,11 +200,10 @@ class UserController extends Controller
 
             $uesr_data = [
 
-                
+
             'name' => $user->name,
             'personal_number' => $user->personal_number,
             'role' => $user->roles->first()->name?? null,
-            // 'employee_type_name' => optional($user->employeeType)->name,
 
             ];
 
@@ -290,7 +320,7 @@ class UserController extends Controller
             if ((ctype_digit($searchQuery) == true)) {
                 //? search user by personal_number
                 $user_search_for = User::with(['employeeType'])
-                    ->whereRaw('SUBSTRING(personal_number, 2) LIKE ?', ['%' . $searchQuery . '%'])
+                    ->where('personal_number', 'like', '%' . $searchQuery . '%')
                     ->where('is_deleted', false)
                     ->orderBy('id', 'asc')
                     ->get();
@@ -458,7 +488,7 @@ class UserController extends Controller
                 ]);
 
 
-                
+
             // // // Assign role based on the received value.
             switch ($request->input('role')) {
                 case 1:
@@ -525,30 +555,25 @@ class UserController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-            $user_exsist = User::where('id', $request->input('id'))->where('is_deleted', false)->first();
+            $user = User::where('id', $id)->where('is_deleted', false)->first();
 
-            if (is_null($user_exsist)==false) {
+            if (is_null($user)) {
                 return response()->json(['message' => 'משתמש אינו קיים במערכת.'], Response::HTTP_BAD_REQUEST);
             }
 
+            // Fetch the role directly based on the ID provided in the request
+            $role = Role::find($request->input('role'));
 
-            // ?Assign role based on the received value.
-            switch ($request->input('role')) {
-                case 1:
-                    $role = Role::where('name', 'admin')->first();
-                    break;
-                case 2:
-                    $role = Role::where('name', 'user')->first();
-                    break;
-                case 3:
-                    $role = Role::where('name', 'quartermaster')->first();
-                    break;
-                default:
-                    throw new \InvalidArgumentException('Invalid role value.');
+            if (!$role) {
+                return response()->json(['message' => 'תפקיד שנשלח אינו קיים במערכת.'], Response::HTTP_BAD_REQUEST);
             }
 
-            // Assign the role to the new user.
-            $user_exsist->assignRole($role);
+            // Detach all existing roles
+            $user->roles()->detach();
+
+            // Assign the new role to the user
+            $user->assignRole($role);
+
 
 
             return response()->json(['message' => 'שינויים עבור המשתמש נשמרו במערכת.'], Response::HTTP_CREATED  );

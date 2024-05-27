@@ -98,11 +98,6 @@ class AuthController extends Controller
             ->first();
 
 
-            // $user = User::with(['employeeType'])
-            //     ->where('personal_number', $pn)
-            //     ->where('is_deleted', false)
-            //     ->first();
-
             ///validate the user exsist and has emp_type and permission.
             if (is_null($user)) {
                 return response()->json(['message' => 'המשתמש לא קיים במערכת, יש לפנות למסגרת אמ"ת.'], Response::HTTP_BAD_REQUEST);
@@ -131,10 +126,10 @@ class AuthController extends Controller
             return response()
                 ->json(
                     [
-          
+
                         'name' => $user->name,
+                        'personal_number' => $user->personal_number,
                         'role' => $user->roles->first()->name?? null,
-                        // 'employee_type_name' => optional($user->employeeType)->name,
                         // 'token' => $token->accessToken,
                     ],
                     Response::HTTP_OK,

@@ -24,10 +24,10 @@ class UpdateInventoryRequest extends FormRequest
         return [
             //
             'quantity' => 'nullable|integer|min:0',
-            
+
             'sku' => 'nullable|string|max:255',
 
-            'type_id' => 'required|string|exists:item_types,id,is_deleted,0',
+            'type_id' => 'nullable|string|exists:item_types,id,is_deleted,0',
 
 
             'detailed_description' => 'nullable|string',

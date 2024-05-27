@@ -184,7 +184,7 @@ class InventoryController extends Controller
 
 
         try {
-            
+
             if (is_null($id)) {
                 return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
             }
@@ -257,7 +257,7 @@ class InventoryController extends Controller
 
     public function destroy($id = null)
     {
-        
+
         try {
 
             if (is_null($id)) {
@@ -386,9 +386,9 @@ class InventoryController extends Controller
 
     public function update(UpdateInventoryRequest $request, $id = null)
     {
-        
+
         try {
-            
+
             if (is_null($id)) {
                 return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
             }
@@ -413,14 +413,14 @@ class InventoryController extends Controller
             if ($request->input('quantity')) {
                     //? created new reports records
                 Report::create([
-                    
+
                     'hour' => Carbon::now()->format('H:i'), // Current hour and minutes in 'HH:MM' format
                     'created_by' => $authUser->id,
-                    'last_quantity' => $inventory->quantity, 
+                    'last_quantity' => $inventory->quantity,
                     'new_quantity' => $request->input('quantity'),
                     'sku' => $inventory->sku,
                 ]);
-             
+
             }
 
             $inventory->update($request->validated());
@@ -430,8 +430,8 @@ class InventoryController extends Controller
 
             return response()->json(['message' => 'שורה התעדכנה בהצלחה.'], Response::HTTP_OK);
         } catch (\Exception $e) {
-            Log::error($e->getMessage());
             DB::rollBack(); // Rollback the transaction in case of any error
+            Log::error($e->getMessage());
 
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -493,9 +493,9 @@ class InventoryController extends Controller
 
     public function fetchReport(Request $request)
     {
-        
+
         try {
-            
+
 
             // set custom error messages in Hebrew
             $customMessages = [
@@ -531,7 +531,7 @@ class InventoryController extends Controller
                 $report->created_at_date = $report->created_at->format('d/m/Y');
                 $report->updated_at_date = $report->updated_at->format('d/m/Y');
                 $report->makeHidden(['inventory_id','created_by','sku']);
-                    
+
 
 
 
@@ -540,12 +540,12 @@ class InventoryController extends Controller
 
             return response()->json($reports->isEmpty() ? [] :$reports, Response::HTTP_OK);
 
-    
+
         } catch (\Exception $e) {
 
             Log::error($e->getMessage());
 
-            
+
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
@@ -758,7 +758,7 @@ class InventoryController extends Controller
     }
 
 
-    
+
     /**
      * @OA\Get(
      *     path="/api/inventory/fetch-by-type",
@@ -832,7 +832,7 @@ class InventoryController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-   
+
 
             $inventories = Inventory::where('type_id',$request->input('type_id'))
             ->where('is_deleted', 0)
