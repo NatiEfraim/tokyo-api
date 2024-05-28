@@ -125,6 +125,55 @@ class DistributionController extends Controller
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
+    //? fetch records for only records that has been approved
+    public function fetchApprovedDistribution()
+    {
+
+
+
+        try {
+
+           // Fetch records with associated relations and conditions
+            $distributions = Distribution::with(['inventory', 'itemType', 'department', 'createdForUser'])
+            ->where('is_deleted', 0)
+            ->where('status', DistributionStatus::APPROVED->value)
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+            // Loop through each record and add inventory_items object
+            $distributions->transform(function ($distribution) {
+                $inventoryItems = json_decode($distribution->inventory_items, true);
+
+                // If inventory_items is not null, process it
+                if ($inventoryItems) {
+                $inventoryItems = array_map(function ($item) {
+                    return [
+                        'inventory_id' => $item['inventory_id'],
+                        'quantity' => $item['quantity'],
+                        'comment' => $item['comment'] ?? null,
+                    ];
+                }, $inventoryItems);
+            }
+
+            $distribution->inventory_items = $inventoryItems;
+            return $distribution;
+        });
+
+        return response()->json($distributions, Response::HTTP_OK);
+
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+        
+    }
+
+
+
+
+
+    
     /**
      * @OA\Get(
      *      path="/api/distributions/{id}",
