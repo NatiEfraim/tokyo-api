@@ -1095,7 +1095,7 @@
                 ],
                 "summary": "Update distribution status by ID",
                 "description": "Updates the status of a distribution by its ID.",
-                "operationId": "e4ec00332d6533046540248b557b9207",
+                "operationId": "5c9d2b732067278de431035cf84ca685",
                 "parameters": [
                     {
                         "name": "id",
@@ -1194,6 +1194,128 @@
                         }
                     }
                 }
+            }
+        },
+        "/api/distributions/change-status/{id}": {
+            "put": {
+                "tags": [
+                    "Distributions"
+                ],
+                "summary": "Change the status of a distribution",
+                "description": "This endpoint allows you to change the status of a distribution.",
+                "operationId": "changeStatus",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the distribution",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "description": "The status of the distribution",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "quartermaster_comment": {
+                                        "description": "Comment from the quartermaster",
+                                        "type": "string",
+                                        "example": "Cancelled due to unavailability"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Distribution status updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "שורה התעדכנה בהצלחה."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "יש לשלוח מספר מזהה של שורה."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "messages": {
+                                            "type": "object",
+                                            "example": {
+                                                "status": [
+                                                    "חובה לשלוח שדה סטטוס לעידכון."
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "התרחש בעיית שרת יש לנסות שוב מאוחר יותר."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/distribution/{id}": {

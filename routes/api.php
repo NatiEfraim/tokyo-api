@@ -88,10 +88,13 @@ Route::controller(DistributionController::class)
 
         Route::get('/{id?}', 'getRecordById');
 
-        Route::put('/changed-status/{id?}', 'changeStatus')->middleware(['role:admin']);
+        // Route::put('/changed-status/{id?}', 'changeStatus')->middleware(['role:admin']);
+        //? route for liran alocate items
+        Route::put('/allocation/{id?}', 'allocationStatus')->middleware(['role:admin']);
+        //?route for quartermaster - to sign for collected or back to liran
+        Route::put('/changed-status/{id?}', 'changeStatus')->middleware(['role:admin|quartermaster']);
 
-        Route::put('/{id?}', 'update')->middleware(['role:admin|quartermaster']);
-
+        //? route for to make order on item  route for user
         Route::post('/', 'store')->middleware(['role:admin|user']);
 
         Route::delete('/mass-destroy', 'massDestroy')->middleware(['role:admin']);

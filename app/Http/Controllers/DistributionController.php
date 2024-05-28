@@ -390,7 +390,7 @@ class DistributionController extends Controller
                    'department_id' => $request->input('department_id'),
                    'is_deleted' => '0',
 
-               ]); 
+               ]);
             }
 
             $client=Client::where('personal_number',$request->input('personal_number'))
@@ -407,11 +407,11 @@ class DistributionController extends Controller
                    'phone' => $request->input('phone'),
                    'emp_type_id' =>  $request->input('employee_type'),
                    'department_id' => $request->input('department_id'),
-    
+
                 ]);
             }
-            
-            
+
+
 
 
 
@@ -627,7 +627,7 @@ class DistributionController extends Controller
      * )
      */
 
-    public function changeStatus(Request $request, $id = null)
+    public function allocationStatus(Request $request, $id = null)
     {
         try {
 
@@ -771,6 +771,173 @@ class DistributionController extends Controller
 
     /**
      * @OA\Put(
+     *     path="/api/distributions/change-status/{id}",
+     *     summary="Change the status of a distribution",
+     *     description="This endpoint allows you to change the status of a distribution.",
+     *     operationId="changeStatus",
+     *     tags={"Distributions"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID of the distribution",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer",
+     *             example=1
+     *         )
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"status"},
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="integer",
+     *                 description="The status of the distribution",
+     *                 example=1
+     *             ),
+     *             @OA\Property(
+     *                 property="quartermaster_comment",
+     *                 type="string",
+     *                 description="Comment from the quartermaster",
+     *                 example="Cancelled due to unavailability"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Distribution status updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="שורה התעדכנה בהצלחה."
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad Request",
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="יש לשלוח מספר מזהה של שורה."
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Unprocessable Entity",
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="messages",
+     *                 type="object",
+     *                 example={"status": {"חובה לשלוח שדה סטטוס לעידכון."}}
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="התרחש בעיית שרת יש לנסות שוב מאוחר יותר."
+     *             )
+     *         )
+     *     ),
+     *     security={
+     *         {"bearerAuth": {}}
+     *     }
+     * )
+     */
+
+    public function changeStatus(Request $request, $id = null)
+    {
+        try {
+
+            if (is_null($id)) {
+                return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה.'], Response::HTTP_BAD_REQUEST);
+            }
+
+            // set custom error messages in Hebrew
+            $customMessages = [
+
+                'status.required' => 'חובה לשלוח שדה סטטוס לעידכון.',
+                'status.integer' => 'שדה סטטוס שנשלח אינו בפורמט תקין.',
+                'status.between' => 'ערך הסטטוס שנשלח אינו תקין.',
+
+                'quartermaster_comment.string' => 'אחת מהשדות שנשלחו אינם תקינים.',
+                'quartermaster_comment.min' => 'אחת מהשדות שנשלחו אינם תקינים.',
+                'quartermaster_comment.max' => 'אחת מהשדות שנשלחו אינם תקינים.',
+
+            ];
+
+            //set the rules
+            $rules = [
+
+                'status' => 'required|integer|between:0,3',
+                'quartermaster_comment' => 'nullable|string|min:2|max:255',
+            ];
+
+            // validate the request data
+            $validator = Validator::make($request->all(), $rules, $customMessages);
+
+            // Check if validation fails
+            if ($validator->fails()) {
+                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+            if ($request->input('status')!==DistributionStatus::PENDING->value && $request->input('status')!==DistributionStatus::COLLECTED->value) {
+                return response()->json(['message' => 'נתונים אינם תקינים.'], Response::HTTP_BAD_REQUEST);
+            }
+
+            if (is_null($request->input('quartermaster_comment')) && $request->input('status')==DistributionStatus::PENDING->value) {
+                return response()->json(['message' => 'חובה לשלוח סיבת ביטול.'], Response::HTTP_BAD_REQUEST);
+            }
+
+            $distribution_record = Distribution::where('id', $id)->where('is_deleted', false)->first();
+
+            if (is_null($distribution_record)) {
+                return response()->json(['message' => 'שורה זו אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
+            }
+
+
+            $statusValue = (int) $request->input('status');
+            $statusValue = match ($statusValue) {
+                DistributionStatus::PENDING->value => 0,
+                DistributionStatus::COLLECTED->value => 3,
+
+                default => throw new \InvalidArgumentException('ערך סטטוס אינו תקין..'),
+            };
+
+
+
+            $currentTime = Carbon::now()->toDateTimeString();
+
+               $distribution_record->update([
+                    'status' =>  $statusValue,
+                    'admin_comment'=> $request->input('quartermaster_comment')??null,
+                    'updated_at' => $currentTime,
+
+                ]);
+
+
+
+            return response()->json(['message' => 'שורה התעדכנה בהצלחה.'], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+
+
+
+    /**
+     * @OA\Put(
      *     path="/api/distribution/{id}",
      *     tags={"Distributions"},
      *     summary="Update distribution record",
@@ -844,9 +1011,9 @@ class DistributionController extends Controller
     public function update(UpdateDistributionRequest $request, $id = null)
     {
         try {
-        
+
             if (is_null($id)) {
-                
+
                 return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
             }
 
@@ -889,7 +1056,7 @@ class DistributionController extends Controller
 
 
 
-            
+
             // if ($request->input('status')) {
 
 
