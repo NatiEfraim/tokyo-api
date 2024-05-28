@@ -118,12 +118,6 @@ class UserController extends Controller
         ], Response::HTTP_OK);
 
 
-            // $users = User::with(['employeeType'])
-            // ->where('is_deleted', false)
-            // ->paginate(10);
-
-            // return response()->json($users->isEmpty() ? [] :$users, Response::HTTP_OK);
-
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
@@ -318,23 +312,60 @@ class UserController extends Controller
             }
 
             if ((ctype_digit($searchQuery) == true)) {
+
                 //? search user by personal_number
-                $user_search_for = User::with(['employeeType'])
+                $user_search_for = User::with(['employeeType','roles'])
                     ->where('personal_number', 'like', '%' . $searchQuery . '%')
                     ->where('is_deleted', false)
                     ->orderBy('id', 'asc')
                     ->get();
 
+                // Initialize an empty array to hold the formatted users
+                $formattedUsers = [];
+
+                // Use foreach to format the users data to include role name
+                foreach ($user_search_for as $user) {
+                    $formattedUsers[] = [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'personal_number' => $user->personal_number,
+                        'email' => $user->email,
+                        'phone' => $user->phone,
+                        'emp_type_id' => $user->emp_type_id,
+                        'employee_type' => $user->employeeType,
+                        'role' => $user->roles->first()->name ?? null, //set asscoiae
+                    ];
+                }
                     return response()->json($user_search_for,Response::HTTP_OK);
             }
 
 
             // Search users by name (ignoring spaces)
-            $user_search_for = User::with(['employeeType'])
+            $user_search_for = User::with(['employeeType', 'roles'])
             ->whereRaw("REPLACE(name, ' ', '') LIKE ?", ['%' . $searchQuery . '%'])
             ->where('is_deleted', false)
                 ->orderBy('id', 'asc')
                 ->get();
+
+
+
+            // Initialize an empty array to hold the formatted users
+            $formattedUsers = [];
+
+            // Use foreach to format the users data to include role name
+            foreach ($user_search_for as $user) {
+                $formattedUsers[] = [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'personal_number' => $user->personal_number,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'emp_type_id' => $user->emp_type_id,
+                    'employee_type' => $user->employeeType,
+                    'role' => $user->roles->first()->name ?? null, //set asscoiae
+                ];
+            }
+                
 
             return response()->json($user_search_for, Response::HTTP_OK);
 
