@@ -437,33 +437,39 @@ class DistributionController extends Controller
             // Get the current year
             $currentYear = Carbon::now()->year;
 
+            $allQuantity = array_sum(array_column($request->input('items'), 'quantity'));
 
-            // Loop through each item and create distribution records
+
             foreach ($request->input('items') as $item) {
-                //? save key & value
                 $itemType = $item['type_id'];
                 $quantity = $item['quantity'];
-                $comment = $item['comment'] ?? null; // Get comment or null if not provided
+                $comment = $item['comment'] ?? null;
+
+                // Prepare inventory items array
+                $inventoryItems[] = [
+                    'type_id' => $itemType,
+                    'quantity' => $quantity,
+                    'comment' => $comment,
+                ];
 
 
+          
 
                 Distribution::create([
                     'order_number' => intval($orderNumber),
                     'user_comment' => $request->input('user_comment') ?? null,
-                    'type_comment' => $comment,//comment per type order
-                    'total_quantity' =>  $allQuantity,
-                    'quantity_per_item' =>  $quantity,
+                    'type_comment' => $comment,
+                    'total_quantity' => $allQuantity,
+                    'quantity_per_item' => $quantity,
                     'status' => DistributionStatus::PENDING->value,
                     'type_id' => $itemType,
-                    'year' =>  $currentYear,
+                    'year' => $currentYear,
                     'department_id' => $request->input('department_id'),
-                    'created_by' => $user_auth->id,//set relation
-                    'created_for' =>  $client->id,//set relation
-
+                    'created_by' => $user_auth->id,
+                    'created_for' => $client->id,
+                    'inventory_items' => json_encode($inventoryItems), // Save inventory items as JSON
                 ]);
-
             }
-
 
 
 

@@ -30,14 +30,13 @@ class StoreDistributionRequest extends FormRequest
             'personal_number' => [
                 'required',
                 'regex:/^\d{7}$/', // Ensure the value is exactly 7 digits
-                // 'unique:clients,personal_number,NULL,id,is_deleted,0', // Custom unique rule
             ],
 
             'phone' => 'required|string|unique:users|regex:/^05\d{8}$/',
 
             'employee_type' => 'required|exists:employee_types,id,is_deleted,0',
 
-            'general_comment' => 'nullable|string|min:2|max:255',
+            'user_comment' => 'nullable|string|min:2|max:255',
 
             'department_id' => 'required|exists:departments,id,is_deleted,0',
 
@@ -46,8 +45,8 @@ class StoreDistributionRequest extends FormRequest
 
             'items.*.type_id' => 'required|exists:item_types,id,is_deleted,0',
 
-            'items.*.quantity' => 'required|integer|min:1', // Adjust min value as needed
-            'items.*.comment' => 'nullable|string|max:255', // Nullable string with max length 255
+            'items.*.quantity' => 'required|integer|min:1', 
+            'items.*.comment' => 'nullable|string|max:255', 
 
         ];
     }

@@ -82,13 +82,15 @@ Route::controller(DistributionController::class)
 
         Route::get('/fetch-records-by-order', 'fetchDistributionsRecordsByOrderNumber');
 
+        //? route for quartermaster - fetch all distributions records - ccording apporved and invetories
+        Route::get('/fetch-approved', 'fetchApprovedDistribution')->middleware(['role:admin|quartermaster']);
+
         //?sprt & fetch by quering
         Route::get('/sortByQuery', 'sortByQuery');
 
 
         Route::get('/{id?}', 'getRecordById');
 
-        // Route::put('/changed-status/{id?}', 'changeStatus')->middleware(['role:admin']);
         //? route for liran alocate items
         Route::put('/allocation/{id?}', 'allocationStatus')->middleware(['role:admin']);
         //?route for quartermaster - to sign for collected or back to liran

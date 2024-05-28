@@ -17,7 +17,6 @@ return new class extends Migration
 
             $table->integer('order_number')->nullable();
             $table->longText('type_comment')->nullable();
-            // $table->longText('general_comment')->nullable();
 
             //? 0--> pendig. 1--> approved. 2 -->canceld. 3 --> collected
             $table->integer('status')->default(0);
