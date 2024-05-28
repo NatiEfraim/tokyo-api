@@ -92,7 +92,7 @@ Route::controller(DistributionController::class)
         Route::get('/{id?}', 'getRecordById');
 
         //? route for liran alocate items
-        Route::put('/allocation/{id?}', 'allocationStatus')->middleware(['role:admin']);
+        Route::post('/allocation', 'allocationStatus')->middleware(['role:admin']);
         //?route for quartermaster - to sign for collected or back to liran
         Route::put('/changed-status', 'changeStatus')->middleware(['role:admin|quartermaster']);
 

@@ -682,13 +682,12 @@ class DistributionController extends Controller
      * )
      */
 
-    public function allocationStatus(Request $request, $id = null)
+    public function allocationStatus(Request $request)
     {
+
         try {
 
-            if (is_null($id)) {
-                return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה.'], Response::HTTP_BAD_REQUEST);
-            }
+
 
             // set custom error messages in Hebrew
             $customMessages = [
@@ -698,25 +697,42 @@ class DistributionController extends Controller
                 'status.between' => 'ערך הסטטוס שנשלח אינו תקין.',
 
                 'admin_comment.string' => 'אחת מהשדות שנשלחו אינם תקינים.',
+                'admin_comment.required' => '.',
                 'admin_comment.min' => 'אחת מהשדות שנשלחו אינם תקינים.',
                 'admin_comment.max' => 'אחת מהשדות שנשלחו אינם תקינים.',
-
+                
                 'inventory_items.array' => 'נתון שנשלח אינו תקין.',
                 'inventory_items.*.inventory_id.required' => 'חובה לשלוח מזהה פריט במערך הפריטים.',
                 'inventory_items.*.inventory_id.exists' => 'מזהה הפריט שנשלח במערך אינו קיים או נמחק.',
                 'inventory_items.*.quantity.required' => 'חובה לשלוח כמות לכל פריט במערך.',
                 'inventory_items.*.quantity.integer' => 'הכמות שנשלחה עבור פריט במערך אינה בפורמט תקין.',
                 'inventory_items.*.quantity.min' => 'הכמות שנשלחה עבור פריט במערך חייבת להיות גדולה או שווה ל-0.',
+
+                'order_number.required' => 'חובה לשלוח מספר הזמנה.',
+                'order_number.integer' => 'אחת מהשדות שנשלחו אינם תקינים.',
+                'order_number.exists' => 'מספר הזמנה אינה קיימת במערכת.',
+                
             ];
 
             //set the rules
             $rules = [
 
                 'status' => 'required|integer|between:1,2',
-                'admin_comment' => 'nullable|string|min:2|max:255',
+                
+                'admin_comment' => 'required|string|min:2|max:255',
+
                 'inventory_items' => 'nullable|array',
-                'inventory_items.*.inventory_id' => 'required|exists:inventories,id,is_deleted,0',
-                'inventory_items.*.quantity' => 'required|integer|min:0',
+
+                'inventory_items.*.type_id' => 'required|exists:item_types,id,is_deleted,0',
+
+                'inventory_items.*.items' => 'required|array',
+
+                'inventory_items.*.items.*.inventory_id' => 'required|exists:inventories,id,is_deleted,0',
+                
+                'inventory_items.*.items.*.quantity' => 'required|integer|min:0',
+                
+                'order_number' => 'nullable|integer|exists:distributions,order_number,is_deleted,0',
+
             ];
 
             // validate the request data
@@ -727,18 +743,25 @@ class DistributionController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-            if (is_null($request->input('inventory_items')) && $request->input('status')==DistributionStatus::APPROVED->value) {
+            if ((is_null($request->input('inventory_items'))||(is_null($request->input('inventory_items')))) && $request->input('status') == DistributionStatus::APPROVED->value) {
                 return response()->json(['message' => 'נתונים אינם תקינים.'], Response::HTTP_BAD_REQUEST);
             }
 
-            if (is_null($request->input('admin_comment')) && $request->input('status')==DistributionStatus::CANCELD->value) {
+            if (is_null($request->input('admin_comment')) && $request->input('status') == DistributionStatus::CANCELD->value) {
                 return response()->json(['message' => 'חובה לשלוח סיבת ביטול.'], Response::HTTP_BAD_REQUEST);
             }
 
-            $distribution_record = Distribution::where('id', $id)->where('is_deleted', false)->first();
+         
 
-            if (is_null($distribution_record)) {
-                return response()->json(['message' => 'שורה זו אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
+            // Fetch the records with the given order_number and is_deleted is false
+            $distributionRecords = Distribution::where('order_number', $request->input('order_number'))
+            ->where('is_deleted', false)
+            ->get();
+
+
+            // Check if records exist
+            if ($distributionRecords->isEmpty()) {
+                return response()->json(['message' => 'לא נמצאו רשומות עם מספר הזמנה זה במערכת.'], Response::HTTP_BAD_REQUEST);
             }
 
 
@@ -749,8 +772,7 @@ class DistributionController extends Controller
 
                 default => throw new \InvalidArgumentException('ערך סטטוס אינו תקין..'),
             };
-
-
+            
 
             $currentTime = Carbon::now()->toDateTimeString();
             DB::beginTransaction(); // Start a database transaction
@@ -759,59 +781,93 @@ class DistributionController extends Controller
 
             if ($statusValue == DistributionStatus::APPROVED->value) {
 
-                foreach ($request->inventory_items as $invetories) {
+                // Track processed type_ids
+                $processedTypeIds = [];
+                // Loop through each type_id in the request
+                foreach ($request->input('inventory_items') as $type_id => $items) {
 
-                    $idInvetory = $invetories['inventory_id']; //save the invetory_id records
-                    $quantity = $invetories['quantity'];
-
-
-
-                    $inventory = Inventory::where('id',  $idInvetory)
-                        ->where('is_deleted', false)
-                        ->first();
-
-                    $available = $inventory->quantity - $inventory->reserved;
-
-
-                    if ($inventory->type_id !== $distribution_record->type_id) {
-                        DB::rollBack(); // Rollback the transaction
-                        return response()->json(['message' => 'פריט עבור מק"ט' . $inventory->sku . '.אינו תקין'], Response::HTTP_OK);
+                    
+                    // Skip if this type_id has already been processed
+                    if (in_array($items['type_id'], $processedTypeIds)) {
+                        continue;
                     }
 
-                    if ($quantity< $available) {
-                        DB::rollBack(); // Rollback the transaction
-                        return response()->json(['message' => 'כמות שנשלח עבור'. $inventory->sku .' חסרה במלאי.'], Response::HTTP_OK);
+                    
+                    // Find the first distribution record with the matching type_id that has not been processed
+                    $distributionRecord = $distributionRecords->firstWhere('type_id', $items['type_id']);
+
+                    if ($distributionRecord) {
+                        $inventoryUpdates = []; // To store updated inventory items
+
+                        
+                        // Loop on each item within the type_id
+                        foreach ($items['items'] as $inventoryItem) {
+                            $idInventory = $inventoryItem['inventory_id']; // Save the inventory_id records
+                            $quantity = $inventoryItem['quantity'];
+
+                           
+
+                            $inventory = Inventory::where('id', $idInventory)
+                            ->where('is_deleted', false)
+                                ->first();
+
+                            if($inventory->type_id!== $items['type_id'])
+                            {
+                                DB::rollBack(); // Rollback the transaction
+                                return response()->json(['message' => 'סוג מק"ט אינו תואם לסוג פריט בהזמנה.'], Response::HTTP_OK); 
+                            }
+
+                            $available = $inventory->quantity - $inventory->reserved;
+
+                            if ($quantity > $available) {
+                                DB::rollBack(); // Rollback the transaction
+                                return response()->json(['message' => 'כמות שנשלח עבור ' . $inventory->sku . ' חסרה במלאי.'], Response::HTTP_OK);
+                            }
+
+                            // Update inventory records based on inventory_id
+                            $inventory->update([
+                                'reserved' => $inventory->reserved + $quantity, // Increase the reserved
+                                'updated_at' => $currentTime,
+                            ]);
+
+                            // Add to the list of inventory updates
+                            $inventoryUpdates[] = [
+                                'inventory_id' => $idInventory,
+                                'quantity' => $quantity,
+                            ];
+                        }
+
+
+
+                        
+                        // Update the distribution record with the updated inventory items
+                        $distributionRecord->update([
+                            'status' => $statusValue,
+                            'admin_comment' => $request->input('admin_comment'),
+                            'inventory_items' => json_encode($inventoryUpdates), // Save the inventory items
+                            'updated_at' => $currentTime,
+                        ]);
+                        
+                        // Mark this type_id as processed
+                        $processedTypeIds[] = $items['type_id'];
                     }
-
-                    //? update invetory records based on invetory_id
-                    $inventory->update([
-                        // 'quantity' => $inventory->quantity - $quantity,
-                        'reserved' => $inventory->reserved - $quantity,
-                        'updated_at' => $currentTime,
-                    ]);
-
                 }
-
-                   $distribution_record->update([
-                        'inventory_items' => json_encode($request->inventory_items),
-                        'updated_at' => $currentTime,
-
-                   ]);
 
 
                 //? distribution records has been canceld
             } elseif ($statusValue == DistributionStatus::CANCELD->value) {
 
+                //? Loop through each record and update the fields
+                foreach ($distributionRecords as $distributionRecord) {
+                    $distributionRecord->update([
+                        'status' => $statusValue,
+                        'admin_comment' => $request->input('admin_comment') ?? null,
+                        'updated_at' => $currentTime,
+                    ]);
 
-
-                $distribution_record->update([
-                    'status' => DistributionStatus::CANCELD->value,
-                    'admin_comment'=> $request->input('admin_comment'),
-                    'updated_at' => $currentTime,
-
-                ]);
 
             }
+        }
 
 
             DB::commit(); // commit all changes in database.
@@ -822,7 +878,12 @@ class DistributionController extends Controller
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+
+
+        
     }
+
 
     /**
      * @OA\Put(
@@ -926,7 +987,7 @@ class DistributionController extends Controller
 
                 'order_number.required' => 'חובה לשלוח מספר הזמנה.',
                 'order_number.integer' => 'אחת מהשדות שנשלחו אינם תקינים.',
-                'distributions.exists' => 'מספר הזמנה אינה קיימת במערכת.',
+                'order_number.exists' => 'מספר הזמנה אינה קיימת במערכת.',
 
             ];
 
@@ -982,7 +1043,7 @@ class DistributionController extends Controller
             foreach ($distributionRecords as $distributionRecord) {
                 $distributionRecord->update([
                 'status' => $statusValue,
-                'admin_comment' => $request->input('quartermaster_comment') ?? null,
+                'quartermaster_comment' => $request->input('quartermaster_comment') ?? null,
                 'updated_at' => $currentTime,
             ]);
     }
