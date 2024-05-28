@@ -94,7 +94,7 @@ Route::controller(DistributionController::class)
         //? route for liran alocate items
         Route::put('/allocation/{id?}', 'allocationStatus')->middleware(['role:admin']);
         //?route for quartermaster - to sign for collected or back to liran
-        Route::put('/changed-status/{id?}', 'changeStatus')->middleware(['role:admin|quartermaster']);
+        Route::put('/changed-status', 'changeStatus')->middleware(['role:admin|quartermaster']);
 
         //? route for to make order on item  route for user
         Route::post('/', 'store')->middleware(['role:admin|user']);

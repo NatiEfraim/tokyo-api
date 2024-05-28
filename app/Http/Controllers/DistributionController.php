@@ -437,7 +437,7 @@ class DistributionController extends Controller
             // Get the current year
             $currentYear = Carbon::now()->year;
 
-            $allQuantity = array_sum(array_column($request->input('items'), 'quantity'));
+            // $allQuantity = array_sum(array_column($request->input('items'), 'quantity'));
 
 
             foreach ($request->input('items') as $item) {
@@ -445,12 +445,12 @@ class DistributionController extends Controller
                 $quantity = $item['quantity'];
                 $comment = $item['comment'] ?? null;
 
-                // Prepare inventory items array
-                $inventoryItems[] = [
-                    'type_id' => $itemType,
-                    'quantity' => $quantity,
-                    'comment' => $comment,
-                ];
+                // // Prepare inventory items array
+                // $inventoryItems[] = [
+                //     'type_id' => $itemType,
+                //     'quantity' => $quantity,
+                //     'comment' => $comment,
+                // ];
 
 
           
@@ -467,7 +467,7 @@ class DistributionController extends Controller
                     'department_id' => $request->input('department_id'),
                     'created_by' => $user_auth->id,
                     'created_for' => $client->id,
-                    'inventory_items' => json_encode($inventoryItems), // Save inventory items as JSON
+                    // 'inventory_items' => json_encode($inventoryItems), // Save inventory items as JSON
                 ]);
             }
 
@@ -782,22 +782,18 @@ class DistributionController extends Controller
      *     description="This endpoint allows you to change the status of a distribution.",
      *     operationId="changeStatus",
      *     tags={"Distributions"},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         description="ID of the distribution",
-     *         required=true,
-     *         @OA\Schema(
-     *             type="integer",
-     *             example=1
-     *         )
-     *     ),
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
      *             required={"status"},
      *             @OA\Property(
      *                 property="status",
+     *                 type="integer",
+     *                 description="The status of the distribution",
+     *                 example=1
+     *             ),     
+     *            @OA\Property(
+     *                 property="order_number",
      *                 type="integer",
      *                 description="The status of the distribution",
      *                 example=1
@@ -879,6 +875,10 @@ class DistributionController extends Controller
                 'quartermaster_comment.min' => 'אחת מהשדות שנשלחו אינם תקינים.',
                 'quartermaster_comment.max' => 'אחת מהשדות שנשלחו אינם תקינים.',
 
+                'order_number.required' => 'חובה לשלוח מספר הזמנה.',
+                'order_number.integer' => 'אחת מהשדות שנשלחו אינם תקינים.',
+                'distributions.exists' => 'מספר הזמנה אינה קיימת במערכת.',
+
             ];
 
             //set the rules
@@ -886,6 +886,8 @@ class DistributionController extends Controller
 
                 'status' => 'required|integer|between:0,3',
                 'quartermaster_comment' => 'nullable|string|min:2|max:255',
+                'order_number' => 'required|integer|exists:distributions,order_number,is_deleted,0',
+
             ];
 
             // validate the request data
@@ -904,10 +906,14 @@ class DistributionController extends Controller
                 return response()->json(['message' => 'חובה לשלוח סיבת ביטול.'], Response::HTTP_BAD_REQUEST);
             }
 
-            $distribution_record = Distribution::where('id', $id)->where('is_deleted', false)->first();
+            // Fetch the records with the given order_number and is_deleted is false
+            $distributionRecords = Distribution::where('order_number', $request->input('orderNumber'))
+                ->where('is_deleted', false)
+                ->get();
 
-            if (is_null($distribution_record)) {
-                return response()->json(['message' => 'שורה זו אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
+            // Check if records exist
+            if ($distributionRecords->isEmpty()) {
+                return response()->json(['message' => 'לא נמצאו רשומות עם מספר הזמנה זה במערכת.'], Response::HTTP_BAD_REQUEST);
             }
 
 
@@ -923,13 +929,14 @@ class DistributionController extends Controller
 
             $currentTime = Carbon::now()->toDateTimeString();
 
-               $distribution_record->update([
-                    'status' =>  $statusValue,
-                    'admin_comment'=> $request->input('quartermaster_comment')??null,
-                    'updated_at' => $currentTime,
-
-                ]);
-
+            // Loop through each record and update the fields
+            foreach ($distributionRecords as $distributionRecord) {
+                $distributionRecord->update([
+                'status' => $statusValue,
+                'admin_comment' => $request->input('quartermaster_comment') ?? null,
+                'updated_at' => $currentTime,
+            ]);
+    }
 
 
             return response()->json(['message' => 'שורה התעדכנה בהצלחה.'], Response::HTTP_OK);

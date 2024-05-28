@@ -1204,18 +1204,6 @@
                 "summary": "Change the status of a distribution",
                 "description": "This endpoint allows you to change the status of a distribution.",
                 "operationId": "changeStatus",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID of the distribution",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 1
-                        }
-                    }
-                ],
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -1226,6 +1214,11 @@
                                 ],
                                 "properties": {
                                     "status": {
+                                        "description": "The status of the distribution",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "order_number": {
                                         "description": "The status of the distribution",
                                         "type": "integer",
                                         "example": 1
