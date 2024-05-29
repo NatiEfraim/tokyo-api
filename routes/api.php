@@ -146,12 +146,12 @@ Route::controller(ExportController::class)
     ->prefix('export')
     ->middleware(['auth:api'])
     ->group(function () {
-        Route::get('/inventories', 'exportInventories');
-        Route::get('/inventories-email', 'sendInventoriesByEmail');
-        Route::get('/users', 'exportUsers');
-        Route::get('/users-email', 'sendUsersByEmail');
-        Route::get('/distributions', 'exportDistributions');
-        Route::get('/distributions-email', 'sendDistributionsByEmail');
+        Route::get('/inventories', 'exportInventories')->middleware(['role:admin']);
+        Route::get('/inventories-email', 'sendInventoriesByEmail')->middleware(['role:admin']);
+        Route::get('/users', 'exportUsers')->middleware(['role:admin']);
+        Route::get('/users-email', 'sendUsersByEmail')->middleware(['role:admin']);
+        Route::get('/distributions', 'exportDistributions')->middleware(['role:admin']);
+        Route::get('/distributions-email', 'sendDistributionsByEmail')->middleware(['role:admin']);
     });
 
 

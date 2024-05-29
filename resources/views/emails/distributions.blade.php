@@ -69,8 +69,10 @@
                 <th>מק"ט</th>
                 <th>סוג פריט</th>
                 <th>פירוט מורחב</th>
-                <th>הערות על ההזמנה</th>
                 <th>הערות על הפריט</th>
+                <th>הערות ראש מדור</th>
+                <th>הערות מנהל</th>
+                <th>הערות אפסנאי</th>
                 <th>סטטוס</th>
                 <th>תאריך שינוי אחרון</th>
             </tr>
@@ -93,8 +95,10 @@
                     <td>{{ $distribution->inventory_id ? $distribution->inventory->sku : 'לא קיים' }}</td>
                     <td>{{ $distribution->itemType->type ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->inventory_id ? $distribution->inventory->detailed_description : 'לא קיים' }}</td>
-                    <td>{{ $distribution->general_comment ?? 'לא קיים' }}</td>
-                    <td>{{ $distribution->inventory_comment ?? 'לא קיים' }}</td>
+                    <td>{{ $distribution->type_comment ?? 'לא קיים' }}</td>
+                    <td>{{ $distribution->user_comment ?? 'לא קיים' }}</td>
+                    <td>{{ $distribution->admin_comment ?? 'לא קיים' }}</td>
+                    <td>{{ $distribution->quartermaster_comment ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->getStatusTranslation() ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->updated_at_date ?? 'לא קיים' }}</td>
                 </tr>
