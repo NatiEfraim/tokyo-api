@@ -1147,69 +1147,11 @@ class DistributionController extends Controller
                 return response()->json(['message' => 'שורה אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
             }
 
-            //? fetch inventory associated records based distrbution->inventory_id
-            $inventory = Inventory::where('id', $distribution->inventory_id)
-                ->where('is_deleted', false)
-                ->first();
 
-            if (is_null($inventory)) {
-                return response()->json(['message' => 'פריט אינו קיים במלאי'], Response::HTTP_BAD_REQUEST);
-            }
-
-            if ($request->input('quantity') && $request->input('quantity') > $inventory->quantity - $inventory->reserved && $request->input('quantity') > $distribution->quantity) {
-                return response()->json(['message' => 'אין מספיק מלאי זמין עבור כמות שנשלחה .'], Response::HTTP_BAD_REQUEST);
-            }
 
             $currentTime = Carbon::now()->toDateTimeString();
 
             DB::beginTransaction(); // Start a database transaction
-
-            // //? update the reserved fileds of inventory
-            // if ($request->input('quantity') && $request->input('quantity') > $distribution->quantity) {
-            //     $inventory->update([
-            //         'reserved' => $inventory->reserved + abs($request->input('quantity') - $distribution->quantity),
-            //         'updated_at' => $currentTime,
-            //     ]);
-            // } elseif ($request->input('quantity') && $request->input('quantity') < $distribution->quantity) {
-            //     $inventory->update([
-            //         'reserved' => $inventory->reserved - abs($request->input('quantity') - $distribution->quantity),
-            //         'updated_at' => $currentTime,
-            //     ]);
-            // }
-
-
-
-
-            // if ($request->input('status')) {
-
-
-            //     // $statusValue = (int) $request->input('status');
-
-            //     // $statusValue = match ($statusValue) {
-            //     //     DistributionStatus::PENDING->value => 0,
-            //     //     // DistributionStatus::APPROVED->value => 1,
-            //     //     // DistributionStatus::CANCELD->value => 2,
-            //     //     DistributionStatus::COLLECTED->value => 3,
-
-            //     //     default => throw new \InvalidArgumentException('ערך סטטוס אינו תקין..'),
-            //     // };
-
-            //     //? distribution records has been approved
-
-            //     // if ($statusValue == DistributionStatus::APPROVED->value) {
-            //     //     $inventory->update([
-            //     //         'quantity' => $inventory->quantity - $distribution->quantity,
-            //     //         'reserved' => $inventory->reserved - $distribution->quantity,
-            //     //         'updated_at' => $currentTime,
-            //     //     ]);
-            //     //     //? distribution records has been canceld
-            //     // } elseif ($statusValue == DistributionStatus::CANCELD->value) {
-            //     //     $inventory->update([
-            //     //         'reserved' => $inventory->reserved - $distribution->quantity,
-            //     //         'updated_at' => $currentTime,
-            //     //     ]);
-            //     // }
-            // }
 
             //? updated all fileds for distribution record
 
@@ -1451,17 +1393,6 @@ class DistributionController extends Controller
                 ->where('status', $request->input('status'))
                 ->where('is_deleted', 0)
                 ->paginate(20);
-
-
-            // if ($distributions) {
-            //     $distributions->each(function ($distribution) {
-            //         // Format the created_at and updated_at timestamps
-            //         $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
-            //         $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
-
-            //         return $distribution;
-            //     });
-            // }
 
 
 
@@ -1729,6 +1660,8 @@ class DistributionController extends Controller
             // set validation rules
             $rules = [
 
+                'user_id' => 'nullable|array',
+                'user_id.*' => 'integer|exists:users,id,is_deleted,0',
 
                 'inventory_id' => 'nullable|string|max:255|exists:inventories,id,is_deleted,0',
 
@@ -1736,7 +1669,6 @@ class DistributionController extends Controller
 
                 'department_id' => 'nullable|string|exists:departments,id,is_deleted,0',
 
-                'user_id' => 'nullable|string|exists:users,id,is_deleted,0',
 
                 'order_number' => 'nullable|string|exists:distributions,order_number,is_deleted,0',
 
@@ -1763,6 +1695,8 @@ class DistributionController extends Controller
 
                 'status.between' => 'שדה הסטטוס אינו תקין.',
 
+                'user_id.integer' => 'אחת מהשדות שנשלחו אינם תקינים.',
+                'user_id.array' => 'אחת מהשדות שנשלחו אינם תקינים.',
                 'user_id.exists' => 'משתמש אינו קיים במערכת.',
 
                 'created_at.date' => 'שדה תאריך התחלה אינו תקין.',
