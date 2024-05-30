@@ -8,21 +8,21 @@ use App\Enums\DistributionStatus;
 use App\Http\Requests\StoreDistributionRequest;
 use App\Http\Requests\UpdateDistributionRequest;
 use App\Models\Client;
-// use App\Models\Department;
 use App\Models\Distribution;
 use App\Models\Inventory;
-// use App\Models\User;
-// use App\Models\Inventory;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-// use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
 
+// use Illuminate\Validation\Rule;
 // use Illuminate\Support\Str;
+// use App\Models\Department;
+// use App\Models\User;
+// use App\Models\Inventory;
 
 class DistributionController extends Controller
 {
@@ -403,12 +403,6 @@ class DistributionController extends Controller
             DB::beginTransaction();
 
             $user_auth = Auth::user();
-
-
-
-        // // Fetch associated roles for the authenticated user
-        // $userRoles = $user_auth->roles->first()->name;
-
 
             //? create new clients records. - and get the client_id
 
@@ -1671,9 +1665,12 @@ class DistributionController extends Controller
 
                 'department_id' => 'nullable|string|exists:departments,id,is_deleted,0',
 
-                'user_id' => 'nullable|string|exists:users,id,is_deleted,0',
-
                 'order_number' => 'nullable|string|exists:distributions,order_number,is_deleted,0',
+
+
+                'clients_id' => 'nullable|array',
+                'clients_id.*' => 'nullable|exists:clients,id,is_deleted,0',
+                
 
                 'year' => 'nullable|integer|between:1948,2099',
 
@@ -1685,12 +1682,11 @@ class DistributionController extends Controller
             // Define custom error messages
             $customMessages = [
 
+                'clients_id.array' => 'שדה משתמש שנשלח אינו תקין.',
+                'clients_id.*.exists' => 'הערך שהוזן לא חוקי.',
+
                 'year.integer' => 'שדה שנה אינו תקין.',
                 'year.between' => 'שדה שנה אינו תקין.',
-
-                'inventory_id.string' => 'שדה שהוזן אינו בפורמט תקין',
-                'inventory_id.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
-                'inventory_id.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
 
                 'department_id.exists' => 'מחלקה אינה קיימת במערכת.',
 
@@ -1698,7 +1694,6 @@ class DistributionController extends Controller
 
                 'status.between' => 'שדה הסטטוס אינו תקין.',
 
-                'user_id.exists' => 'משתמש אינו קיים במערכת.',
 
                 'created_at.date' => 'שדה תאריך התחלה אינו תקין.',
                 'created_at.exists' => 'שדה תאריך אינו קיים במערכת.',
@@ -1714,7 +1709,9 @@ class DistributionController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-            if ($request->has('user_id') || $request->has('year')  || $request->has('status') || $request->has('order_number') || $request->has('inventory_id') || $request->has('department_id') || $request->has('created_at') || $request->has('updated_at')) {
+
+
+            if ($request->has('clients_id') || $request->has('year')  || $request->has('status') || $request->has('order_number') || $request->has('inventory_id') || $request->has('department_id') || $request->has('created_at') || $request->has('updated_at')) {
                 //? one or more of th search based on value filter send
 
                 $distributions = $this->fetchDistributionsByFilter($request);
@@ -1910,9 +1907,15 @@ class DistributionController extends Controller
                 $query->where('year', $request->input('year'));
             }
 
+            // // Search by user_id
+            // if ($request->has('user_id') && empty($request->input('user_id'))==false) {
+            //     $query->where('created_for', $request->input('user_id'));
+            // }
+
+            
             // Search by user_id
-            if ($request->has('user_id') && empty($request->input('user_id'))==false) {
-                $query->where('created_for', $request->input('user_id'));
+            if ($request->has('clients_id') && empty($request->input('clients_id'))==false) {
+                $query->whereIn('created_for', $request->input('clients_id'));
             }
 
             // Search by created_at
