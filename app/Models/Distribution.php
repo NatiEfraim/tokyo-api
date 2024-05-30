@@ -15,13 +15,14 @@ class Distribution extends Model
      * @var array
      */
     protected $fillable = [
-        'general_comment',
-        'inventory_comment',
+        'user_comment',
+        'admin_comment',
+        'quartermaster_comment',
+        'type_comment',
         'order_number',
         'status',
         'total_quantity',
         'quantity_per_item',
-        'inventory_id',
         'type_id',
         'year',
         'inventory_items',
@@ -85,7 +86,7 @@ class Distribution extends Model
     public function createdForUser()
     {
         return $this->belongsTo(Client::class, 'created_for')
-            ->select('id', 'name', 'emp_type_id', 'phone', 'email', 'personal_number')->with(['employeeType']);
+            ->select('id', 'name', 'emp_type_id', 'phone', 'email', 'personal_number', 'department_id')->with(['employeeType', 'department']);
     }
 
 

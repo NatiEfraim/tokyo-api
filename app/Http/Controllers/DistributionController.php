@@ -107,7 +107,7 @@ class DistributionController extends Controller
         try {
 
             
-            $distributions = Distribution::with(['inventory', 'itemType', 'department', 'createdForUser'])
+            $distributions = Distribution::with(['itemType', 'department', 'createdForUser'])
                 ->where('is_deleted', 0)
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
@@ -136,7 +136,7 @@ class DistributionController extends Controller
         try {
 
            // Fetch records with associated relations and conditions
-            $distributions = Distribution::with(['inventory', 'itemType', 'department', 'createdForUser'])
+            $distributions = Distribution::with(['itemType', 'department', 'createdForUser'])
             ->where('is_deleted', 0)
             ->where('status', DistributionStatus::APPROVED->value)
             ->orderBy('created_at', 'desc')
@@ -462,12 +462,6 @@ class DistributionController extends Controller
                 ]);
             }
 
-
-
-
-
-
-
             // Fetch all existing order numbers
             $existingOrderNumbersQuery = Distribution::pluck('order_number');
 
@@ -479,16 +473,10 @@ class DistributionController extends Controller
             $orderNumber = (int)$orderNumber; // Cast to integer
 
 
-            $allQuantity = 0;
-            foreach ($request->input('items') as $item) {
-                $allQuantity += $item['quantity'];
-            }
-
-
             // Get the current year
             $currentYear = Carbon::now()->year;
 
-            // $allQuantity = array_sum(array_column($request->input('items'), 'quantity'));
+            $allQuantity = array_sum(array_column($request->input('items'), 'quantity'));
 
 
             foreach ($request->input('items') as $item) {
@@ -496,16 +484,8 @@ class DistributionController extends Controller
                 $quantity = $item['quantity'];
                 $comment = $item['comment'] ?? null;
 
-                // // Prepare inventory items array
-                // $inventoryItems[] = [
-                //     'type_id' => $itemType,
-                //     'quantity' => $quantity,
-                //     'comment' => $comment,
-                // ];
 
-
-          
-
+        
                 Distribution::create([
                     'order_number' => intval($orderNumber),
                     'user_comment' => $request->input('user_comment') ?? null,
@@ -518,7 +498,6 @@ class DistributionController extends Controller
                     'department_id' => $request->input('department_id'),
                     'created_by' => $user_auth->id,
                     'created_for' => $client->id,
-                    // 'inventory_items' => json_encode($inventoryItems), // Save inventory items as JSON
                 ]);
             }
 
@@ -771,7 +750,9 @@ class DistributionController extends Controller
 
             $statusValue = (int) $request->input('status');
             $statusValue = match ($statusValue) {
+
                 DistributionStatus::APPROVED->value => 1,
+                
                 DistributionStatus::CANCELD->value => 2,
 
                 default => throw new \InvalidArgumentException('ערך סטטוס אינו תקין..'),
@@ -779,6 +760,7 @@ class DistributionController extends Controller
             
 
             $currentTime = Carbon::now()->toDateTimeString();
+            
             DB::beginTransaction(); // Start a database transaction
 
             //? distribution records has been approved
@@ -806,11 +788,12 @@ class DistributionController extends Controller
                         
                         // Loop on each item within the type_id
                         foreach ($items['items'] as $inventoryItem) {
+
+                            
                             $idInventory = $inventoryItem['inventory_id']; // Save the inventory_id records
                             $quantity = $inventoryItem['quantity'];
 
-                           
-
+                        
                             $inventory = Inventory::where('id', $idInventory)
                             ->where('is_deleted', false)
                                 ->first();
@@ -841,9 +824,6 @@ class DistributionController extends Controller
                             ];
                         }
 
-
-
-                        
                         // Update the distribution record with the updated inventory items
                         $distributionRecord->update([
                             'status' => $statusValue,
@@ -1402,7 +1382,7 @@ class DistributionController extends Controller
             }
 
 
-            $distributions = Distribution::with(['inventory', 'itemType', 'department', 'createdForUser'])
+            $distributions = Distribution::with(['itemType', 'department', 'createdForUser'])
                 ->where('status', $request->input('status'))
                 ->where('is_deleted', 0)
                 ->orderBy('created_at', 'desc')
@@ -1443,8 +1423,8 @@ class DistributionController extends Controller
 
         } catch (\Exception $e) {
             Log::error($e->getMessage());
-            return response()->json(['message' => 'Server error, please try again later.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+        return response()->json(['message' => 'התרחש בעיית שרת.נסה שוב מאוחר יותר'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
 
@@ -1751,7 +1731,7 @@ class DistributionController extends Controller
             } else {
                 //? fetch all distributions records.
 
-                $distributions = Distribution::with(['inventory', 'department', 'createdForUser'])
+                $distributions = Distribution::with(['department', 'createdForUser'])
                     ->where('is_deleted', 0)
                     ->orderBy('created_at', 'desc')
                     ->get()
@@ -1827,7 +1807,7 @@ class DistributionController extends Controller
         $perPage = 20;
 
         // Fetch the sorted records with pagination
-        $distributions = $query->with(['inventory', 'itemType', 'department', 'createdForUser'])
+        $distributions = $query->with(['itemType', 'department', 'createdForUser'])
                                ->paginate($perPage);
 
         return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
@@ -1848,9 +1828,11 @@ class DistributionController extends Controller
     private function fetchDistributions(Request $request)
     {
         try {
+
+            
             $query = $request->input('query');
 
-            return Distribution::with(['inventory', 'itemType', 'department', 'createdForUser'])
+            return Distribution::with(['itemType', 'department', 'createdForUser'])
 
                 ->where('is_deleted', 0)
 
@@ -1860,10 +1842,10 @@ class DistributionController extends Controller
                         $userQuery->where('personal_number', 'like', "%$query%");
                     });
 
-                    // Search by SKU
-                    $queryBuilder->orWhereHas('inventory', function ($inventoryQuery) use ($query) {
-                        $inventoryQuery->where('sku', 'like', "%$query%");
-                    });
+                    // // Search by SKU
+                    // $queryBuilder->orWhereHas('inventory', function ($inventoryQuery) use ($query) {
+                    //     $inventoryQuery->where('sku', 'like', "%$query%");
+                    // });
 
                     // Search by item_type type field
                     $queryBuilder->orWhereHas('inventory.itemType', function ($itemTypeQuery) use ($query) {
@@ -1902,10 +1884,10 @@ class DistributionController extends Controller
 
             $query = Distribution::query();
 
-            // Search by inventory_id
-            if ($request->has('inventory_id') && empty($request->input('inventory_id'))==false) {
-                $query->where('inventory_id', $request->input('inventory_id'));
-            }
+            // // Search by inventory_id
+            // if ($request->has('inventory_id') && empty($request->input('inventory_id'))==false) {
+            //     $query->where('inventory_id', $request->input('inventory_id'));
+            // }
 
             // Search by order_number
             if ($request->has('order_number') && empty($request->input('order_number'))==false) {
@@ -1947,7 +1929,7 @@ class DistributionController extends Controller
             $query->where('is_deleted', 0);
 
             return $query
-                ->with(['inventory', 'itemType', 'department', 'createdForUser'])
+                ->with(['itemType', 'department', 'createdForUser'])
                 ->orderBy('created_at', 'desc')
                 ->get();
         } catch (\Exception $e) {
