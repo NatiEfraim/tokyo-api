@@ -77,25 +77,23 @@ class StoreDistributionRequest extends FormRequest
             'phone.string' => 'מספר הטלפון אינו בפורמט תקין',
             'phone.unique' => 'מספר הטלפון כבר קיים במערכת',
             'phone.regex' => 'מספר הטלפון חייב להיות בפורמט תקין של מספר ישראלי',
+            
             'employee_type.required' => 'סוג העובד הוא שדה חובה',
             'employee_type.exists' => 'סוג העובד אינו קיים במערכת',
 
 
             //? items comments
-            'general_comment.required' => 'שדה ההערה הוא חובה.',
+            // 'general_comment.required' => 'שדה ההערה הוא חובה.',
 
-            'general_comment.string' => 'שדה הערה כללית אינה תקינה.',
-            'general_comment.min' => 'שדה הערה כללית אינה תקינה.',
-            'general_comment.max' => 'שדה הערה כללית אינה תקינה.',
+            'user_comment.string' => 'שדה הערה כללית אינה תקינה.',
+            'user_comment.min' => 'שדה הערה כללית אינה תקינה.',
+            'user_comment.max' => 'שדה הערה כללית אינה תקינה.',
 
             'status.between' => 'שדה הסטטוס אינו תקין.',
 
-            'quantity.required' => 'שדה הכמות הוא חובה.',
-            'quantity.min' => 'ערך שדה כמות אינו תקין.',
 
-            'inventory_id.required' => 'שדה מזהה המלאי הוא חובה.',
+            
             'department_id.required' => 'שדה מזהה המחלקה הוא חובה.',
-            'inventory_id.exists' => 'שדה מזהה המלאי אינו קיים במערכת.',
             'department_id.exists' => 'שדה מזהה המחלקה אינו קיים במערכת.',
 
             'created_for.required' => 'יש לשלוח משתמש קיים במערכת שעבורו נופק הבקשה.',
@@ -114,14 +112,6 @@ class StoreDistributionRequest extends FormRequest
 
             'items.*.comment.string' => 'הערה עבור הפריט חייבת להיות מחרוזת.',
             'items.*.comment.max' => 'הערה עבור הפריט חייבת להיות לא יותר מ-255 תווים.',
-
-
-
-            // 'items.*.item_type.required' => 'שדה סוג הפריט הוא שדה חובה.',
-            // 'items.*.item_type.string' => 'סוג הפריט חייב להיות מחרוזת.',
-            // 'items.*.item_type.exists' => 'הפריט :value לא קיים או נמחק.',
-            // 'items.*.type_id.string' => 'סוג הפריט חייב להיות מחרוזת.',
-
 
         ];
     }

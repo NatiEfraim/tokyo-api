@@ -1088,14 +1088,14 @@
                 }
             }
         },
-        "/changed-status/{id}": {
-            "put": {
+        "/api/distributions/allocation": {
+            "post": {
                 "tags": [
                     "Distributions"
                 ],
                 "summary": "Update distribution status by ID",
                 "description": "Updates the status of a distribution by its ID.",
-                "operationId": "5c9d2b732067278de431035cf84ca685",
+                "operationId": "cc17aef19668b5c94848f1d8d125e9f9",
                 "parameters": [
                     {
                         "name": "id",

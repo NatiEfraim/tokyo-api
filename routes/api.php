@@ -74,12 +74,16 @@ Route::controller(DistributionController::class)
 
         Route::get('/', 'index');
 
+        //?search distributions records based on one query
         Route::get('/search-by-query', 'getRecordsByQuery');
 
+        //? fillter distributions records based on one or more fileds
         Route::get('/search-by-filter', 'getRecordsByFilter');
 
+        //? search by order_number.
         Route::get('/search-by-order', 'getRecordsByOrder');
 
+        //? fetch based on only order_number fileds - and group_by
         Route::get('/fetch-records-by-order', 'fetchDistributionsRecordsByOrderNumber');
 
         //? route for quartermaster - fetch all distributions records - ccording apporved and invetories

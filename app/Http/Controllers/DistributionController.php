@@ -631,8 +631,8 @@ class DistributionController extends Controller
     }
 
     /**
-     * @OA\Put(
-     *      path="/changed-status/{id}",
+     * @OA\Post(
+     *      path="/api/distributions/allocation",
      *      tags={"Distributions"},
      *      summary="Update distribution status by ID",
      *      description="Updates the status of a distribution by its ID.",
@@ -759,6 +759,7 @@ class DistributionController extends Controller
             $distributionRecords = Distribution::where('order_number', $request->input('order_number'))
             ->where('is_deleted', false)
             ->get();
+
 
 
             // Check if records exist
@@ -968,13 +969,10 @@ class DistributionController extends Controller
      * )
      */
 
-    public function changeStatus(Request $request, $id = null)
+    public function changeStatus(Request $request)
     {
         try {
 
-            if (is_null($id)) {
-                return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה.'], Response::HTTP_BAD_REQUEST);
-            }
 
             // set custom error messages in Hebrew
             $customMessages = [
@@ -1010,24 +1008,26 @@ class DistributionController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
+
             if ($request->input('status')!==DistributionStatus::PENDING->value && $request->input('status')!==DistributionStatus::COLLECTED->value) {
-                return response()->json(['message' => 'נתונים אינם תקינים.'], Response::HTTP_BAD_REQUEST);
+                return response()->json(['message' => 'ערך סטטוס אינו תקין.'], Response::HTTP_BAD_REQUEST);
             }
 
             if (is_null($request->input('quartermaster_comment')) && $request->input('status')==DistributionStatus::PENDING->value) {
-                return response()->json(['message' => 'חובה לשלוח סיבת ביטול.'], Response::HTTP_BAD_REQUEST);
+                return response()->json(['message' => 'יש לשלוח הערה על ההזמנה למנהל.'], Response::HTTP_BAD_REQUEST);
             }
 
+
             // Fetch the records with the given order_number and is_deleted is false
-            $distributionRecords = Distribution::where('order_number', $request->input('orderNumber'))
+            $distributionRecords = Distribution::where('order_number', $request->input('order_number'))
                 ->where('is_deleted', false)
                 ->get();
 
+                
             // Check if records exist
             if ($distributionRecords->isEmpty()) {
                 return response()->json(['message' => 'לא נמצאו רשומות עם מספר הזמנה זה במערכת.'], Response::HTTP_BAD_REQUEST);
             }
-
 
             $statusValue = (int) $request->input('status');
             $statusValue = match ($statusValue) {

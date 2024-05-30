@@ -103,9 +103,9 @@ class UserController extends Controller
                         'personal_number' => $user->personal_number,
                         'email' => $user->email,
                         'phone' => $user->phone,
-                        'emp_type_id' => $user->emp_type_id,
-                        'employee_type' => $user->employeeType,
-                        'role' => $user->roles->first()->name ?? null,//set asscoiae
+                        'employee_type' => $user->getTranslatedEmployeeTypeAttribute()?? null,
+                        'role' => $user->translateRoleAttribute() ?? null,//set asscoiae
+                        // 'emp_type_id' => $user->emp_type_id,
                     ];
             }
 
@@ -331,9 +331,9 @@ class UserController extends Controller
                         'personal_number' => $user->personal_number,
                         'email' => $user->email,
                         'phone' => $user->phone,
-                        'emp_type_id' => $user->emp_type_id,
-                        'employee_type' => $user->employeeType,
-                        'role' => $user->roles->first()->name ?? null, //set asscoiae
+                        'employee_type' => $user->getTranslatedEmployeeTypeAttribute() ?? null,
+                        'role' => $user->translateRoleAttribute() ?? null,//set asscoiae
+                   
                     ];
                 }
                     return response()->json($user_search_for,Response::HTTP_OK);
