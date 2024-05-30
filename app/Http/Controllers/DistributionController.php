@@ -105,6 +105,8 @@ class DistributionController extends Controller
     public function index()
     {
         try {
+
+            
             $distributions = Distribution::with(['inventory', 'itemType', 'department', 'createdForUser'])
                 ->where('is_deleted', 0)
                 ->orderBy('created_at', 'desc')
@@ -148,9 +150,9 @@ class DistributionController extends Controller
                 if ($inventoryItems) {
                 $inventoryItems = array_map(function ($item) {
                     return [
-                        'inventory_id' => $item['inventory_id'],
+                        'sku' => $item['sku'],
                         'quantity' => $item['quantity'],
-                        'comment' => $item['comment'] ?? null,
+                        // 'comment' => $item['comment'] ?? null,
                     ];
                 }, $inventoryItems);
             }
@@ -719,7 +721,7 @@ class DistributionController extends Controller
 
                 'status' => 'required|integer|between:1,2',
                 
-                'admin_comment' => 'required|string|min:2|max:255',
+                'admin_comment' => 'nullable|string|min:2|max:255',
 
                 'inventory_items' => 'nullable|array',
 
@@ -743,11 +745,11 @@ class DistributionController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-            if ((is_null($request->input('inventory_items'))||(is_null($request->input('inventory_items')))) && $request->input('status') == DistributionStatus::APPROVED->value) {
-                return response()->json(['message' => 'נתונים אינם תקינים.'], Response::HTTP_BAD_REQUEST);
-            }
-
             if (is_null($request->input('admin_comment')) && $request->input('status') == DistributionStatus::CANCELD->value) {
+                return response()->json(['message' => 'חובה לשלוח סיבת ביטול.'], Response::HTTP_BAD_REQUEST);
+            }
+            
+            if (is_null($request->input('inventory_items')) && $request->input('status') == DistributionStatus::APPROVED->value) {
                 return response()->json(['message' => 'חובה לשלוח סיבת ביטול.'], Response::HTTP_BAD_REQUEST);
             }
 
@@ -811,11 +813,11 @@ class DistributionController extends Controller
                             ->where('is_deleted', false)
                                 ->first();
 
-                            if($inventory->type_id!== $items['type_id'])
+                            if(  (is_null($inventory)) || ($inventory->type_id!== $items['type_id']) )
                             {
                                 DB::rollBack(); // Rollback the transaction
-                                return response()->json(['message' => 'סוג מק"ט אינו תואם לסוג פריט בהזמנה.'], Response::HTTP_OK); 
-                            }
+                                return response()->json(['message' => 'אחד מהפרטים שבמלאי שנשלחו אינם תקינים.'], Response::HTTP_BAD_REQUEST); 
+                            }                   
 
                             $available = $inventory->quantity - $inventory->reserved;
 
@@ -832,8 +834,8 @@ class DistributionController extends Controller
 
                             // Add to the list of inventory updates
                             $inventoryUpdates[] = [
-                                'inventory_id' => $idInventory,
-                                'quantity' => $quantity,
+                                'sku' => $inventory->sku,//save sku
+                                'quantity' => $quantity,//save qty
                             ];
                         }
 
@@ -1164,53 +1166,6 @@ class DistributionController extends Controller
 
             DB::beginTransaction(); // Start a database transaction
 
-            // //? update the reserved fileds of inventory
-            // if ($request->input('quantity') && $request->input('quantity') > $distribution->quantity) {
-            //     $inventory->update([
-            //         'reserved' => $inventory->reserved + abs($request->input('quantity') - $distribution->quantity),
-            //         'updated_at' => $currentTime,
-            //     ]);
-            // } elseif ($request->input('quantity') && $request->input('quantity') < $distribution->quantity) {
-            //     $inventory->update([
-            //         'reserved' => $inventory->reserved - abs($request->input('quantity') - $distribution->quantity),
-            //         'updated_at' => $currentTime,
-            //     ]);
-            // }
-
-
-
-
-            // if ($request->input('status')) {
-
-
-            //     // $statusValue = (int) $request->input('status');
-
-            //     // $statusValue = match ($statusValue) {
-            //     //     DistributionStatus::PENDING->value => 0,
-            //     //     // DistributionStatus::APPROVED->value => 1,
-            //     //     // DistributionStatus::CANCELD->value => 2,
-            //     //     DistributionStatus::COLLECTED->value => 3,
-
-            //     //     default => throw new \InvalidArgumentException('ערך סטטוס אינו תקין..'),
-            //     // };
-
-            //     //? distribution records has been approved
-
-            //     // if ($statusValue == DistributionStatus::APPROVED->value) {
-            //     //     $inventory->update([
-            //     //         'quantity' => $inventory->quantity - $distribution->quantity,
-            //     //         'reserved' => $inventory->reserved - $distribution->quantity,
-            //     //         'updated_at' => $currentTime,
-            //     //     ]);
-            //     //     //? distribution records has been canceld
-            //     // } elseif ($statusValue == DistributionStatus::CANCELD->value) {
-            //     //     $inventory->update([
-            //     //         'reserved' => $inventory->reserved - $distribution->quantity,
-            //     //         'updated_at' => $currentTime,
-            //     //     ]);
-            //     // }
-            // }
-
             //? updated all fileds for distribution record
 
             $distribution->update($request->validated());
@@ -1446,22 +1401,21 @@ class DistributionController extends Controller
             }
 
 
-            // Fetch all distribution records with their relations
             $distributions = Distribution::with(['inventory', 'itemType', 'department', 'createdForUser'])
                 ->where('status', $request->input('status'))
                 ->where('is_deleted', 0)
+                ->orderBy('created_at', 'desc')
                 ->paginate(20);
 
+            $distributions->each(function ($distribution) {
+                // Format the created_at and updated_at timestamps
+                $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+                $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
 
-            // if ($distributions) {
-            //     $distributions->each(function ($distribution) {
-            //         // Format the created_at and updated_at timestamps
-            //         $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
-            //         $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+                return $distribution;
+            });
 
-            //         return $distribution;
-            //     });
-            // }
+
 
 
 
