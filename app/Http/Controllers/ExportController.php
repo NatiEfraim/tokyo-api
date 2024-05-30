@@ -841,15 +841,13 @@ class ExportController extends Controller
             $sheet->setCellValue('I1', 'מייל');
             $sheet->setCellValue('J1', 'כמות פריט');
             $sheet->setCellValue('K1', 'כמות סה"כ');
-            $sheet->setCellValue('L1', 'מק"ט');
-            $sheet->setCellValue('M1', 'סוג פריט');
-            $sheet->setCellValue('N1', 'פירוט מורחב');
-            $sheet->setCellValue('O1', 'הערות על הפריט');
-            $sheet->setCellValue('P1', 'הערות ראש מדור');
-            $sheet->setCellValue('Q1', 'הערות מנהל');
-            $sheet->setCellValue('R1', 'הערות אפסנאי');
-            $sheet->setCellValue('S1', 'סטטוס');
-            $sheet->setCellValue('T1', 'תאריך שינוי אחרון');
+            $sheet->setCellValue('L1', 'סוג פריט');
+            $sheet->setCellValue('M1', 'הערות על הפריט');
+            $sheet->setCellValue('N1', 'הערות ראש מדור');
+            $sheet->setCellValue('O1', 'הערות מנהל');
+            $sheet->setCellValue('P1', 'הערות אפסנאי');
+            $sheet->setCellValue('Q1', 'סטטוס');
+            $sheet->setCellValue('R1', 'תאריך שינוי אחרון');
 
             $row = 2;
             foreach ($distributions as $distribution) {
@@ -866,15 +864,13 @@ class ExportController extends Controller
                 $sheet->setCellValue('I' . $row, $distribution->created_for ? $distribution->createdForUser->email : 'לא קיים');
                 $sheet->setCellValue('J' . $row, $distribution->quantity_per_item ?? 'לא קיים');
                 $sheet->setCellValue('K' . $row, $distribution->total_quantity ?? 'לא קיים');
-                $sheet->setCellValue('L' . $row, $distribution->inventory_id ? $distribution->inventory->sku : 'לא קיים');
-                $sheet->setCellValue('M' . $row, $distribution->type_id ? $distribution->itemType->type : 'לא קיים');
-                $sheet->setCellValue('N' . $row, $distribution->inventory_id ? $distribution->inventory->detailed_description : 'לא קיים');
-                $sheet->setCellValue('O' . $row, $distribution->type_comment ?? 'לא קיים');
-                $sheet->setCellValue('P' . $row, $distribution->user_comment ?? 'לא קיים');
-                $sheet->setCellValue('Q' . $row, $distribution->admin_comment ?? 'לא קיים');
-                $sheet->setCellValue('R' . $row, $distribution->quartermaster_comment ?? 'לא קיים');
-                $sheet->setCellValue('S' . $row, $distribution->getStatusTranslation() ?? 'לא קיים');
-                $sheet->setCellValue('T' . $row, $distribution->updated_at_date ?? 'לא קיים');
+                $sheet->setCellValue('L' . $row, $distribution->type_id ? $distribution->itemType->type : 'לא קיים');
+                $sheet->setCellValue('M' . $row, $distribution->type_comment ?? 'לא קיים');
+                $sheet->setCellValue('N' . $row, $distribution->user_comment ?? 'לא קיים');
+                $sheet->setCellValue('O' . $row, $distribution->admin_comment ?? 'לא קיים');
+                $sheet->setCellValue('P' . $row, $distribution->quartermaster_comment ?? 'לא קיים');
+                $sheet->setCellValue('Q' . $row, $distribution->getStatusTranslation() ?? 'לא קיים');
+                $sheet->setCellValue('R' . $row, $distribution->updated_at_date ?? 'לא קיים');
 
                 $row++;
             }
@@ -903,7 +899,7 @@ class ExportController extends Controller
                 ],
             ];
 
-            $sheet->getStyle('A1:T1')->applyFromArray($headerStyle);
+            $sheet->getStyle('A1:R1')->applyFromArray($headerStyle);
 
             // Set & Style the cells
             $cellStyle = [
@@ -914,10 +910,10 @@ class ExportController extends Controller
             ];
 
             // apply styling to all cells in the sheet
-            $sheet->getStyle('A1:T' . ($row - 1))->applyFromArray($cellStyle);
+            $sheet->getStyle('A1:R' . ($row - 1))->applyFromArray($cellStyle);
 
             // set the size for rest of columns
-            foreach (range('A', 'T') as $column) {
+            foreach (range('A', 'R') as $column) {
                 $sheet->getColumnDimension($column)->setAutoSize(true);
             }
 

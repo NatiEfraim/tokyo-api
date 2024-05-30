@@ -51,14 +51,14 @@ class DistributionFactory extends Factory
             'admin_comment' => $this->faker->sentence, // Generate generate comment for adamin
             'user_comment' => $this->faker->sentence, // Generate generate comment for user
             'status' => $this->faker->numberBetween(0, 3),
-            'inventory_id' => $randomInventory->id, //set relation
             'type_id' => $randomType->id, //set relation
             'department_id' => $randomDepartemnt->id, //set relation
             'created_by' => $randomUser->id, //set relation
             'created_for' =>  $randomClient->id, //set relation
             'quantity_per_item' => $this->faker->numberBetween(1, 100), // Generate quantity per item
             'total_quantity' => $this->faker->numberBetween(1, 100), // Generate total quantity
-
+            
+            // 'inventory_id' => $randomInventory->id, //set relation
         ];
     }
 }

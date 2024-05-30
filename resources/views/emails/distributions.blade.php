@@ -66,9 +66,7 @@
                 <th>מייל</th>
                 <th>כמות פריט</th>
                 <th>כמות סה"כ</th>
-                <th>מק"ט</th>
                 <th>סוג פריט</th>
-                <th>פירוט מורחב</th>
                 <th>הערות על הפריט</th>
                 <th>הערות ראש מדור</th>
                 <th>הערות מנהל</th>
@@ -92,9 +90,7 @@
                     <td>{{ $distribution->created_for ? $distribution->createdForUser->email : 'לא קיים' }}</td>
                     <td>{{ $distribution->quantity_per_item ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->total_quantity ?? 'לא קיים' }}</td>
-                    <td>{{ $distribution->inventory_id ? $distribution->inventory->sku : 'לא קיים' }}</td>
                     <td>{{ $distribution->itemType->type ?? 'לא קיים' }}</td>
-                    <td>{{ $distribution->inventory_id ? $distribution->inventory->detailed_description : 'לא קיים' }}</td>
                     <td>{{ $distribution->type_comment ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->user_comment ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->admin_comment ?? 'לא קיים' }}</td>
