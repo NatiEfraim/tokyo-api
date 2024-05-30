@@ -509,7 +509,7 @@ class DistributionController extends Controller
                 Distribution::create([
                     'order_number' => intval($orderNumber),
                     'user_comment' => $request->input('user_comment') ?? null,
-                    'type_comment' => $comment,
+                    'type_comment' => $comment??null,
                     'total_quantity' => $allQuantity,
                     'quantity_per_item' => $quantity,
                     'status' => DistributionStatus::PENDING->value,
@@ -684,7 +684,8 @@ class DistributionController extends Controller
      * )
      */
 
-    public function allocationStatus(Request $request)
+     //? route for admin - to allocate records based on order_number.
+    public function allocationRecords(Request $request)
     {
 
         try {

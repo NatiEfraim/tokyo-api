@@ -80,7 +80,7 @@ Route::controller(DistributionController::class)
         //? fillter distributions records based on one or more fileds
         Route::get('/search-by-filter', 'getRecordsByFilter');
 
-        //? search by order_number.
+        //? search records by order_number.
         Route::get('/search-by-order', 'getRecordsByOrder');
 
         //? fetch based on only order_number fileds - and group_by
@@ -96,12 +96,14 @@ Route::controller(DistributionController::class)
         Route::get('/{id?}', 'getRecordById');
 
         //? route for liran alocate items
-        Route::post('/allocation', 'allocationStatus')->middleware(['role:admin']);
+        Route::post('/allocation', 'allocationRecords')->middleware(['role:admin']);
+        
+        //? route for to make order on item  route for user
+        Route::post('/', 'store')->middleware(['role:admin|user']);
+        
         //?route for quartermaster - to sign for collected or back to liran
         Route::put('/changed-status', 'changeStatus')->middleware(['role:admin|quartermaster']);
 
-        //? route for to make order on item  route for user
-        Route::post('/', 'store')->middleware(['role:admin|user']);
 
         Route::delete('/mass-destroy', 'massDestroy')->middleware(['role:admin']);
 
