@@ -89,7 +89,13 @@ class DistributionController extends Controller
      *                      type="object",
      *                      @OA\Property(property="id", type="integer", example=2),
      *                      @OA\Property(property="name", type="string", example="miluim")
-     *                  )
+     *                  ),
+     *                  @OA\Property(
+     *                      property="department",
+     *                      type="object",
+     *                      @OA\Property(property="id", type="integer", example=2),
+     *                      @OA\Property(property="name", type="string", example="ducimus")
+     *                  ),
      *              )
      *          )
      *      ),
@@ -108,7 +114,7 @@ class DistributionController extends Controller
         try {
 
             
-            $distributions = Distribution::with(['itemType', 'department', 'createdForUser'])
+            $distributions = Distribution::with(['itemType','createdForUser'])
                 ->where('is_deleted', 0)
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
@@ -245,12 +251,7 @@ class DistributionController extends Controller
 
         
     }
-
-
-
-
-
-    
+   
     /**
      * @OA\Get(
      *      path="/api/distributions/{id}",
@@ -327,7 +328,7 @@ class DistributionController extends Controller
                 return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
             }
 
-            $distribution = Distribution::with(['inventory', 'itemType', 'department', 'createdForUser'])
+            $distribution = Distribution::with(['itemType','createdForUser'])
                 ->where('id', $id)
                 ->where('is_deleted', 0)
                 ->first();
@@ -564,7 +565,7 @@ class DistributionController extends Controller
                     'status' => DistributionStatus::PENDING->value,
                     'type_id' => $itemType,
                     'year' => $currentYear,
-                    'department_id' => $request->input('department_id'),
+                    'department_id' => $request->input('department_id'),//unnassesery
                     'created_by' => $user_auth->id,
                     'created_for' => $client->id,
                 ]);
@@ -1453,7 +1454,7 @@ class DistributionController extends Controller
             }
 
 
-            $distributions = Distribution::with(['itemType', 'department', 'createdForUser'])
+            $distributions = Distribution::with(['itemType', 'createdForUser'])
                 ->where('status', $request->input('status'))
                 ->where('is_deleted', 0)
                 ->orderBy('created_at', 'desc')
@@ -1614,7 +1615,7 @@ class DistributionController extends Controller
             }
 
             //? fetch all distribution records based on order_number
-            $distributions= Distribution::with(['inventory', 'itemType', 'department', 'createdForUser'])
+            $distributions= Distribution::with(['itemType',  'createdForUser'])
                 ->where('order_number', $request->input('order_number'))
                 ->where('is_deleted',0)
                 ->get();
@@ -1833,10 +1834,11 @@ class DistributionController extends Controller
         try {
 
             // Define the fields that are allowed to be sorted by
-            $sortableFields = ['order_number', 'year', 'type_id', 'department_id'];
+            $sortableFields = ['order_number', 'year', 'type_id', 'department_id', 'created_at'];
 
             // Define validation rules
             $rules = [
+                
                 'sort' => 'required|array',
                 'sort.*.field' => 'required|string|in:' . implode(',', $sortableFields),
                 'sort.*.direction' => 'required|string|in:asc,desc',
@@ -1894,31 +1896,45 @@ class DistributionController extends Controller
             $sortParams = $request->input('sort', []);
 
             // Apply multiple sorting parameters
-            foreach ($sortParams as $sort) {
-                
-                $sortField = $sort['field'];
-                $sortDirection = strtolower($sort['direction']) === 'desc' ? 'desc' : 'asc';
+            if (!empty($sortParams)) {
+                $distributions = $distributions->sortBy(function ($distribution) use ($sortParams) {
+                    $sortValues = [];
 
+                    foreach ($sortParams as $sort) {
+                        $sortField = $sort['field'];
+                        if ($sortField== 'order_number') {
+                            //? sort the records by order_number fileds
+                            $sortValues[] = $distribution->order_number;
 
-                $distributions = $distributions->sortBy(function ($distribution) use ($sortField) {
-                    switch ($sortField) {
-                        case 'order_number':
-                            //? sort by order_number fileds
-                            return $distribution->order_number;
-                        case 'year':
+                        } else if($sortField == 'year') {
                             //? sort by year
-                            return $distribution->year;
-                        case 'type_id':
-                            //?sort by type
-                            return $distribution->itemType->type ?? '';
-                        case 'department_id':
-                            //? sort by department name
-                            return $distribution->createdForUser->department->name ?? '';
-                        default:
-                            return $distribution->created_at;
+                            $sortValues[] = $distribution->year;
+                        }else if($sortField == 'type_id') {
+                            //? sort the records by type of item_types associated records.
+                            $sortValues[] = $distribution->itemType->type ?? '';
+
+                        }elseif($sortField == 'department_id'){
+                            //? sort by department name associated by department_id
+                            $sortValues[] = $distribution->createdForUser->department->name ?? '';
+                        } else if($sortField == 'created_at') {
+                            $sortValues[] = $distribution->created_at;
+                        }
+  
                     }
-                }, SORT_REGULAR, $sortDirection === 'desc');
+
+                    return $sortValues;
+                });
+
+                foreach ($sortParams as $sort) {
+                    $sortField = $sort['field'];
+                    $sortDirection = strtolower($sort['direction']) === 'desc' ? 'desc' : 'asc';
+
+                    $distributions = $sortDirection === 'asc' ? $distributions->sortBy($sortField) : $distributions->sortByDesc($sortField);
+                }
             }
+
+
+
 
             // Convert to collection after sorting to maintain collection methods
             $distributions = $distributions->values();
@@ -1931,7 +1947,6 @@ class DistributionController extends Controller
             $paginatedDistributions = new LengthAwarePaginator($currentItems, $distributions->count(), $perPage, $currentPage);
 
 
-            
             // Return the paginated and sorted results
             return response()->json($paginatedDistributions, Response::HTTP_OK);
 
@@ -1959,7 +1974,7 @@ class DistributionController extends Controller
             
             $query = $request->input('query');
 
-            return Distribution::with(['itemType', 'department', 'createdForUser'])
+            return Distribution::with(['itemType', 'createdForUser'])
 
                 ->where('is_deleted', 0)
 
@@ -1968,11 +1983,6 @@ class DistributionController extends Controller
                     $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
                         $userQuery->where('personal_number', 'like', "%$query%");
                     });
-
-                    // // Search by SKU
-                    // $queryBuilder->orWhereHas('inventory', function ($inventoryQuery) use ($query) {
-                    //     $inventoryQuery->where('sku', 'like', "%$query%");
-                    // });
 
                     // Search by item_type type field
                     $queryBuilder->orWhereHas('inventory.itemType', function ($itemTypeQuery) use ($query) {
@@ -2011,10 +2021,6 @@ class DistributionController extends Controller
 
             $query = Distribution::query();
 
-            // // Search by inventory_id
-            // if ($request->has('inventory_id') && empty($request->input('inventory_id'))==false) {
-            //     $query->where('inventory_id', $request->input('inventory_id'));
-            // }
 
             // Search by order_number
             if ($request->has('order_number') && empty($request->input('order_number'))==false) {
@@ -2026,23 +2032,25 @@ class DistributionController extends Controller
                 $query->where('status', $request->status);
             }
 
+            //? fetch by department
+            if ($request->has('department_id')) {
 
-            // Search by department_id
-            if ($request->has('department_id') && empty($request->input('department_id'))==false) {
-                $query->where('department_id', $request->input('department_id'));
+
+                $query->whereHas('createdForUser', function ($q) use ($request) {
+                    $q->where('department_id', $request->input('department_id'));
+                });
             }
+
+            // // Search by department_id
+            // if ($request->has('department_id') && empty($request->input('department_id'))==false) {
+            //     $query->where('department_id', $request->input('department_id'));
+            // }
 
             // Search by year
             if ($request->has('year') && empty($request->input('year'))==false) {
                 $query->where('year', $request->input('year'));
             }
 
-            // // Search by user_id
-            // if ($request->has('user_id') && empty($request->input('user_id'))==false) {
-            //     $query->where('created_for', $request->input('user_id'));
-            // }
-
-            
             // Search by user_id
             if ($request->has('clients_id') && empty($request->input('clients_id'))==false) {
                 $query->whereIn('created_for', $request->input('clients_id'));

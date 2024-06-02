@@ -1317,7 +1317,7 @@ class ExportController extends Controller
             // Ensure is_deleted is 0
             $query->where('is_deleted', 0);
 
-            return $query->with(['inventory', 'department', 'itemType','createdForUser'])
+            return $query->with(['department', 'itemType','createdForUser'])
             ->orderBy('created_at', 'desc')
             ->get();
         } catch (\Exception $e) {
