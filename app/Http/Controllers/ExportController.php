@@ -1113,17 +1113,11 @@ class ExportController extends Controller
                 'created_at' => [
                     'nullable',
                     'date',
-                    // Rule::exists('distributions')->where(function ($query) {
-                    //     return $query->where('is_deleted', 0);
-                    // }),
                 ],
 
                 'updated_at' => [
                     'nullable',
                     'date',
-                    // Rule::exists('distributions')->where(function ($query) {
-                    //     return $query->where('is_deleted', 0);
-                    // }),
                 ],
 
 
@@ -1195,6 +1189,7 @@ class ExportController extends Controller
             } else {
                 //? fetch all distributions records.
                 $distributions = Distribution::with(['inventory', 'department', 'createdForUser'])
+                ->where('status',1)
                 ->where('is_deleted', 0)
                 ->orderBy('created_at', 'desc')
                 ->get()
@@ -1206,6 +1201,25 @@ class ExportController extends Controller
 
                     return $distribution;
                 });
+
+
+                // Loop through each record and add inventory_items object
+                $distributions->transform(function ($distribution) {
+                    $inventoryItems = json_decode($distribution->inventory_items, true);
+                    // If inventory_items is not null, process it
+                    if ($inventoryItems) {
+                        $inventoryItems = array_map(function ($item) {
+                            return [
+                                'sku' => $item['sku'],
+                                'quantity' => $item['quantity'],
+                            ];
+                        }, $inventoryItems);
+                    }
+                    $distribution->inventory_items = $inventoryItems;
+                    return $distribution;
+                });
+
+                
             }
 
 

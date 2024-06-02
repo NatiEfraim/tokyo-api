@@ -73,6 +73,7 @@
                 <th>הערות אפסנאי</th>
                 <th>סטטוס</th>
                 <th>תאריך שינוי אחרון</th>
+                <th>פרטי מלאי</th>
             </tr>
         </thead>
         <tbody>
@@ -82,7 +83,7 @@
                     <td>{{ $distribution->id ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->created_at_date ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->order_number ?? 'לא קיים' }}</td>
-                    <td>{{ $distribution->department_id ? $distribution->department->name : 'לא קיים' }}</td>
+                    <td>{{ $distribution->created_for ? $distribution->createdForUser->department->name : 'לא קיים' }}</td>
                     <td>{{ $distribution->created_for ? $distribution->createdForUser->personal_number : 'לא קיים' }}</td>
                     <td>{{ $distribution->created_for ? $distribution->createdForUser->name : 'לא קיים' }}</td>
                     <td>{{ $distribution->created_for ? $distribution->createdForUser->translated_employee_type : 'לא קיים' }}</td>
@@ -97,6 +98,17 @@
                     <td>{{ $distribution->quartermaster_comment ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->getStatusTranslation() ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->updated_at_date ?? 'לא קיים' }}</td>
+                    <td>
+                        @if (!empty($distribution->inventory_items))
+                            <ul>
+                                @foreach ($distribution->inventory_items as $item)
+                                    <li>SKU: {{ $item['sku'] }}, Quantity: {{ $item['quantity'] }}</li>
+                                @endforeach
+                            </ul>
+                        @else
+                            לא קיים
+                        @endif
+                    </td>
                 </tr>
             @endforeach
         </tbody>
