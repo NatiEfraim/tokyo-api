@@ -3074,6 +3074,101 @@
                 }
             }
         },
+        "/api/inventories/fetch-by-sku": {
+            "get": {
+                "tags": [
+                    "Inventories"
+                ],
+                "summary": "fetch inventories records based on type_id and sku",
+                "description": "Returns a list of inventories records based on type_id and sku.",
+                "operationId": "052cce9b99f7da83602d168b3033d08d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "type_id",
+                                    "query"
+                                ],
+                                "properties": {
+                                    "type_id": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "query": {
+                                        "type": "string",
+                                        "example": "7845"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "quantity": {
+                                                "type": "integer",
+                                                "example": 33
+                                            },
+                                            "sku": {
+                                                "type": "string",
+                                                "example": "0028221469208"
+                                            },
+                                            "item_type": {
+                                                "type": "string",
+                                                "example": "autem"
+                                            },
+                                            "detailed_description": {
+                                                "type": "string",
+                                                "example": "Neque recusandae corporis totam facere pariatur. Et perspiciatis aut in quia. Placeat quas vero modi magni ut. Voluptas et qui vitae culpa."
+                                            },
+                                            "reserved": {
+                                                "type": "integer",
+                                                "example": 3
+                                            },
+                                            "available": {
+                                                "type": "integer",
+                                                "example": 3
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "התרחש בעיית שרת יש לנסות שוב מאוחר יותר."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/inventories/{id}": {
             "get": {
                 "tags": [

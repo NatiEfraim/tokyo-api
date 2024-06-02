@@ -712,7 +712,7 @@ class ExportController extends Controller
 
                 'status' => 'nullable|integer|between:0,2',
 
-                'name' => 'nullable|string|exists:departments,name,is_deleted,0',
+                // 'name' => 'nullable|string|exists:departments,name,is_deleted,0',
                 'department_id' => 'nullable|string|exists:departments,id,is_deleted,0',
 
                 'personal_number' => 'nullable|min:1|max:7',
@@ -747,6 +747,7 @@ class ExportController extends Controller
 
 
                 'name.string' => 'שדה ערך שם מחלקה אינו תקין.',
+                
                 'department_id.exists' => 'מחלקה אינה קיימת במערכת.',
 
                 'status.between' => 'שדה הסטטוס אינו תקין.',
@@ -1101,27 +1102,29 @@ class ExportController extends Controller
                 'users' => 'required|array',
                 'users.*' => 'required|exists:users,id,is_deleted,0',
 
-                'sku' => 'nullable|string|max:255|exists:inventories,sku,is_deleted,0',
-
+                
                 'status' => 'nullable|integer|between:0,2',
-
-                'name' => 'nullable|string|exists:departments,name,is_deleted,0',
-
+                
+                'department_id' => 'nullable|string|exists:departments,id,is_deleted,0',
+                
+                
                 'personal_number' => 'nullable|min:1|max:7',
-
-
+                
+                
                 'created_at' => [
                     'nullable',
                     'date',
                 ],
-
+                
                 'updated_at' => [
                     'nullable',
                     'date',
                 ],
-
-
-
+                
+                
+                
+                // 'sku' => 'nullable|string|max:255|exists:inventories,sku,is_deleted,0',
+                // 'name' => 'nullable|string|exists:departments,name,is_deleted,0',
             ];
 
             // Define custom error messages
@@ -1134,27 +1137,28 @@ class ExportController extends Controller
                 'users.*.exists' => 'הערך שהוזן לא חוקי.',
 
 
+                'department_id.exists' => 'מחלקה אינה קיימת במערכת.',
 
-                'sku.string' => 'שדה שהוזן אינו בפורמט תקין',
-                'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
-                'sku.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
-
-
+                
+                
                 'name.string' => 'שדה ערך שם מחלקה אינו תקין.',
-
+                
                 'status.between' => 'שדה הסטטוס אינו תקין.',
-
-
+                
+                
                 'personal_number.min' => 'מספר אישי אינו תקין.',
                 'personal_number.max' => 'מספר אישי אינו תקין.',
-
-
-
+                
+                
+                
                 'created_at.date' => 'שדה תאריך התחלה אינו תקין.',
                 'created_at.exists' => 'שדה תאריך אינו קיים במערכת.',
                 'updated_at.date' => 'שדה תאריך סיום אינו תקין.',
                 'updated_at.exists' => 'שדה תאריך סיום אינו קיים במערכת.',
-
+                
+                // 'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
+                // 'sku.string' => 'שדה שהוזן אינו בפורמט תקין',
+                // 'sku.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
             ];
 
             // validate the request with custom error messages
@@ -1168,9 +1172,8 @@ class ExportController extends Controller
 
 
             if (
-                $request->has('sku')
-                || $request->has('status')
-                || $request->has('name')
+                $request->has('status')
+                || $request->has('department_id')
                 || $request->has('personal_number')
                 || $request->has('created_at')
                 || $request->has('updated_at')
@@ -1186,10 +1189,27 @@ class ExportController extends Controller
                         return $distribution;
                     });
                 }
+
+                // Loop through each record and add inventory_items object
+                $distributions->transform(function ($distribution) {
+                    $inventoryItems = json_decode($distribution->inventory_items, true);
+                    // If inventory_items is not null, process it
+                    if ($inventoryItems) {
+                        $inventoryItems = array_map(function ($item) {
+                            return [
+                                'sku' => $item['sku'],
+                                'quantity' => $item['quantity'],
+                            ];
+                        }, $inventoryItems);
+                    }
+                    $distribution->inventory_items = $inventoryItems;
+                    return $distribution;
+                });
+
+                
             } else {
                 //? fetch all distributions records.
                 $distributions = Distribution::with(['inventory', 'department', 'createdForUser'])
-                ->where('status',1)
                 ->where('is_deleted', 0)
                 ->orderBy('created_at', 'desc')
                 ->get()
@@ -1222,6 +1242,7 @@ class ExportController extends Controller
                 
             }
 
+            dd($distributions->toArray());
 
             $users = User::whereIn('id', $request->users)->get();
 
@@ -1250,51 +1271,23 @@ class ExportController extends Controller
             $query = Distribution::query();
 
 
-            // ? search by the fileds it selft
-            // if ($request->has('sku')) {
-            //     $query->whereHas('inventory', function ($q) use ($request) {
-            //         $q->where('sku', $request->sku);
-            //     });
-            // }
 
-            // if ($request->has('status')) {
-            //     $query->where('status', $request->status);
-            // }
-
-            // if ($request->has('name')) {
-            //     $query->whereHas('department', function ($q) use ($request) {
-            //         $q->where('name', $request->name);
-            //     });
-            // }
-
-
-            // if ($request->has('personal_number')) {
-            //     // $pnInput = $request->personal_number;
-            //     $query->whereHas('createdForUser', function ($q) use ($request) {
-            //         $q->whereRaw('SUBSTRING(personal_number, 2) LIKE ?', ['%' . $request->input('personal_number') . '%']);
-            //     });
-            // }
 
 
             //? search by the associated id
 
-            //serach by inventoty_id
-            if ($request->has('inventory_id')) {
-                $query->whereHas('inventory', function ($q) use ($request) {
-                    $q->where('id', $request->input('inventory_id'));
-                });
-            }
-
-            //? search by status
+            //? fetch by status
             if ($request->has('status')) {
                 $query->where('status', $request->status);
             }
 
 
-            //? search by department
+            //? fetch by department
             if ($request->has('department_id')) {
-                $query->whereHas('department', function ($q) use ($request) {
-                    $q->where('id', $request->input('department_id'));
+
+                
+                $query->whereHas('createdForUser', function ($q) use ($request) {
+                    $q->where('department_id', $request->input('department_id'));
                 });
             }
 
@@ -1308,7 +1301,7 @@ class ExportController extends Controller
                 // $pnInput = $request->personal_number;
                 $query->whereHas('createdForUser', function ($q) use ($request) {
                     // $q->whereRaw('SUBSTRING(personal_number, 2) LIKE ?', ['%' . $request->input('personal_number') . '%']);
-                    $q->where('id', $request->input('iser_id'));
+                    $q->where('id', $request->input('user_id'));
                 });
             }
 

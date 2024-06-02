@@ -27,7 +27,7 @@ class StoreInventoryRequest extends FormRequest
             'reserved' => 'nullable|string|min:0',
             'sku' => 'required|string|max:255',
 
-            'type_id' => 'required|string|exists:item_types,id,is_deleted,0',
+            'type_id' => 'required|integer|exists:item_types,id,is_deleted,0',
 
             'detailed_description' => 'required|string',
             // 'item_type' => 'required|string|max:255',
@@ -56,7 +56,7 @@ class StoreInventoryRequest extends FormRequest
             'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
 
             'type_id.required' => 'יש לבחור סוג פריט.',
-            'type_id.string' => 'סוג פריט אינו בפורמט תקין',
+            'type_id.integer' => 'סוג פריט אינו בפורמט תקין',
             'type_id.exists' => 'סוג פריט אינו קיים.',
 
 

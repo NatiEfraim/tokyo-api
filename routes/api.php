@@ -43,9 +43,16 @@ Route::controller(InventoryController::class)
         //? fetch sku & id only
         Route::get('/sku-records', 'getSkuRecords');
 
+        //? search invetories records 
         Route::get('/search-records', 'searchRecords');
 
+        //? fetch records by type_id fileds
         Route::get('/fetch-by-type', 'fetchByType');
+
+        //? sort by sku based on type_id
+        Route::get('/fetch-by-sku', 'fetchBySku');
+
+        
 
         //? fetch all reports records by sku of invetory records (property sku:5487415).
         Route::get('/history', 'fetchReport')->middleware(['role:admin']);

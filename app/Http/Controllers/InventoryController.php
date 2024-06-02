@@ -132,6 +132,103 @@ class InventoryController extends Controller
     }
 
 
+    /**
+     * @OA\Get(
+     *      path="/api/inventories/fetch-by-sku",
+     *      tags={"Inventories"},
+     *      summary="fetch inventories records based on type_id and sku",
+     *      description="Returns a list of inventories records based on type_id and sku.",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              required={"type_id", "query"},
+     *              @OA\Property(property="type_id", type="integer", example=10),
+     *              @OA\Property(property="query", type="string", example="7845"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              type="array",
+     *              @OA\Items(
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="quantity", type="integer", example=33),
+     *                  @OA\Property(property="sku", type="string", example="0028221469208"),
+     *                  @OA\Property(property="item_type", type="string", example="autem"),
+     *                  @OA\Property(property="detailed_description", type="string", example="Neque recusandae corporis totam facere pariatur. Et perspiciatis aut in quia. Placeat quas vero modi magni ut. Voluptas et qui vitae culpa."),
+     *                  @OA\Property(property="reserved", type="integer", example=3),
+     *                  @OA\Property(property="available", type="integer", example=3),
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Internal server error",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="התרחש בעיית שרת יש לנסות שוב מאוחר יותר.")
+     *          )
+     *      )
+     * )
+     */
+    public function fetchBySku(Request $request)
+    {
+        try {
+
+
+            // set custom error messages in Hebrew
+            $customMessages = [
+                
+                'type_id.required' => 'יש לבחור סוג פריט.',
+                'type_id.integer' => 'סוג פריט אינו בפורמט תקין',
+                'type_id.exists' => 'סוג פריט אינו קיים.',
+
+                'query.required' => 'יש לשלוח שדה לחיפוש.',
+                'query.string' => 'שדה חיפוש אינו תקין.',
+                'query.max' => 'שדה חיפוש אינו תקין.',
+                
+            ];
+            //set the rules
+
+            $rules = [
+                
+                'type_id' => 'required|integer|exists:item_types,id,is_deleted,0',
+                'query'=> 'required|string'
+            ];
+
+            // validate the request data
+            $validator = Validator::make($request->all(), $rules, $customMessages);
+
+            // Check if validation fails
+            if ($validator->fails()) {
+
+                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+          
+
+            $searchQuery = str_replace(' ', '', $request->input('query'));
+
+            // Search users by name (ignoring spaces)
+            $invetoriesRecords = Inventory::with(['itemType'])
+            ->where('type_id', $request->input('type_id'))
+            ->where('is_deleted', false)
+            ->where('sku', 'LIKE', '%' . $searchQuery . '%')
+
+            ->orderBy('id', 'asc')
+                ->get();
+
+            return response()->json($invetoriesRecords, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
 
 
     /**
