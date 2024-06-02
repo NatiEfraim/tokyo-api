@@ -96,8 +96,8 @@ Route::controller(DistributionController::class)
         //? route for quartermaster - fetch all distributions records - ccording apporved and invetories
         Route::get('/fetch-approved', 'fetchApprovedDistribution')->middleware(['role:admin|quartermaster']);
 
-        //?sprt & fetch by quering
-        Route::get('/sortByQuery', 'sortByQuery');
+        //?sort & fetch by quering
+        Route::get('/sort', 'sortByQuery');
 
 
         Route::get('/{id?}', 'getRecordById');
