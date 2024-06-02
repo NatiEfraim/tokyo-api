@@ -617,6 +617,147 @@
                 }
             }
         },
+        "/api/distributions/fetch-approved": {
+            "get": {
+                "tags": [
+                    "Distributions"
+                ],
+                "summary": "Get all Distributions records approved",
+                "description": "Returns a list of all Distributions records that has been approved.",
+                "operationId": "f518f2c22afe00d5f41bc7f37996ea48",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "comment": {
+                                            "type": "string",
+                                            "example": "Velit veritatis quia vel nemo qui. Eaque commodi expedita enim libero ut. Porro ducimus repellendus tenetur."
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "quantity": {
+                                            "type": "integer",
+                                            "example": 44
+                                        },
+                                        "inventory_id": {
+                                            "type": "integer",
+                                            "example": 24
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2024-04-07T11:42:45.000000Z"
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2024-04-07T11:42:45.000000Z"
+                                        },
+                                        "inventory": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 24
+                                                },
+                                                "quantity": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "sku": {
+                                                    "type": "string",
+                                                    "example": "1359395842801"
+                                                },
+                                                "item_type": {
+                                                    "type": "string",
+                                                    "example": "magni"
+                                                },
+                                                "detailed_description": {
+                                                    "type": "string",
+                                                    "example": "Velit ut ipsam neque tempora est dicta. Et distinctio eligendi expedita corporis assumenda aspernatur hic."
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "created_for_user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Percival Schulist"
+                                                },
+                                                "emp_type_id": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "phone": {
+                                                    "type": "string",
+                                                    "example": "0556926412"
+                                                },
+                                                "employee_type": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 2
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "example": "miluim"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "התרחש בעיית שרת יש לנסות שוב מאוחר יותר."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/distributions/{id}": {
             "get": {
                 "tags": [
@@ -1095,7 +1236,7 @@
                 ],
                 "summary": "Update distribution status by ID",
                 "description": "Updates the status of a distribution by its ID.",
-                "operationId": "cc17aef19668b5c94848f1d8d125e9f9",
+                "operationId": "17eccb8888b5c63f86676562754e9284",
                 "parameters": [
                     {
                         "name": "id",

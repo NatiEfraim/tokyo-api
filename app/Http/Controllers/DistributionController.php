@@ -127,6 +127,80 @@ class DistributionController extends Controller
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
+
+    /**
+     * Retrieve all distributions.
+     *
+     * This endpoint retrieves all distribution records where status is approved by Liran .
+     *
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @OA\Get(
+     *     path="/api/distributions/fetch-approved",
+     *     summary="Retrieve all distributions where status is 1",
+     *     tags={"Distributions"},
+     *      summary="Get all Distributions records approved",
+     *      description="Returns a list of all Distributions records that has been approved.",
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Page number",
+     *         required=false,
+     *         @OA\Schema(
+     *             type="integer",
+     *             default=1
+     *         )
+     *     ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="id", type="integer", example=1),
+     *              @OA\Property(property="comment", type="string", example="Velit veritatis quia vel nemo qui. Eaque commodi expedita enim libero ut. Porro ducimus repellendus tenetur."),
+     *              @OA\Property(property="status", type="integer", example=1),
+     *              @OA\Property(property="quantity", type="integer", example=44),
+     *              @OA\Property(property="inventory_id", type="integer", example=24),
+     *              @OA\Property(property="created_at", type="string", format="date-time", example="2024-04-07T11:42:45.000000Z"),
+     *              @OA\Property(property="updated_at", type="string", format="date-time", example="2024-04-07T11:42:45.000000Z"),
+     *              @OA\Property(
+     *                  property="inventory",
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=24),
+     *                  @OA\Property(property="quantity", type="integer", example=10),
+     *                  @OA\Property(property="sku", type="string", example="1359395842801"),
+     *                  @OA\Property(property="item_type", type="string", example="magni"),
+     *                  @OA\Property(property="detailed_description", type="string", example="Velit ut ipsam neque tempora est dicta. Et distinctio eligendi expedita corporis assumenda aspernatur hic.")
+     *              ),
+     *              @OA\Property(
+     *                  property="created_for_user",
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="name", type="string", example="Percival Schulist"),
+     *                  @OA\Property(property="emp_type_id", type="integer", example=2),
+     *                  @OA\Property(property="phone", type="string", example="0556926412"),
+     *                  @OA\Property(
+     *                      property="employee_type",
+     *                      type="object",
+     *                      @OA\Property(property="id", type="integer", example=2),
+     *                      @OA\Property(property="name", type="string", example="miluim")
+     *                  )
+     *              )
+     *          )
+     *      ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="התרחש בעיית שרת יש לנסות שוב מאוחר יותר.")
+     *         )
+     *     )
+     * )
+     */
+
+
+
+
+    
     //? fetch records for only records that has been approved
     public function fetchApprovedDistribution()
     {
@@ -136,11 +210,12 @@ class DistributionController extends Controller
         try {
 
            // Fetch records with associated relations and conditions
-            $distributions = Distribution::with(['itemType', 'department', 'createdForUser'])
-            ->where('is_deleted', 0)
+            $distributions = Distribution::where('is_deleted', 0)
             ->where('status', DistributionStatus::APPROVED->value)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
+
+            $distributions->makeHidden(['department_id', 'year', 'quartermaster_comment']);
 
             // Loop through each record and add inventory_items object
             $distributions->transform(function ($distribution) {
@@ -152,7 +227,6 @@ class DistributionController extends Controller
                     return [
                         'sku' => $item['sku'],
                         'quantity' => $item['quantity'],
-                        // 'comment' => $item['comment'] ?? null,
                     ];
                 }, $inventoryItems);
             }
@@ -764,7 +838,7 @@ class DistributionController extends Controller
                 // Track processed type_ids
                 $processedTypeIds = [];
                 // Loop through each type_id in the request
-                foreach ($request->input('inventory_items') as $type_id => $items) {
+                foreach ($request->input('inventory_items') as $key => $items) {
 
                     
                     // Skip if this type_id has already been processed
@@ -775,6 +849,7 @@ class DistributionController extends Controller
                     
                     // Find the first distribution record with the matching type_id that has not been processed
                     $distributionRecord = $distributionRecords->firstWhere('type_id', $items['type_id']);
+
 
                     if ($distributionRecord) {
                         $inventoryUpdates = []; // To store updated inventory items
@@ -791,6 +866,7 @@ class DistributionController extends Controller
                             $inventory = Inventory::where('id', $idInventory)
                             ->where('is_deleted', false)
                                 ->first();
+
 
                             if(  (is_null($inventory)) || ($inventory->type_id!== $items['type_id']) )
                             {
