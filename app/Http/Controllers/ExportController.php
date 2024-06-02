@@ -722,17 +722,11 @@ class ExportController extends Controller
                 'created_at' => [
                     'nullable',
                     'date',
-                    // Rule::exists('distributions')->where(function ($query) {
-                    //     return $query->where('is_deleted', 0);
-                    // }),
                 ],
 
                 'updated_at' => [
                     'nullable',
                     'date',
-                    // Rule::exists('distributions')->where(function ($query) {
-                    //     return $query->where('is_deleted', 0);
-                    // }),
                 ],
 
 
@@ -804,23 +798,62 @@ class ExportController extends Controller
                     });
                 }
 
+                // Loop through each record and add inventory_items object
+                $distributions->transform(function ($distribution) {
+                    $inventoryItems = json_decode($distribution->inventory_items, true);
+                    // If inventory_items is not null, process it
+                    if ($inventoryItems) {
+                        $inventoryItems = array_map(function ($item) {
+                            return [
+                                'sku' => $item['sku'],
+                                'quantity' => $item['quantity'],
+                            ];
+                        }, $inventoryItems);
+                    }
+                    $distribution->inventory_items = $inventoryItems;
+                    return $distribution;
+                });
+
+
+                
+
             }
+            
             else {
-                //? fetch all distributions records.
-                $distributions = Distribution::with(['inventory', 'itemType','department', 'createdForUser'])
+
+                
+                // //? fetch all distributions records.
+
+                // Fetch all distributions records.
+                $distributions = Distribution::with(['inventory', 'itemType', 'department', 'createdForUser'])
                     ->where('is_deleted', 0)
                     ->orderBy('created_at', 'desc')
                     ->get()
                     ->map(function ($distribution) {
-
                         // Format the created_at and updated_at timestamps
                         $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
                         $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
-
                         return $distribution;
                     });
 
+                // Loop through each record and add inventory_items object
+                $distributions->transform(function ($distribution) {
+                    $inventoryItems = json_decode($distribution->inventory_items, true);
+                    // If inventory_items is not null, process it
+                    if ($inventoryItems) {
+                        $inventoryItems = array_map(function ($item) {
+                            return [
+                                'sku' => $item['sku'],
+                                'quantity' => $item['quantity'],
+                            ];
+                        }, $inventoryItems);
+                    }
+                    $distribution->inventory_items = $inventoryItems;
+                    return $distribution;
+                });
+                
             }
+
 
 
             // Create a new Spreadsheet object
@@ -829,7 +862,7 @@ class ExportController extends Controller
 
             $sheet->setRightToLeft(true);
 
-            // Set headers
+            // Set the header row for the Excel sheet
             $sheet->setCellValue('A1', 'מזהה שורה');
             $sheet->setCellValue('B1', 'תאריך ניפוק');
             $sheet->setCellValue('C1', 'מספר הזמנה');
@@ -848,15 +881,16 @@ class ExportController extends Controller
             $sheet->setCellValue('P1', 'הערות אפסנאי');
             $sheet->setCellValue('Q1', 'סטטוס');
             $sheet->setCellValue('R1', 'תאריך שינוי אחרון');
+            $sheet->setCellValue('S1', 'פרטי מלאי');
 
-            $row = 2;
+                        $row = 2;
+
             foreach ($distributions as $distribution) {
-
-
+                // Add the main distribution data
                 $sheet->setCellValue('A' . $row, $distribution->id ?? 'לא קיים');
                 $sheet->setCellValue('B' . $row, $distribution->created_at_date ?? 'לא קיים');
                 $sheet->setCellValue('C' . $row, $distribution->order_number ?? 'לא קיים');
-                $sheet->setCellValue('D' . $row, $distribution->department_id ? $distribution->department->name : 'לא קיים');
+                $sheet->setCellValue('D' . $row, $distribution->created_for ? $distribution->createdForUser->department->name  : 'לא קיים');
                 $sheet->setCellValue('E' . $row, $distribution->created_for ? $distribution->createdForUser->personal_number : 'לא קיים');
                 $sheet->setCellValue('F' . $row, $distribution->created_for ? $distribution->createdForUser->name : 'לא קיים');
                 $sheet->setCellValue('G' . $row, $distribution->created_for ? $distribution->createdForUser->translated_employee_type : 'לא קיים');
@@ -872,8 +906,19 @@ class ExportController extends Controller
                 $sheet->setCellValue('Q' . $row, $distribution->getStatusTranslation() ?? 'לא קיים');
                 $sheet->setCellValue('R' . $row, $distribution->updated_at_date ?? 'לא קיים');
 
-                $row++;
+                // Add the inventory items if available
+                if (!empty($distribution->inventory_items)) {
+                    foreach ($distribution->inventory_items as $item) {
+                        $sheet->setCellValue('S' . $row, 'SKU: ' . $item['sku'] . ', Quantity: ' . $item['quantity']);
+                        // Move to the next row for the next inventory item
+                        $row++;
+                    }
+                } else {
+                    // Move to the next row if there are no inventory items
+                    $row++;
+                }
             }
+            
 
 
             // Set & Style the header cells
@@ -899,7 +944,7 @@ class ExportController extends Controller
                 ],
             ];
 
-            $sheet->getStyle('A1:R1')->applyFromArray($headerStyle);
+            $sheet->getStyle('A1:S1')->applyFromArray($headerStyle);
 
             // Set & Style the cells
             $cellStyle = [
@@ -910,10 +955,10 @@ class ExportController extends Controller
             ];
 
             // apply styling to all cells in the sheet
-            $sheet->getStyle('A1:R' . ($row - 1))->applyFromArray($cellStyle);
+            $sheet->getStyle('A1:S' . ($row - 1))->applyFromArray($cellStyle);
 
             // set the size for rest of columns
-            foreach (range('A', 'R') as $column) {
+            foreach (range('A', 'S') as $column) {
                 $sheet->getColumnDimension($column)->setAutoSize(true);
             }
 
