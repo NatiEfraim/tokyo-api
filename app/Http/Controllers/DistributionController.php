@@ -209,19 +209,90 @@ class DistributionController extends Controller
 
     
     //? fetch records for only records that has been approved
-    public function fetchApprovedDistribution()
+    public function fetchApprovedDistribution(Request $request)
     {
 
 
 
         try {
 
-           // Fetch records with associated relations and conditions
-            $distributions = Distribution::with(['createdForUser', 'itemType'])
-            ->where('is_deleted', 0)
-            ->where('status', DistributionStatus::APPROVED->value)
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
+
+            // set validation rules
+            $rules = [
+
+
+                'inventory_id' => 'nullable|string|max:255|exists:inventories,id,is_deleted,0',
+
+                'status' => 'nullable|integer|between:0,3',
+
+                'department_id' => 'nullable|string|exists:departments,id,is_deleted,0',
+
+                'order_number' => 'nullable|string|exists:distributions,order_number,is_deleted,0',
+
+
+                'clients_id' => 'nullable|array',
+                'clients_id.*' => 'nullable|exists:clients,id,is_deleted,0',
+
+
+                'year' => 'nullable|integer|between:1948,2099',
+
+                'created_at' => ['nullable', 'date'],
+
+                'updated_at' => ['nullable', 'date'],
+            ];
+
+            // Define custom error messages
+            $customMessages = [
+
+                'clients_id.array' => 'שדה משתמש שנשלח אינו תקין.',
+                'clients_id.*.exists' => 'הערך שהוזן לא חוקי.',
+
+                'year.integer' => 'שדה שנה אינו תקין.',
+                'year.between' => 'שדה שנה אינו תקין.',
+
+                'department_id.exists' => 'מחלקה אינה קיימת במערכת.',
+
+                'order_number.exists' => 'מספר הזמנה אינה קיית במערכת.',
+
+                'status.between' => 'שדה הסטטוס אינו תקין.',
+
+
+                'created_at.date' => 'שדה תאריך התחלה אינו תקין.',
+                'created_at.exists' => 'שדה תאריך אינו קיים במערכת.',
+                'updated_at.date' => 'שדה תאריך סיום אינו תקין.',
+                'updated_at.exists' => 'שדה תאריך סיום אינו קיים במערכת.',
+            ];
+
+            // validate the request with custom error messages
+            $validator = Validator::make($request->all(), $rules, $customMessages);
+
+            // Check if validation fails
+            if ($validator->fails()) {
+                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+            if (
+                $request->has('clients_id')
+                || $request->has('year')  ||
+                $request->has('status') ||
+                $request->has('order_number') ||
+                $request->has('inventory_id') ||
+                $request->has('department_id') ||
+                $request->has('created_at') ||
+                $request->has('updated_at')
+            ) {
+                //? search records by filter
+                $distributions = $this->fetchDistributionsByFilter($request);//use private function to fillter records based on filter input
+            } else {
+
+                // Fetch records with associated relations and conditions
+                $distributions = Distribution::with(['createdForUser', 'itemType'])
+                ->where('is_deleted', 0)
+                ->where('status', DistributionStatus::APPROVED->value)
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
+            }
+
 
             $distributions->makeHidden(['department_id', 'year', 'quartermaster_comment']);
 
@@ -1994,7 +2065,8 @@ class DistributionController extends Controller
             $query = $request->input('query');
 
             return Distribution::with(['itemType', 'createdForUser'])
-                ->where('is_deleted', 0)
+            ->where('status', DistributionStatus::APPROVED->value)
+            ->where('is_deleted', 0)
 
                 ->where(function ($queryBuilder) use ($query) {
                     // Search by personal number
@@ -2102,12 +2174,6 @@ class DistributionController extends Controller
                     $q->where('department_id', $request->input('department_id'));
                 });
             }
-
-            // // Search by department_id
-            // if ($request->has('department_id') && empty($request->input('department_id'))==false) {
-            //     $query->where('department_id', $request->input('department_id'));
-            // }
-
             // Search by year
             if ($request->has('year') && empty($request->input('year'))==false) {
                 $query->where('year', $request->input('year'));
@@ -2128,8 +2194,9 @@ class DistributionController extends Controller
                 $query->whereDate('updated_at', $request->updated_at);
             }
 
-            // Ensure is_deleted is 0
-            $query->where('is_deleted', 0);
+            // Ensure is_deleted is 0 and appproved
+            $query->where('status',DistributionStatus::APPROVED->value)
+            ->where('is_deleted', 0);
 
             return $query
                 ->with(['itemType', 'department', 'createdForUser'])
