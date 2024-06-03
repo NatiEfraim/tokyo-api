@@ -91,7 +91,7 @@ Route::controller(DistributionController::class)
         //? search records by order_number.
         Route::get('/search-by-order', 'getRecordsByOrder');
 
-        //? fetch based on only order_number fileds - and group_by
+        //? fetch based on only order_number fileds - and group_by (given query is optional)
         Route::get('/fetch-records-by-order', 'fetchDistributionsRecordsByOrderNumber');
 
         //? route for quartermaster - fetch all distributions records - only records apporved and invetories

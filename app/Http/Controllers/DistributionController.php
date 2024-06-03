@@ -1346,16 +1346,16 @@ class DistributionController extends Controller
 
             //? one or more of th search based on value filter send
             $distributions = $this->fetchDistributions($request); ///private function
-
+            
             if ($distributions) {
                 $distributions->map(function ($distribution) {
                     $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
                     $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
-
+                    
                     return $distribution;
                 });
             }
-
+            
             return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
@@ -1440,14 +1440,18 @@ class DistributionController extends Controller
                 'status.required' => 'יש לשלוח שדה לחיפוש',
                 'order_number.integer' => 'ערך השדה שנשלח אינו תקין.',
                 'order_number.between' => 'ערך השדה שנשלח אינו תקין.',
+                'query.string' => 'שדה חיפוש אינו תקין.',
+                'query.min' => 'שדה חיפוש אינו תקין.',
+                'query.max' => 'שדה חיפוש אינו תקין.',
 
             ];
 
 
             //set the rules
             $rules = [
-
+                
                 'status' => 'required|integer|between:0,3',
+                'query' => 'nullable|string|min:1|max:255',
 
             ];
 
@@ -1459,12 +1463,22 @@ class DistributionController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
+            if ($request->input('query')) {
 
-            $distributions = Distribution::with(['itemType', 'createdForUser'])
-                ->where('status', $request->input('status'))
-                ->where('is_deleted', 0)
-                ->orderBy('created_at', 'desc')
-                ->paginate(20);
+
+                //? search records based on query and given status
+                $distributions = $this->fetchDistributionsByStatus($request); ///private function
+                
+            }else{
+                //? fetch all records without any query to search 
+                $distributions = Distribution::with(['itemType', 'createdForUser'])
+                    ->where('status', $request->input('status'))
+                    ->where('is_deleted', 0)
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(20);
+            }
+
+
 
             $distributions->each(function ($distribution) {
                 // Format the created_at and updated_at timestamps
@@ -1976,11 +1990,53 @@ class DistributionController extends Controller
     private function fetchDistributions(Request $request)
     {
         try {
-
             
             $query = $request->input('query');
 
             return Distribution::with(['itemType', 'createdForUser'])
+                ->where('is_deleted', 0)
+
+                ->where(function ($queryBuilder) use ($query) {
+                    // Search by personal number
+                    $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
+                        $userQuery->where('personal_number', 'like', "%$query%");
+                    });
+
+                    // Search by item_type type field
+                    $queryBuilder->orWhereHas('itemType', function ($itemTypeQuery) use ($query) {
+                        $itemTypeQuery->where('type', 'like', "%$query%");
+                    });
+
+                    // Search by order number
+                    $queryBuilder->orWhere('order_number', 'like', "%$query%");
+
+                    // Search by year
+                    $queryBuilder->orWhere('year', 'like', "%$query%");
+
+                    // Search by full name
+                    $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
+                        $userQuery->where('name', 'like', "%$query%");
+                    });
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+    //? search based on request->input('query'). based on status given
+    private function fetchDistributionsByStatus(Request $request)
+    {
+        try {
+            
+            $query = $request->input('query');
+
+            return Distribution::with(['itemType', 'createdForUser'])
+
+                ->where('status', $request->input('status'))
 
                 ->where('is_deleted', 0)
 
@@ -1991,7 +2047,7 @@ class DistributionController extends Controller
                     });
 
                     // Search by item_type type field
-                    $queryBuilder->orWhereHas('inventory.itemType', function ($itemTypeQuery) use ($query) {
+                    $queryBuilder->orWhereHas('itemType', function ($itemTypeQuery) use ($query) {
                         $itemTypeQuery->where('type', 'like', "%$query%");
                     });
 
