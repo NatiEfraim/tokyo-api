@@ -188,15 +188,20 @@ class UserController extends Controller
             }
 
 
-            // // Extract employee type name
-            // $employeeTypeName = $user->employeeType ? $user->employeeType->name : null;
 
+            $user->population = match ($user->emp_type_id) {
+                EmployeeType::KEVA->value, EmployeeType::SADIR->value => 's' . $user->personal_number,
+                EmployeeType::MILUIM->value => 'm' . $user->personal_number,
+                EmployeeType::OVED_TZAHAL->value => 'c' . $user->personal_number,
+                default => throw new \InvalidArgumentException('סוג עובד לא תקין.')
+            };
+                    
 
             $uesr_data = [
 
 
             'name' => $user->name,
-            'personal_number' => $user->personal_number,
+            'personal_number' =>   $user->population,
             'role' => $user->roles->first()->name?? null,
 
             ];

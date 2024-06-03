@@ -24,5 +24,6 @@ class PermissionSeeder extends Seeder
              Permission::create(['name' => 'store_records', 'guard_name' => 'passport']);
              Permission::create(['name' => 'update_records', 'guard_name' => 'passport']);
              Permission::create(['name' => 'delete_records', 'guard_name' => 'passport']);
+             Permission::create(['name' => 'export_data', 'guard_name' => 'passport']);
     }
 }
