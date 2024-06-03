@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\DistributionController;
 use App\Http\Controllers\EmployeeTypeController;
@@ -122,7 +123,7 @@ Route::controller(DepartmentController::class)
     ->middleware(['auth:api'])
     ->group(function () {
         Route::get('/', 'index');
-        Route::post('/', 'store')->middleware(['role:admin']);
+        Route::post('/', 'store')->middleware(['role:admin|user']);
         Route::delete('/mass-destroy', 'massDestroy')->middleware(['role:admin']);
         Route::delete('/{id?}', 'destroy')->middleware(['role:admin']);
     });
@@ -131,6 +132,14 @@ Route::controller(EmployeeTypeController::class)
     ->prefix('employee-types')
     ->middleware(['auth:api'])
     ->group(function () {
+        Route::get('/', 'index');
+    });
+    
+Route::controller(ClientController::class)
+    ->prefix('clients')
+    ->middleware(['auth:api'])
+    ->group(function () {
+        //?fetch all clients id & name
         Route::get('/', 'index');
     });
 
