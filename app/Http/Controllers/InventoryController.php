@@ -933,7 +933,7 @@ class InventoryController extends Controller
 
             $inventories = Inventory::where('type_id',$request->input('type_id'))
             ->where('is_deleted', 0)
-            ->select('id','sku', 'type_id', 'quantity', 'reserved')
+            ->select('id','sku', 'type_id', 'quantity', 'reserved', 'detailed_description')
             ->get();
 
             $inventories->each(function ($inventory) {

@@ -94,7 +94,7 @@ Route::controller(DistributionController::class)
         //? fetch based on only order_number fileds - and group_by
         Route::get('/fetch-records-by-order', 'fetchDistributionsRecordsByOrderNumber');
 
-        //? route for quartermaster - fetch all distributions records - ccording apporved and invetories
+        //? route for quartermaster - fetch all distributions records - only records apporved and invetories
         Route::get('/fetch-approved', 'fetchApprovedDistribution')->middleware(['role:admin|quartermaster']);
 
         //?sort & fetch by quering

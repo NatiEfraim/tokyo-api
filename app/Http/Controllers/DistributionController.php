@@ -217,7 +217,8 @@ class DistributionController extends Controller
         try {
 
            // Fetch records with associated relations and conditions
-            $distributions = Distribution::where('is_deleted', 0)
+            $distributions = Distribution::with(['createdForUser', 'itemType'])
+            ->where('is_deleted', 0)
             ->where('status', DistributionStatus::APPROVED->value)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
@@ -237,8 +238,13 @@ class DistributionController extends Controller
                     ];
                 }, $inventoryItems);
             }
-
+            
             $distribution->inventory_items = $inventoryItems;
+            
+                //?format each date.
+                $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+                $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+            
             return $distribution;
         });
 
