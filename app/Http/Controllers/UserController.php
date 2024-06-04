@@ -179,8 +179,9 @@ class UserController extends Controller
     {
         try {
 
-            $user = auth()->user();
+            $user = auth()->user()->id;
 
+            
 
             // Make sure the user has an associated employeeType record
             if (is_null($user->employeeType)) {
@@ -337,7 +338,7 @@ class UserController extends Controller
                         'email' => $user->email,
                         'phone' => $user->phone,
                         'employee_type' => $user->getTranslatedEmployeeTypeAttribute() ?? null,
-                        'role' => $user->translateRoleAttribute() ?? null,//set asscoiae
+                        'role' => $user->translateRoleAttribute() ?? null,//set role associated.
                    
                     ];
                 }
@@ -367,12 +368,12 @@ class UserController extends Controller
                     'phone' => $user->phone,
                     'emp_type_id' => $user->emp_type_id,
                     'employee_type' => $user->employeeType,
-                    'role' => $user->roles->first()->name ?? null, //set asscoiae
+                    'role' => $user->translateRoleAttribute() ?? null,//set asscoiae
                 ];
             }
                 
 
-            return response()->json($user_search_for, Response::HTTP_OK);
+            return response()->json($formattedUsers, Response::HTTP_OK);
 
         } catch (\Exception $e) {
             Log::error($e->getMessage());

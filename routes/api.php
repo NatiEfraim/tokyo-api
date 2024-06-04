@@ -148,14 +148,18 @@ Route::controller(UserController::class)
     ->middleware(['auth:api'])
     ->group(function () {
 
+        //? fetch all users records with associated roles.
         Route::get('/', 'index')->middleware(['role:admin|quartermaster']);
 
+        //? search users records - based on pn or name.
         Route::get('/search', 'searchUser')->middleware(['role:admin|quartermaster']);
 
+        //? fetch all roles 
         Route::get('/roles', 'getRoles')->middleware(['role:admin']);
 
 
         Route::post('/', 'store')->middleware(['role:admin']);
+        
         Route::put('/{id?}', 'update')->middleware(['role:admin']);
 
         Route::delete('/mass-destroy', 'massDestroy')->middleware(['role:admin']);
