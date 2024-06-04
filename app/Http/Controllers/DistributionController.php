@@ -1018,9 +1018,12 @@ class DistributionController extends Controller
                                 'sku' => $inventory->sku,//save sku
                                 'quantity' => $quantity,//save qty
                             ];
+
+                            ///here need to created a new distributions records - with the same values fileds - nd set relation with the invetory_id - that Liran choosd
+                            
                         }
 
-                        // Update the distribution record with the updated inventory items
+                        // Update the distribution record with the updated inventory items - to to set that deleted.
                         $distributionRecord->update([
                             'status' => $statusValue,
                             'admin_comment' => $request->input('admin_comment'),
