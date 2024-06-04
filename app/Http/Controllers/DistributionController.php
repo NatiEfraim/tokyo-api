@@ -1823,14 +1823,20 @@ class DistributionController extends Controller
     //? fetch distributions records - based on filter
     public function getRecordsByFilter(Request $request)
     {
+
+
+        
         try {
+
+
+
             // set validation rules
             $rules = [
 
 
                 'inventory_id' => 'nullable|string|max:255|exists:inventories,id,is_deleted,0',
 
-                'status' => 'nullable|integer|between:0,3',
+                'status' => 'nullable|integer|between:1,3',
 
                 'department_id' => 'nullable|string|exists:departments,id,is_deleted,0',
 
@@ -1880,7 +1886,16 @@ class DistributionController extends Controller
 
 
 
-            if ($request->has('clients_id') || $request->has('year')  || $request->has('status') || $request->has('order_number') || $request->has('inventory_id') || $request->has('department_id') || $request->has('created_at') || $request->has('updated_at')) {
+            if (
+                $request->has('clients_id')
+                || $request->has('year')
+                || $request->has('status')
+                || $request->has('order_number')
+                || $request->has('inventory_id')
+                || $request->has('department_id')
+                || $request->has('created_at')
+                || $request->has('updated_at')
+            ) {
                 //? one or more of th search based on value filter send
 
                 $distributions = $this->fetchDistributionsByFilter($request);
@@ -1898,7 +1913,7 @@ class DistributionController extends Controller
                 //? fetch all distributions records.
 
                 $distributions = Distribution::with(['department', 'createdForUser'])
-                    ->where('is_deleted', 0)
+                ->where('is_deleted', 0)
                     ->orderBy('created_at', 'desc')
                     ->get()
                     ->map(function ($distribution) {
@@ -2163,16 +2178,16 @@ class DistributionController extends Controller
 
             // Search by status
             if ($request->has('status')  && empty($request->input('status'))==false) {
-                $query->where('status', $request->status);
+                $query->where('status', $request->input('status'));
             }
 
             //? fetch by department
-            if ($request->has('department_id')) {
+            if ($request->has('department_id') && empty($request->input('department_id')) == false) {
 
-
-                $query->whereHas('createdForUser', function ($q) use ($request) {
-                    $q->where('department_id', $request->input('department_id'));
-                });
+                $query->where('department_id', $request->input('department_id'));
+                // $query->whereHas('createdForUser', function ($q) use ($request) {
+                //     $q->where('department_id', $request->input('department_id'));
+                // });
             }
             // Search by year
             if ($request->has('year') && empty($request->input('year'))==false) {
@@ -2195,13 +2210,15 @@ class DistributionController extends Controller
             }
 
             // Ensure is_deleted is 0 and appproved
-            $query->where('status',DistributionStatus::APPROVED->value)
+            $query
+            // ->where('status',DistributionStatus::APPROVED->value)
             ->where('is_deleted', 0);
 
             return $query
                 ->with(['itemType', 'department', 'createdForUser'])
-                ->orderBy('created_at', 'desc')
+                // ->orderBy('created_at', 'desc')
                 ->get();
+                
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             return response()->json(['message' => 'התרחשה בעיה בשרת. נסה שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
