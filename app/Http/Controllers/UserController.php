@@ -179,9 +179,8 @@ class UserController extends Controller
     {
         try {
 
-            $user = auth()->user()->id;
+            $user = auth()->user();
 
-            
 
             // Make sure the user has an associated employeeType record
             if (is_null($user->employeeType)) {
@@ -215,7 +214,7 @@ class UserController extends Controller
 
         }
 
-        return response()->json(['message' => 'אירעה שגיאה בעת ההתחברות.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
 

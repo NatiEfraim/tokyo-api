@@ -34,10 +34,11 @@ class DistributionFactory extends Factory
 
 
 
-        $randomInventory = Inventory::inRandomOrder()->first();
+        // $randomInventory = Inventory::inRandomOrder()->first();
         $randomType = ItemType::inRandomOrder()->first();
         $randomDepartemnt = Department::inRandomOrder()->first();
         $randomUser = User::inRandomOrder()->first();
+        $randomUserId = User::inRandomOrder()->first()->id;
         $randomClient = Client::inRandomOrder()->first();
 
         return [
@@ -55,6 +56,7 @@ class DistributionFactory extends Factory
             'department_id' => $randomDepartemnt->id, //set relation
             'created_by' => $randomUser->id, //set relation
             'created_for' =>  $randomClient->id, //set relation
+            'quartermaster_id' =>$randomUserId, //set relation
             'quantity_per_item' => $this->faker->numberBetween(1, 100), // Generate quantity per item
             'total_quantity' => $this->faker->numberBetween(1, 100), // Generate total quantity
             

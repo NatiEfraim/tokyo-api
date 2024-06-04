@@ -29,6 +29,7 @@ class Distribution extends Model
         'department_id',
         'created_by',
         'created_for',
+        'quartermaster_id',
         'is_deleted',
         'created_at',
         'updated_at'
@@ -45,6 +46,7 @@ class Distribution extends Model
         // 'department_id',
         // 'created_by',
         // 'created_for',
+        // 'quartermaster_id',
 
         'is_deleted',
         'created_at',
@@ -86,6 +88,13 @@ class Distribution extends Model
     public function createdForUser()
     {
         return $this->belongsTo(Client::class, 'created_for')
+            ->select('id', 'name', 'emp_type_id', 'phone', 'email', 'personal_number', 'department_id')->with(['employeeType', 'department']);
+    }
+
+    //? fetch associated quartermaster user records 
+    public function quartermaster()
+    {
+        return $this->belongsTo(Client::class, 'quartermaster_id')
             ->select('id', 'name', 'emp_type_id', 'phone', 'email', 'personal_number', 'department_id')->with(['employeeType', 'department']);
     }
 

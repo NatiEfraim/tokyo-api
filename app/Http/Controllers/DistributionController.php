@@ -114,7 +114,7 @@ class DistributionController extends Controller
         try {
 
             
-            $distributions = Distribution::with(['itemType','createdForUser'])
+            $distributions = Distribution::with(['itemType','createdForUser', 'quartermaster'])
                 ->where('is_deleted', 0)
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
@@ -128,6 +128,53 @@ class DistributionController extends Controller
             });
 
             return response()->json($distributions, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+
+
+    //? fetch associated quartermaster
+    public function fetchQuartermaster($id=null)
+    {
+        try {
+
+            if (is_null($id)) {
+                return response()->json(['message' => 'יש לשלוח מזהה שורה .'], Response::HTTP_BAD_REQUEST);
+            }
+
+            // Fetch distribution by ID
+            $distribution = Distribution::with(['quartermaster'])
+            ->where('id', $id)
+            ->where('is_deleted', 0)
+            ->first();
+
+
+            if (is_null($distribution) || is_null($distribution->quartermaster_id)) {
+                return response()->json(['message' => 'הזמנה זו אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
+            }
+
+            // Format date and time
+            $createdAt = $distribution->created_at->format('H:i:s'); // Time
+            $createdAtDate = $distribution->created_at->format('d/m/Y'); // Date
+
+            // Extract user data
+            $quartermasterName = $distribution->quartermaster->name;
+            $quartermasterId = $distribution->quartermaster->id;
+
+            // Prepare response data
+            $responseData = [
+                'quartermaster_name' => $quartermasterName,
+                'quartermaster_id' => $quartermasterId,
+                'created_at_time' => $createdAt,
+                'created_at_date' => $createdAtDate
+            ];
+
+            return response()->json($responseData, Response::HTTP_OK);
+
+
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
@@ -1112,6 +1159,7 @@ class DistributionController extends Controller
                 'status.between' => 'ערך הסטטוס שנשלח אינו תקין.',
 
                 'quartermaster_comment.string' => 'אחת מהשדות שנשלחו אינם תקינים.',
+                'quartermaster_comment.required' => 'אחת מהשדות שנשלחו אינם תקינים.',
                 'quartermaster_comment.min' => 'אחת מהשדות שנשלחו אינם תקינים.',
                 'quartermaster_comment.max' => 'אחת מהשדות שנשלחו אינם תקינים.',
 
@@ -1125,7 +1173,7 @@ class DistributionController extends Controller
             $rules = [
 
                 'status' => 'required|integer|between:0,3',
-                'quartermaster_comment' => 'nullable|string|min:2|max:255',
+                'quartermaster_comment' => 'required|string|min:2|max:255',
                 'order_number' => 'required|integer|exists:distributions,order_number,is_deleted,0',
 
             ];
@@ -1175,7 +1223,7 @@ class DistributionController extends Controller
             foreach ($distributionRecords as $distributionRecord) {
                 $distributionRecord->update([
                 'status' => $statusValue,
-                'quartermaster_comment' => $request->input('quartermaster_comment') ?? null,
+                'quartermaster_comment' => $request->input('quartermaster_comment'),//can be a comment or Reference Number
                 'updated_at' => $currentTime,
             ]);
     }

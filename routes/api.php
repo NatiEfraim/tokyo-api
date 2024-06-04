@@ -102,6 +102,8 @@ Route::controller(DistributionController::class)
 
 
         Route::get('/{id?}', 'getRecordById');
+        //? fetch quartermaster associated to the records 
+        Route::get('/fetch-quartermaster/{id?}', 'fetchQuartermaster');
 
         //? route for liran alocate items
         Route::post('/allocation', 'allocationRecords')->middleware(['role:admin']);

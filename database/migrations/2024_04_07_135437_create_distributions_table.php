@@ -31,7 +31,8 @@ return new class extends Migration
             $table->integer('year');
             $table->foreignId('type_id');
             $table->foreignId('department_id');
-            $table->foreignId('created_by');
+            $table->foreignId('created_by'); 
+            $table->foreignId('quartermaster_id')->nullable(); 
             $table->foreignId('created_for')->nullable();
             
             $table->boolean('is_deleted')->default('0');
@@ -43,6 +44,7 @@ return new class extends Migration
             $table->foreign('department_id')->references('id')->on('departments')->onUpdate('cascade')->onDelete('cascade');
             $table->foreign('created_by')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
             $table->foreign('created_for')->references('id')->on('clients')->onUpdate('cascade')->onDelete('cascade');
+            $table->foreign('quartermaster_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
             
             // $table->foreignId('inventory_id')->nullable();
             // $table->foreign('inventory_id')->references('id')->on('inventories')->onUpdate('cascade')->onDelete('cascade');
