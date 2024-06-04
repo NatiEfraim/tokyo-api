@@ -613,9 +613,9 @@ class DistributionController extends Controller
 
             //set the first letter for the persnal_number
             $personal_number = match ($emp_type) {
-                EmployeeType::KEVA->value, EmployeeType::SADIR->value => 's' . $request->personal_number,
-                EmployeeType::MILUIM->value => 'm' . $request->personal_number,
-                EmployeeType::OVED_TZAHAL->value => 'c' . $request->personal_number,
+                EmployeeType::KEVA->value, EmployeeType::SADIR->value => 's' . $request->input('personal_number'),
+                EmployeeType::MILUIM->value => 'm' . $request->input('personal_number'),
+                EmployeeType::OVED_TZAHAL->value => 'c' . $request->input('personal_number'),
                 default => throw new \InvalidArgumentException('סוג עובד לא תקין.')
             };
 

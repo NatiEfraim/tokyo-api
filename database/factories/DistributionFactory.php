@@ -34,7 +34,7 @@ class DistributionFactory extends Factory
 
 
 
-        // $randomInventory = Inventory::inRandomOrder()->first();
+        $randomInventory = Inventory::inRandomOrder()->first();
         $randomType = ItemType::inRandomOrder()->first();
         $randomDepartemnt = Department::inRandomOrder()->first();
         $randomUser = User::inRandomOrder()->first();
@@ -47,7 +47,6 @@ class DistributionFactory extends Factory
             'order_number' => $this->faker->unique()->numberBetween(1000000, 9999999),
             'year' => $this->faker->year,
             'type_comment' => $this->faker->sentence, // Generate inventory comment
-            // 'general_comment' => $this->faker->sentence, // Generate generate comment
             'quartermaster_comment' => $this->faker->sentence, // Generate generate comment for quartermaster_comment
             'admin_comment' => $this->faker->sentence, // Generate generate comment for adamin
             'user_comment' => $this->faker->sentence, // Generate generate comment for user
@@ -59,8 +58,7 @@ class DistributionFactory extends Factory
             'quartermaster_id' =>$randomUserId, //set relation
             'quantity_per_item' => $this->faker->numberBetween(1, 100), // Generate quantity per item
             'total_quantity' => $this->faker->numberBetween(1, 100), // Generate total quantity
-            
-            // 'inventory_id' => $randomInventory->id, //set relation
+            'inventory_id' => $randomInventory->id, //set relation
         ];
     }
 }
