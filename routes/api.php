@@ -82,7 +82,7 @@ Route::controller(DistributionController::class)
 
         Route::get('/', 'index');
 
-        //?search distributions records based on one query
+        //?search distributions records based on one query - only be type_id or order_number
         Route::get('/search-by-query', 'getRecordsByQuery');
 
         //? fillter distributions records based on one or more fileds
