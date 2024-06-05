@@ -2231,8 +2231,9 @@ class DistributionController extends Controller
                 $query->where('order_number', $request->input('order_number'));
             }
 
+
             // Search by status
-            if ($request->has('status')  && empty($request->input('status'))==false) {
+            if ($request->has('status')) {
                 $query->where('status', $request->input('status'));
             }
 
