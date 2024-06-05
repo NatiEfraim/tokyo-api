@@ -114,7 +114,7 @@ class DistributionController extends Controller
         try {
 
 
-            $distributions = Distribution::with(['itemType','createdForUser', 'quartermaster'])
+            $distributions = Distribution::with(['itemType','inventory','department','createdForUser', 'quartermaster'])
                 ->where('is_deleted', 0)
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);

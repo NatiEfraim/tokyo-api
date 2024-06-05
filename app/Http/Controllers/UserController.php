@@ -341,7 +341,7 @@ class UserController extends Controller
                    
                     ];
                 }
-                    return response()->json($user_search_for,Response::HTTP_OK);
+                    return response()->json($formattedUsers,Response::HTTP_OK);
             }
 
 
