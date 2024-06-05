@@ -1965,7 +1965,7 @@ class DistributionController extends Controller
             } else {
                 //? fetch all distributions records.
 
-                $distributions = Distribution::with(['department', 'createdForUser','department'])
+                $distributions = Distribution::with(['department', 'createdForUser', 'inventory','itemType','quartermaster'])
                 ->where('is_deleted', 0)
                     ->orderBy('created_at', 'desc')
                     ->get()
@@ -2262,13 +2262,11 @@ class DistributionController extends Controller
                 $query->whereDate('updated_at', $request->updated_at);
             }
 
-            // Ensure is_deleted is 0 and appproved
-            $query
-            // ->where('status',DistributionStatus::APPROVED->value)
-            ->where('is_deleted', 0);
+
 
             return $query
-                ->with(['itemType', 'department', 'createdForUser'])
+                ->with(['itemType', 'department', 'createdForUser','inventory','quartermaster'])
+                ->where('is_deleted',false)
                 // ->orderBy('created_at', 'desc')
                 ->get();
 
