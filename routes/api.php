@@ -143,6 +143,8 @@ Route::controller(ClientController::class)
     ->group(function () {
         //?fetch all clients id & name
         Route::get('/', 'index');
+        //? search clients records - based on pn or name.
+        Route::get('/search', 'searchClients')->middleware(['role:admin|quartermaster']);
     });
 
 Route::controller(UserController::class)

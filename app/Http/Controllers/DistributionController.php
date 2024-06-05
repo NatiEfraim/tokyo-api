@@ -1889,7 +1889,7 @@ class DistributionController extends Controller
 
                 'inventory_id' => 'nullable|string|max:255|exists:inventories,id,is_deleted,0',
 
-                'status' => 'nullable|integer|between:1,3',
+                'status' => 'nullable|integer|between:0,3',
 
                 'department_id' => 'nullable|string|exists:departments,id,is_deleted,0',
 
