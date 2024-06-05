@@ -2132,31 +2132,18 @@ class DistributionController extends Controller
 
             $query = $request->input('query');
 
-            return Distribution::with(['itemType', 'createdForUser','department','inventory'])
-            ->where('status', DistributionStatus::APPROVED->value)
+            return Distribution::with(['itemType', 'createdForUser','department','inventory', 'quartermaster'])
             ->where('is_deleted', 0)
                 //? fetch records - by query - can be type or order_number
                 ->where(function ($queryBuilder) use ($query) {
-                    // // Search by personal number
-                    // $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
-                    //     $userQuery->where('personal_number', 'like', "%$query%");
-                    // });
 
                     // Search by item_type type field
                     $queryBuilder->orWhereHas('itemType', function ($itemTypeQuery) use ($query) {
                         $itemTypeQuery->where('type', 'like', "%$query%");
                     });
-
                     // Search by order number
                     $queryBuilder->orWhere('order_number', 'like', "%$query%");
-
-                    // Search by year
-                    // $queryBuilder->orWhere('year', 'like', "%$query%");
-
-                    // // Search by full name
-                    // $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
-                    //     $userQuery->where('name', 'like', "%$query%");
-                    // });
+                    
                 })
                 ->orderBy('created_at', 'desc')
                 ->get();
