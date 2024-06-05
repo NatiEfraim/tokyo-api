@@ -18,7 +18,6 @@ class Inventory extends Model
         'quantity',
         'reserved',
         'sku',
-        // 'item_type',
         'type_id',
         'detailed_description',
         'is_deleted',

@@ -502,7 +502,7 @@ class InventoryController extends Controller
             }
 
 
-            // $currentTime = Carbon::now()->toDateTimeString();
+            $currentTime = Carbon::now()->toDateTimeString();
 
 
             DB::beginTransaction();
@@ -520,7 +520,13 @@ class InventoryController extends Controller
 
             }
 
-            $inventory->update($request->validated());
+            $inventory->update([
+                'quantity' => $request->input('quantity'),
+                'sku' => $request->input('sku'),
+                'type_id' => $request->input('type_id'),
+                'detailed_description' => $request->input('detailed_description'),
+                'updated_at' =>    $currentTime,
+            ]);
 
             DB::commit();
 

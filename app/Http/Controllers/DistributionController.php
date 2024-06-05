@@ -1887,7 +1887,7 @@ class DistributionController extends Controller
             $rules = [
 
 
-                'inventory_id' => 'nullable|string|max:255|exists:inventories,id,is_deleted,0',
+                // 'inventory_id' => 'nullable|string|max:255|exists:inventories,id,is_deleted,0',
 
                 'status' => 'nullable|integer|between:0,3',
 
@@ -2267,7 +2267,6 @@ class DistributionController extends Controller
             return $query
                 ->with(['itemType', 'department', 'createdForUser','inventory','quartermaster'])
                 ->where('is_deleted',false)
-                // ->orderBy('created_at', 'desc')
                 ->get();
 
         } catch (\Exception $e) {
