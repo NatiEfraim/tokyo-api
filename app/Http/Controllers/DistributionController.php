@@ -1020,6 +1020,19 @@ class DistributionController extends Controller
                             ];
 
                             ///here need to created a new distributions records - with the same values fileds - nd set relation with the invetory_id - that Liran choosd
+                            // Distribution::create([
+                            //     'order_number' => intval($orderNumber),
+                            //     'user_comment' => $request->input('user_comment') ?? null,
+                            //     'type_comment' => $comment ?? null,
+                            //     'total_quantity' => $allQuantity,
+                            //     'quantity_per_item' => $quantity,
+                            //     'status' => DistributionStatus::PENDING->value,
+                            //     'type_id' => $itemType,
+                            //     'year' => $currentYear,
+                            //     'department_id' => $request->input('department_id'),
+                            //     'created_by' => $user_auth->id,
+                            //     'created_for' => $client->id,
+                            // ]);
                             
                         }
 

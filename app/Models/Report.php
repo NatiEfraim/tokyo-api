@@ -20,6 +20,7 @@ class Report extends Model
         'last_quantity',
         'new_quantity',
         'sku',
+        'inventory_id',
         'created_by',
         'is_deleted',
         'created_at',

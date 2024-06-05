@@ -516,16 +516,17 @@ class InventoryController extends Controller
                     'last_quantity' => $inventory->quantity,
                     'new_quantity' => $request->input('quantity'),
                     'sku' => $inventory->sku,
+                    'inventory_id' => $inventory->id,
                 ]);
 
             }
 
             $inventory->update([
-                'quantity' => $request->input('quantity'),
-                'sku' => $request->input('sku'),
-                'type_id' => $request->input('type_id'),
-                'detailed_description' => $request->input('detailed_description'),
-                'updated_at' =>    $currentTime,
+                'quantity' => $request->input('quantity') ? $request->input('quantity') : $inventory->quantity,
+                'sku' => $request->input('sku') ? $request->input('sku'): $inventory->sku,
+                'type_id' => $request->input('type_id') ?  $request->input('type_id') : $inventory->type_id,
+                'detailed_description' => $request->input('detailed_description') ? $request->input('detailed_description') : $inventory->detailed_description,
+                'updated_at' => $currentTime,
             ]);
 
             DB::commit();
@@ -533,8 +534,9 @@ class InventoryController extends Controller
 
             return response()->json(['message' => 'שורה התעדכנה בהצלחה.'], Response::HTTP_OK);
         } catch (\Exception $e) {
+            
             DB::rollBack(); // Rollback the transaction in case of any error
-            Log::error($e->getMessage());
+        Log::error($e->getMessage());
 
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
