@@ -364,8 +364,7 @@ class UserController extends Controller
                     'personal_number' => $user->personal_number,
                     'email' => $user->email,
                     'phone' => $user->phone,
-                    'emp_type_id' => $user->emp_type_id,
-                    'employee_type' => $user->employeeType,
+                    'employee_type' => $user->getTranslatedEmployeeTypeAttribute() ?? null,
                     'role' => $user->translateRoleAttribute() ?? null,//set asscoiae
                 ];
             }
