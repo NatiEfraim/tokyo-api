@@ -799,21 +799,21 @@ class ExportController extends Controller
                     });
                 }
 
-                // Loop through each record and add inventory_items object
-                $distributions->transform(function ($distribution) {
-                    $inventoryItems = json_decode($distribution->inventory_items, true);
-                    // If inventory_items is not null, process it
-                    if ($inventoryItems) {
-                        $inventoryItems = array_map(function ($item) {
-                            return [
-                                'sku' => $item['sku'],
-                                'quantity' => $item['quantity'],
-                            ];
-                        }, $inventoryItems);
-                    }
-                    $distribution->inventory_items = $inventoryItems;
-                    return $distribution;
-                });
+                // // Loop through each record and add inventory_items object
+                // $distributions->transform(function ($distribution) {
+                //     $inventoryItems = json_decode($distribution->inventory_items, true);
+                //     // If inventory_items is not null, process it
+                //     if ($inventoryItems) {
+                //         $inventoryItems = array_map(function ($item) {
+                //             return [
+                //                 'sku' => $item['sku'],
+                //                 'quantity' => $item['quantity'],
+                //             ];
+                //         }, $inventoryItems);
+                //     }
+                //     $distribution->inventory_items = $inventoryItems;
+                //     return $distribution;
+                // });
 
 
                 
@@ -826,7 +826,7 @@ class ExportController extends Controller
                 // //? fetch all distributions records.
 
                 // Fetch all distributions records.
-                $distributions = Distribution::with(['inventory', 'itemType', 'department', 'createdForUser'])
+                $distributions = Distribution::with(['inventory', 'itemType', 'department', 'inventory' ,'createdForUser'])
                     ->where('is_deleted', 0)
                     ->orderBy('created_at', 'desc')
                     ->get()
@@ -837,21 +837,21 @@ class ExportController extends Controller
                         return $distribution;
                     });
 
-                // Loop through each record and add inventory_items object
-                $distributions->transform(function ($distribution) {
-                    $inventoryItems = json_decode($distribution->inventory_items, true);
-                    // If inventory_items is not null, process it
-                    if ($inventoryItems) {
-                        $inventoryItems = array_map(function ($item) {
-                            return [
-                                'sku' => $item['sku'],
-                                'quantity' => $item['quantity'],
-                            ];
-                        }, $inventoryItems);
-                    }
-                    $distribution->inventory_items = $inventoryItems;
-                    return $distribution;
-                });
+                // // Loop through each record and add inventory_items object
+                // $distributions->transform(function ($distribution) {
+                //     $inventoryItems = json_decode($distribution->inventory_items, true);
+                //     // If inventory_items is not null, process it
+                //     if ($inventoryItems) {
+                //         $inventoryItems = array_map(function ($item) {
+                //             return [
+                //                 'sku' => $item['sku'],
+                //                 'quantity' => $item['quantity'],
+                //             ];
+                //         }, $inventoryItems);
+                //     }
+                //     $distribution->inventory_items = $inventoryItems;
+                //     return $distribution;
+                // });
                 
             }
 
@@ -882,7 +882,7 @@ class ExportController extends Controller
             $sheet->setCellValue('P1', 'הערות אפסנאי');
             $sheet->setCellValue('Q1', 'סטטוס');
             $sheet->setCellValue('R1', 'תאריך שינוי אחרון');
-            $sheet->setCellValue('S1', 'פרטי מלאי');
+            $sheet->setCellValue('S1', 'מספר מק"ט');
 
                         $row = 2;
 
@@ -906,18 +906,22 @@ class ExportController extends Controller
                 $sheet->setCellValue('P' . $row, $distribution->quartermaster_comment ?? 'לא קיים');
                 $sheet->setCellValue('Q' . $row, $distribution->getStatusTranslation() ?? 'לא קיים');
                 $sheet->setCellValue('R' . $row, $distribution->updated_at_date ?? 'לא קיים');
+                $sheet->setCellValue('S' . $row, $distribution->inventory ? $distribution->inventory->sku : 'לא קיים');
 
-                // Add the inventory items if available
-                if (!empty($distribution->inventory_items)) {
-                    foreach ($distribution->inventory_items as $item) {
-                        $sheet->setCellValue('S' . $row, 'SKU: ' . $item['sku'] . ', Quantity: ' . $item['quantity']);
-                        // Move to the next row for the next inventory item
-                        $row++;
-                    }
-                } else {
-                    // Move to the next row if there are no inventory items
-                    $row++;
-                }
+
+                // // Add the inventory items if available
+                // if (!empty($distribution->inventory_items)) {
+                //     foreach ($distribution->inventory_items as $item) {
+                //         $sheet->setCellValue('S' . $row, 'SKU: ' . $item['sku'] . ', Quantity: ' . $item['quantity']);
+                //         // Move to the next row for the next inventory item
+                //         $row++;
+                //     }
+                // } else {
+                //     // Move to the next row if there are no inventory items
+                //     $row++;
+                // }
+
+                $row++;
             }
             
 
@@ -1190,26 +1194,26 @@ class ExportController extends Controller
                     });
                 }
 
-                // Loop through each record and add inventory_items object
-                $distributions->transform(function ($distribution) {
-                    $inventoryItems = json_decode($distribution->inventory_items, true);
-                    // If inventory_items is not null, process it
-                    if ($inventoryItems) {
-                        $inventoryItems = array_map(function ($item) {
-                            return [
-                                'sku' => $item['sku'],
-                                'quantity' => $item['quantity'],
-                            ];
-                        }, $inventoryItems);
-                    }
-                    $distribution->inventory_items = $inventoryItems;
-                    return $distribution;
-                });
+                // // Loop through each record and add inventory_items object
+                // $distributions->transform(function ($distribution) {
+                //     $inventoryItems = json_decode($distribution->inventory_items, true);
+                //     // If inventory_items is not null, process it
+                //     if ($inventoryItems) {
+                //         $inventoryItems = array_map(function ($item) {
+                //             return [
+                //                 'sku' => $item['sku'],
+                //                 'quantity' => $item['quantity'],
+                //             ];
+                //         }, $inventoryItems);
+                //     }
+                //     $distribution->inventory_items = $inventoryItems;
+                //     return $distribution;
+                // });
 
                 
             } else {
                 //? fetch all distributions records.
-                $distributions = Distribution::with(['inventory', 'department', 'createdForUser'])
+                $distributions = Distribution::with(['inventory', 'department', 'itemType','createdForUser'])
                 ->where('is_deleted', 0)
                 ->orderBy('created_at', 'desc')
                 ->get()
@@ -1223,26 +1227,25 @@ class ExportController extends Controller
                 });
 
 
-                // Loop through each record and add inventory_items object
-                $distributions->transform(function ($distribution) {
-                    $inventoryItems = json_decode($distribution->inventory_items, true);
-                    // If inventory_items is not null, process it
-                    if ($inventoryItems) {
-                        $inventoryItems = array_map(function ($item) {
-                            return [
-                                'sku' => $item['sku'],
-                                'quantity' => $item['quantity'],
-                            ];
-                        }, $inventoryItems);
-                    }
-                    $distribution->inventory_items = $inventoryItems;
-                    return $distribution;
-                });
+                // // Loop through each record and add inventory_items object
+                // $distributions->transform(function ($distribution) {
+                //     $inventoryItems = json_decode($distribution->inventory_items, true);
+                //     // If inventory_items is not null, process it
+                //     if ($inventoryItems) {
+                //         $inventoryItems = array_map(function ($item) {
+                //             return [
+                //                 'sku' => $item['sku'],
+                //                 'quantity' => $item['quantity'],
+                //             ];
+                //         }, $inventoryItems);
+                //     }
+                //     $distribution->inventory_items = $inventoryItems;
+                //     return $distribution;
+                // });
 
                 
             }
 
-            dd($distributions->toArray());
 
             $users = User::whereIn('id', $request->users)->get();
 

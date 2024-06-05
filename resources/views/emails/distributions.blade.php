@@ -73,7 +73,7 @@
                 <th>הערות אפסנאי</th>
                 <th>סטטוס</th>
                 <th>תאריך שינוי אחרון</th>
-                <th>פרטי מלאי</th>
+                <th>מספר מק"ט</th>
             </tr>
         </thead>
         <tbody>
@@ -98,7 +98,8 @@
                     <td>{{ $distribution->quartermaster_comment ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->getStatusTranslation() ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->updated_at_date ?? 'לא קיים' }}</td>
-                    <td>
+                    <td>{{ $distribution->inventory ? $distribution->inventory->sku : 'לא קיים' }}</td>
+                    {{-- <td>
                         @if (!empty($distribution->inventory_items))
                             <ul>
                                 @foreach ($distribution->inventory_items as $item)
@@ -108,7 +109,7 @@
                         @else
                             לא קיים
                         @endif
-                    </td>
+                    </td> --}}
                 </tr>
             @endforeach
         </tbody>
