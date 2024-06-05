@@ -1019,20 +1019,21 @@ class DistributionController extends Controller
                                 'quantity' => $quantity,//save qty
                             ];
 
-                            ///here need to created a new distributions records - with the same values fileds - nd set relation with the invetory_id - that Liran choosd
-                            // Distribution::create([
-                            //     'order_number' => intval($orderNumber),
-                            //     'user_comment' => $request->input('user_comment') ?? null,
-                            //     'type_comment' => $comment ?? null,
-                            //     'total_quantity' => $allQuantity,
-                            //     'quantity_per_item' => $quantity,
-                            //     'status' => DistributionStatus::PENDING->value,
-                            //     'type_id' => $itemType,
-                            //     'year' => $currentYear,
-                            //     'department_id' => $request->input('department_id'),
-                            //     'created_by' => $user_auth->id,
-                            //     'created_for' => $client->id,
-                            // ]);
+                            //? create a new records per each inveotry records.
+                            Distribution::create([
+                                'order_number' =>$distributionRecord->order_number,
+                                'user_comment' => $distributionRecord->user_comment ?? null,
+                                'type_comment' =>  $distributionRecord->type_comment ?? null,
+                                'total_quantity' => $distributionRecord->total_quantity,
+                                'quantity_per_item' =>$distributionRecord->quantity_per_item,
+                                'status' => $distributionRecord->status,
+                                'type_id' => $distributionRecord->type_id,
+                                'year' => $distributionRecord->year,
+                                'department_id' => $distributionRecord->department_id,
+                                'created_by' => $distributionRecord->created_by,
+                                'created_for' => $distributionRecord->created_for,
+                                'inventory_id' => $inventory->id //set relations
+                            ]);
                             
                         }
 
@@ -1042,6 +1043,7 @@ class DistributionController extends Controller
                             'admin_comment' => $request->input('admin_comment'),
                             'inventory_items' => json_encode($inventoryUpdates), // Save the inventory items
                             'updated_at' => $currentTime,
+                            'is_deleted'=>1,
                         ]);
 
                         // Mark this type_id as processed

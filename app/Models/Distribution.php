@@ -26,6 +26,7 @@ class Distribution extends Model
         'type_id',
         'year',
         'inventory_items',
+        'inventory_id',
         'department_id',
         'created_by',
         'created_for',
@@ -67,7 +68,7 @@ class Distribution extends Model
      */
     public function inventory()
     {
-        return $this->belongsTo(Inventory::class)->with(['itemType']);
+        return $this->belongsTo(Inventory::class, 'inventory_id')->with(['itemType']);
     }
 
     /**
