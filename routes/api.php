@@ -182,11 +182,13 @@ Route::controller(ExportController::class)
     ->middleware(['auth:api'])
     ->group(function () {
         Route::get('/inventories', 'exportInventories');
-        Route::get('/inventories-email', 'sendInventoriesByEmail');
         Route::get('/users', 'exportUsers');
-        Route::get('/users-email', 'sendUsersByEmail');
         Route::get('/distributions', 'exportDistributions');
+
+        //! need to remove those functons and endpoint
         Route::get('/distributions-email', 'sendDistributionsByEmail');
+        Route::get('/users-email', 'sendUsersByEmail');
+        Route::get('/inventories-email', 'sendInventoriesByEmail');
     });
 
 

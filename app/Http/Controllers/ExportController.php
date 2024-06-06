@@ -61,67 +61,22 @@ class ExportController extends Controller
     public function exportInventories(Request $request)
     {
         try {
+  
+            // Fetch all inventories records
+            $inventories = Inventory::with(['itemType'])
+                ->where('is_deleted', false)
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($inventory) {
+
+                    // Format the created_at and updated_at timestamps
+                    $inventory->created_at_date = $inventory->created_at->format('d/m/Y');
+                    $inventory->updated_at_date = $inventory->updated_at->format('d/m/Y');
+                    $inventory->available = $inventory->quantity - $inventory->reserved;
 
 
-            // set validation rules
-            $rules = [
-                'sku' => 'nullable|string|max:255|exists:inventories,sku,is_deleted,0',
-            ];
-
-            // Define custom error messages
-            $customMessages = [
-                'sku.string' => 'שדה שהוזן אינו בפורמט תקין',
-                'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
-                'sku.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
-            ];
-
-            // validate the request with custom error messages
-            $validator = Validator::make($request->all(), $rules, $customMessages);
-
-
-            // Check if validation fails
-            if ($validator->fails()) {
-                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-            }
-
-
-
-            if ($request->input('sku')) {
-
-                $inventories = Inventory::with(['itemType'])
-                    ->where('sku', $request->input('sku'))
-                    ->where('is_deleted', false)
-                    ->orderBy('created_at', 'desc')
-                    ->get()
-                    ->map(function ($inventory) {
-
-                        // Format the created_at and updated_at timestamps
-                        $inventory->created_at_date = $inventory->created_at->format('d/m/Y');
-                        $inventory->updated_at_date = $inventory->updated_at->format('d/m/Y');
-                        $inventory->available = $inventory->quantity - $inventory->reserved;
-
-                        return $inventory;
-                    });
-
-            }else{
-
-                // Fetch all inventories
-                $inventories = Inventory::with(['itemType'])
-                    ->where('is_deleted', false)
-                    ->orderBy('created_at', 'desc')
-                    ->get()
-                    ->map(function ($inventory) {
-
-                        // Format the created_at and updated_at timestamps
-                        $inventory->created_at_date = $inventory->created_at->format('d/m/Y');
-                        $inventory->updated_at_date = $inventory->updated_at->format('d/m/Y');
-                        $inventory->available = $inventory->quantity - $inventory->reserved;
-
-
-                        return $inventory;
-                    });
-            }
-
+                    return $inventory;
+                });
 
             // Create a new Spreadsheet object
             $spreadsheet = new Spreadsheet();
@@ -702,159 +657,20 @@ class ExportController extends Controller
     public function exportDistributions(Request $request)
     {
         try {
+     
+            // //? fetch all distributions records along with relations.
 
-            // set validation rules
-            $rules = [
-
-
-                'sku' => 'nullable|string|max:255|exists:inventories,sku,is_deleted,0',
-                'inventory_id' => 'nullable|string|max:255|exists:inventories,id,is_deleted,0',
-
-                'status' => 'nullable|integer|between:1,4',
-
-                // 'name' => 'nullable|string|exists:departments,name,is_deleted,0',
-                'department_id' => 'nullable|string|exists:departments,id,is_deleted,0',
-
-                'personal_number' => 'nullable|min:1|max:7',
-                'user_id' => 'nullable|string|exists:users,id,is_deleted,0',
-
-
-                'created_at' => [
-                    'nullable',
-                    'date',
-                ],
-
-                'updated_at' => [
-                    'nullable',
-                    'date',
-                ],
-
-
-            ];
-
-            // Define custom error messages
-            $customMessages = [
-
-
-
-                'sku.string' => 'שדה שהוזן אינו בפורמט תקין',
-                'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
-                'sku.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
-
-                'inventory_id.string' => 'שדה שהוזן אינו בפורמט תקין',
-                'inventory_id.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
-                'inventory_id.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
-
-
-                'name.string' => 'שדה ערך שם מחלקה אינו תקין.',
-                
-                'department_id.exists' => 'מחלקה אינה קיימת במערכת.',
-
-                'status.between' => 'שדה הסטטוס אינו תקין.',
-
-
-                'personal_number.min' => 'מספר אישי אינו תקין.',
-                'personal_number.max' => 'מספר אישי אינו תקין.',
-                'user_id.exists' => 'משתמש אינו קיים במערכת.',
-
-
-
-                'created_at.date' => 'שדה תאריך התחלה אינו תקין.',
-                'created_at.exists' => 'שדה תאריך אינו קיים במערכת.',
-                'updated_at.date' => 'שדה תאריך סיום אינו תקין.',
-                'updated_at.exists' => 'שדה תאריך סיום אינו קיים במערכת.',
-
-
-            ];
-
-            // validate the request with custom error messages
-            $validator = Validator::make($request->all(), $rules, $customMessages);
-
-
-            // Check if validation fails
-            if ($validator->fails()) {
-                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-            }
-
-
-            if (
-                $request->has('user_id')
-                || $request->has('status')
-                || $request->has('inventory_id')
-                || $request->has('department_id')
-                || $request->has('created_at')
-                || $request->has('updated_at')
-            ) {
-                //? one or more of th search based on value filter send
-
-                $distributions = $this->fetchDistributions($request);
-
-                if ($distributions) {
-
-                    $distributions->map(function ($distribution) {
-                        $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
-                        $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
-
-                        return $distribution;
-                    });
-                }
-
-                // // Loop through each record and add inventory_items object
-                // $distributions->transform(function ($distribution) {
-                //     $inventoryItems = json_decode($distribution->inventory_items, true);
-                //     // If inventory_items is not null, process it
-                //     if ($inventoryItems) {
-                //         $inventoryItems = array_map(function ($item) {
-                //             return [
-                //                 'sku' => $item['sku'],
-                //                 'quantity' => $item['quantity'],
-                //             ];
-                //         }, $inventoryItems);
-                //     }
-                //     $distribution->inventory_items = $inventoryItems;
-                //     return $distribution;
-                // });
-
-
-                
-
-            }
-            
-            else {
-
-                
-                // //? fetch all distributions records.
-
-                // Fetch all distributions records.
-                $distributions = Distribution::with([ 'itemType','createdForUser'])
-                    ->where('is_deleted', 0)
-                    ->orderBy('created_at', 'desc')
-                    ->get()
-                    ->map(function ($distribution) {
-                        // Format the created_at and updated_at timestamps
-                        $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
-                        $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
-                        return $distribution;
-                    });
-
-                // // Loop through each record and add inventory_items object
-                // $distributions->transform(function ($distribution) {
-                //     $inventoryItems = json_decode($distribution->inventory_items, true);
-                //     // If inventory_items is not null, process it
-                //     if ($inventoryItems) {
-                //         $inventoryItems = array_map(function ($item) {
-                //             return [
-                //                 'sku' => $item['sku'],
-                //                 'quantity' => $item['quantity'],
-                //             ];
-                //         }, $inventoryItems);
-                //     }
-                //     $distribution->inventory_items = $inventoryItems;
-                //     return $distribution;
-                // });
-                
-            }
-
+            // Fetch all distributions records.
+            $distributions = Distribution::with([ 'itemType','createdForUser'])
+                ->where('is_deleted', 0)
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($distribution) {
+                    // Format the created_at and updated_at timestamps
+                    $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+                    $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+                    return $distribution;
+                });
 
 
             // Create a new Spreadsheet object
@@ -909,19 +725,6 @@ class ExportController extends Controller
                 $sheet->setCellValue('R' . $row, $distribution->updated_at_date ?? 'לא קיים');
                 $sheet->setCellValue('S' . $row, $distribution->sku ?? 'לא קיים');
                 $sheet->setCellValue('S' . $row, $distribution->quantity_per_inventory ??  'לא קיים');
-
-
-                // // Add the inventory items if available
-                // if (!empty($distribution->inventory_items)) {
-                //     foreach ($distribution->inventory_items as $item) {
-                //         $sheet->setCellValue('S' . $row, 'SKU: ' . $item['sku'] . ', Quantity: ' . $item['quantity']);
-                //         // Move to the next row for the next inventory item
-                //         $row++;
-                //     }
-                // } else {
-                //     // Move to the next row if there are no inventory items
-                //     $row++;
-                // }
 
                 $row++;
             }
@@ -1268,15 +1071,6 @@ class ExportController extends Controller
             if ($request->has('order_number')) {
                 $query->where('order_number', $request->input('order_number'));
             }
-
-            // if ($request->has('user_id')) {
-            //     // $pnInput = $request->personal_number;
-            //     $query->whereHas('createdForUser', function ($q) use ($request) {
-            //         // $q->whereRaw('SUBSTRING(personal_number, 2) LIKE ?', ['%' . $request->input('personal_number') . '%']);
-            //         $q->where('id', $request->input('user_id'));
-            //     });
-            // }
-
             // Search by user_id
             if ($request->has('clients_id') && empty($request->input('clients_id')) == false) {
                 $query->whereIn('created_for', $request->input('clients_id'));
