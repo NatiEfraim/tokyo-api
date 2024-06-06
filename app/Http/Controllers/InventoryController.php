@@ -77,7 +77,7 @@ class InventoryController extends Controller
                 $inventory->available = $inventory->quantity - $inventory->reserved;
             });
 
-            return response()->json($inventories, Response::HTTP_OK);
+            return response()->json($inventories->isEmpty() ? [] : $inventories, Response::HTTP_OK);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
@@ -124,7 +124,7 @@ class InventoryController extends Controller
                     ];
                 });
 
-            return response()->json($inventories, Response::HTTP_OK);
+            return response()->json($inventories->isEmpty() ? [] : $inventories, Response::HTTP_OK);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
@@ -221,7 +221,7 @@ class InventoryController extends Controller
             ->orderBy('id', 'asc')
                 ->get();
 
-            return response()->json($invetoriesRecords, Response::HTTP_OK);
+            return response()->json($invetoriesRecords->isEmpty()? []: $invetoriesRecords, Response::HTTP_OK);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
@@ -951,7 +951,7 @@ class InventoryController extends Controller
                 $inventory->makeHidden(['quantity', 'reserved', 'type_id']);
             });
 
-            return response()->json($inventories, Response::HTTP_OK);
+            return response()->json($inventories->isEmpty() ? [] : $inventories, Response::HTTP_OK);
 
         } catch (\Exception $e) {
             Log::error($e->getMessage());

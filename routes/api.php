@@ -84,19 +84,19 @@ Route::controller(DistributionController::class)
 
         
         //?fetch  history records - group by type_id fileds 
-        Route::get('/fetch-history', 'fetchRecordsBuType')->middleware(['role:admin|user']);
+        Route::get('/fetch-history', 'fetchRecordsByType')->middleware(['role:admin|user']);
 
         //?search distributions records based on one query - only be type_id or order_number
         Route::get('/search-by-query', 'getRecordsByQuery');
 
-        //? fillter distributions records based on one or more fileds
-        Route::get('/search-by-filter', 'getRecordsByFilter');
+        //? fillter distributions records based on one or more fileds (to export data)
+        Route::get('/search-by-filter', 'getRecordsByFilter')->middleware(['role:admin']);
 
         //? search records by order_number.
         Route::get('/search-by-order', 'getRecordsByOrder');
 
         //? fetch based on only order_number fileds - and group_by (given query is optional)
-        Route::get('/fetch-records-by-order', 'fetchDistributionsRecordsByOrderNumber');
+        Route::get('/fetch-records-by-order', 'fetchDistributionsRecordsByOrderNumber')->middleware(['role:admin|quartermaster']);
 
         //? route for quartermaster - fetch records - based on order_number. 
         Route::get('/fetch-approved', 'fetchApprovedDistribution')->middleware(['role:admin|quartermaster']);
@@ -104,11 +104,11 @@ Route::controller(DistributionController::class)
         //?sort & fetch by quering
         Route::get('/sort', 'sortByQuery');
 
+        //? fetch quartermaster associated to the records 
+        Route::get('/fetch-quartermaster/{id?}', 'fetchQuartermaster')->middleware(['role:admin']);
 
         Route::get('/{id?}', 'getRecordById');
         
-        //? fetch quartermaster associated to the records 
-        Route::get('/fetch-quartermaster/{id?}', 'fetchQuartermaster');
 
         //? route for liran alocate items
         Route::post('/allocation', 'allocationRecords')->middleware(['role:admin']);

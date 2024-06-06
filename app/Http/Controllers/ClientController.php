@@ -95,7 +95,7 @@ class ClientController extends Controller
             });
 
             
-            return response()->json($clients, Response::HTTP_OK);
+            return response()->json($clients->isEmpty() ? [] : $clients, Response::HTTP_OK);
 
             
         } catch (\Exception $e) {
@@ -263,7 +263,7 @@ class ClientController extends Controller
 
                 
 
-            return response()->json($clientsRecords, Response::HTTP_OK);
+            return response()->json($clientsRecords->isEmpty() ? []  : $clientsRecords, Response::HTTP_OK);
 
         } catch (\Exception $e) {
             Log::error($e->getMessage());

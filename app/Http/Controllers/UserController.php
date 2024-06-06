@@ -196,7 +196,7 @@ class UserController extends Controller
             };
                     
 
-            $uesr_data = [
+            $userData = [
 
 
             'name' => $user->name,
@@ -205,7 +205,7 @@ class UserController extends Controller
 
             ];
 
-            return response()->json($uesr_data, Response::HTTP_OK);
+            return response()->json($userData, Response::HTTP_OK);
 
         } catch (\Exception $e) {
 

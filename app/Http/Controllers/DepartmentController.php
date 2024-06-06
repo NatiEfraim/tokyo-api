@@ -56,7 +56,7 @@ class DepartmentController extends Controller
 
             $departments = Department::where('is_deleted', 0)->get();
 
-            return response()->json($departments, Response::HTTP_OK);
+            return response()->json($departments->isEmpty()?[] :$departments, Response::HTTP_OK);
         } catch (\Exception $e) {
             log::error($e->getMessage());
         }
@@ -109,10 +109,6 @@ class DepartmentController extends Controller
     public function store(Request $request)
     {
         try {
-
-            $user_auth = Auth::user();
-
-            $roles = $user_auth->roles->first()->name; // Extract the role names
 
 
 

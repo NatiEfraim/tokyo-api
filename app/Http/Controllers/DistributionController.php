@@ -127,13 +127,85 @@ class DistributionController extends Controller
                 return $distribution;
             });
 
-            return response()->json($distributions, Response::HTTP_OK);
+            return response()->json($distributions->isEmpty() ? [] : $distributions , Response::HTTP_OK);
+            
         } catch (\Exception $e) {
+            
             Log::error($e->getMessage());
+            
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
+
+    /**
+     * @OA\Get(
+     *      path="/api/distributions/fetch-quartermaster/{id}",
+     *      tags={"Distributions"},
+     *      summary="fetch quartermaster by id records ",
+     *      description="Returns a single distribution by its ID.",
+     *      @OA\Parameter(
+     *          name="id",
+     *          in="path",
+     *          description="ID of the distribution",
+     *          required=true,
+     *          @OA\Schema(
+     *              type="integer",
+     *              format="int64"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="id", type="integer", example=1),
+     *              @OA\Property(property="comment", type="string", example="Velit veritatis quia vel nemo qui. Eaque commodi expedita enim libero ut. Porro ducimus repellendus tenetur."),
+     *              @OA\Property(property="status", type="integer", example=1),
+     *              @OA\Property(property="quantity", type="integer", example=44),
+     *              @OA\Property(property="inventory_id", type="integer", example=24),
+     *              @OA\Property(property="created_at", type="string", format="date-time", example="2024-04-07T11:42:45.000000Z"),
+     *              @OA\Property(property="updated_at", type="string", format="date-time", example="2024-04-07T11:42:45.000000Z"),
+     *              @OA\Property(
+     *                  property="inventory",
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=24),
+     *                  @OA\Property(property="quantity", type="integer", example=10),
+     *                  @OA\Property(property="sku", type="string", example="1359395842801"),
+     *                  @OA\Property(property="item_type", type="string", example="magni"),
+     *                  @OA\Property(property="detailed_description", type="string", example="Velit ut ipsam neque tempora est dicta. Et distinctio eligendi expedita corporis assumenda aspernatur hic.")
+     *              ),
+     *              @OA\Property(
+     *                  property="created_for_user",
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="name", type="string", example="Percival Schulist"),
+     *                  @OA\Property(property="emp_type_id", type="integer", example=2),
+     *                  @OA\Property(property="phone", type="string", example="0556926412"),
+     *                  @OA\Property(
+     *                      property="employee_type",
+     *                      type="object",
+     *                      @OA\Property(property="id", type="integer", example=2),
+     *                      @OA\Property(property="name", type="string", example="miluim")
+     *                  )
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad request",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="יש לשלוח מספר מזהה של שורה")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Internal server error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="התרחש בעיית שרת יש לנסות שוב מאוחר יותר.")
+     *          )
+     *      )
+     * )
+     */
 
 
     //? fetch associated quartermaster
@@ -184,6 +256,145 @@ class DistributionController extends Controller
 
     /**
      * Retrieve all distributions.
+     *
+     * This endpoint retrieves all distribution records along with their associated inventory and department.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @OA\Get(
+     *     path="/api/distributions/fetch-history",
+     *     summary="Retrieve all distributions based on role of user",
+     *     tags={"Distributions"},
+     *      summary="Get all Distributions records based on user role",
+     *      description="Returns a list of all history Distributions.",
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Page number",
+     *         required=false,
+     *         @OA\Schema(
+     *             type="integer",
+     *             default=1
+     *         )
+     *     ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="id", type="integer", example=1),
+     *              @OA\Property(property="comment", type="string", example="Velit veritatis quia vel nemo qui. Eaque commodi expedita enim libero ut. Porro ducimus repellendus tenetur."),
+     *              @OA\Property(property="status", type="integer", example=1),
+     *              @OA\Property(property="quantity", type="integer", example=44),
+     *              @OA\Property(property="inventory_id", type="integer", example=24),
+     *              @OA\Property(property="created_at", type="string", format="date-time", example="2024-04-07T11:42:45.000000Z"),
+     *              @OA\Property(property="updated_at", type="string", format="date-time", example="2024-04-07T11:42:45.000000Z"),
+     *              @OA\Property(
+     *                  property="inventory",
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=24),
+     *                  @OA\Property(property="quantity", type="integer", example=10),
+     *                  @OA\Property(property="sku", type="string", example="1359395842801"),
+     *                  @OA\Property(property="item_type", type="string", example="magni"),
+     *                  @OA\Property(property="detailed_description", type="string", example="Velit ut ipsam neque tempora est dicta. Et distinctio eligendi expedita corporis assumenda aspernatur hic.")
+     *              ),
+     *              @OA\Property(
+     *                  property="created_for_user",
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="name", type="string", example="Percival Schulist"),
+     *                  @OA\Property(property="emp_type_id", type="integer", example=2),
+     *                  @OA\Property(property="phone", type="string", example="0556926412"),
+     *                  @OA\Property(
+     *                      property="employee_type",
+     *                      type="object",
+     *                      @OA\Property(property="id", type="integer", example=2),
+     *                      @OA\Property(property="name", type="string", example="miluim")
+     *                  ),
+     *                  @OA\Property(
+     *                      property="department",
+     *                      type="object",
+     *                      @OA\Property(property="id", type="integer", example=2),
+     *                      @OA\Property(property="name", type="string", example="ducimus")
+     *                  ),
+     *              )
+     *          )
+     *      ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="התרחש בעיית שרת יש לנסות שוב מאוחר יותר.")
+     *         )
+     *     )
+     * )
+     */
+
+    // ? fetch all records - based on role of user
+    public function fetchRecordsByType()
+    {
+        try {
+
+            // $user_auth = Auth::user();
+
+            $user_auth = auth()->user();
+            $roleName=$user_auth->roles->first()->name;
+
+
+            if ($roleName=='admin') {
+                //? fetch all records
+                $distributions = Distribution::with(['itemType', 'createdForUser', 'department', 'inventory'])
+                    ->where('is_deleted', 0)
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(20);
+            }else{
+                //? fetch records based on created_by
+                $distributions = Distribution::with(['itemType', 'createdForUser', 'department', 'inventory'])
+                    ->where('created_by', $user_auth->id)
+                    ->where('is_deleted', 0)
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(20);
+            }
+            
+
+
+            $distributions->each(function ($distribution) {
+                // Format the created_at and updated_at timestamps
+                $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+                $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+
+                return $distribution;
+            });
+
+            // Create a new collection to store unique distributions by order_number
+            $uniqueDistributions = collect();
+
+            // Create a set to track seen type_id
+            $seenItemType = [];
+
+            // Loop through the fetched distributions records
+            foreach ($distributions as $distribution) {
+                // make sure the order_number has been seen before
+                if (!in_array($distribution->type_id, $seenItemType)) {
+                    $uniqueDistributions->push($distribution);
+                    // Mark this type_id as seen
+                    $seenItemType[] = $distribution->type_id;
+                }
+            }
+
+            return response()->json($uniqueDistributions->isEmpty() ? [] : $uniqueDistributions, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+        return response()->json(['message' => 'התרחש בעיית שרת.נסה שוב מאוחר יותר'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+
+    
+    
+
+
+    /**
+     * Retrieve all approved distributions records.
      *
      * This endpoint retrieves all distribution records where status is approved by Liran .
      *
@@ -266,48 +477,13 @@ class DistributionController extends Controller
 
             // set validation rules
             $rules = [
-
-
-                // 'inventory_id' => 'nullable|string|max:255|exists:inventories,id,is_deleted,0',
-
-                // 'status' => 'nullable|integer|between:1,4',
-
-                // 'department_id' => 'nullable|string|exists:departments,id,is_deleted,0',
-
                 'order_number' => 'nullable|string|exists:distributions,order_number,is_deleted,0',
-
-
-                // 'clients_id' => 'nullable|array',
-                // 'clients_id.*' => 'nullable|exists:clients,id,is_deleted,0',
-
-
-                // 'year' => 'nullable|integer|between:1948,2099',
-
-                // 'created_at' => ['nullable', 'date'],
-
-                // 'updated_at' => ['nullable', 'date'],
             ];
 
             // Define custom error messages
+            
             $customMessages = [
-
-                // 'clients_id.array' => 'שדה משתמש שנשלח אינו תקין.',
-                // 'clients_id.*.exists' => 'הערך שהוזן לא חוקי.',
-
-                // 'year.integer' => 'שדה שנה אינו תקין.',
-                // 'year.between' => 'שדה שנה אינו תקין.',
-
-                // 'department_id.exists' => 'מחלקה אינה קיימת במערכת.',
-
                 'order_number.exists' => 'מספר הזמנה אינה קיית במערכת.',
-
-                // 'status.between' => 'שדה הסטטוס אינו תקין.',
-
-
-                // 'created_at.date' => 'שדה תאריך התחלה אינו תקין.',
-                // 'created_at.exists' => 'שדה תאריך אינו קיים במערכת.',
-                // 'updated_at.date' => 'שדה תאריך סיום אינו תקין.',
-                // 'updated_at.exists' => 'שדה תאריך סיום אינו קיים במערכת.',
             ];
 
             // validate the request with custom error messages
@@ -321,7 +497,7 @@ class DistributionController extends Controller
 
             
             // ? fetch records has been approved based on order_number
-            $distributions = Distribution::with(['createdForUser', 'itemType', 'department' ,'department'])
+            $distributions = Distribution::with(['createdForUser', 'itemType', 'department' , 'inventory'])
             ->where('is_deleted', 0)
             ->where('order_number', $request->input('order_number'))
             ->get();
@@ -329,20 +505,6 @@ class DistributionController extends Controller
 
             // Loop through each record and add inventory_items object
             $distributions->transform(function ($distribution) {
-            //     $inventoryItems = json_decode($distribution->inventory_items, true);
-
-            //     // If inventory_items is not null, process it
-            //     if ($inventoryItems) {
-            //     $inventoryItems = array_map(function ($item) {
-            //         return [
-            //             'sku' => $item['sku'],
-            //             'quantity' => $item['quantity'],
-            //         ];
-            //     }, $inventoryItems);
-            // }
-
-            // $distribution->inventory_items = $inventoryItems;
-
                 //?format each date.
                 $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
                 $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
@@ -350,7 +512,7 @@ class DistributionController extends Controller
             return $distribution;
         });
 
-        return response()->json($distributions, Response::HTTP_OK);
+        return response()->json($distributions->isEmpty()  ? [] : $distributions, Response::HTTP_OK);
 
         } catch (\Exception $e) {
             Log::error($e->getMessage());
@@ -436,7 +598,7 @@ class DistributionController extends Controller
                 return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
             }
 
-            $distribution = Distribution::with(['itemType','createdForUser'])
+            $distribution = Distribution::with(['itemType','createdForUser', 'department', 'inventory'])
                 ->where('id', $id)
                 ->where('is_deleted', 0)
                 ->first();
@@ -1631,7 +1793,7 @@ class DistributionController extends Controller
                 }
             }
 
-            return response()->json($uniqueDistributions, Response::HTTP_OK);
+            return response()->json($uniqueDistributions->isEmpty() ? [] : $uniqueDistributions, Response::HTTP_OK);
 
 
         } catch (\Exception $e) {
@@ -2020,7 +2182,7 @@ class DistributionController extends Controller
             }
 
             // fetch all distributions records with associations
-            $distributions = Distribution::with(['itemType', 'createdForUser','department'])
+            $distributions = Distribution::with(['itemType', 'createdForUser','department', 'inventory'])
             ->where('is_deleted', 0)
             ->get();
 
@@ -2158,7 +2320,7 @@ class DistributionController extends Controller
 
             $query = $request->input('query');
 
-            return Distribution::with(['itemType', 'createdForUser','department'])
+            return Distribution::with(['itemType', 'createdForUser','department', 'inventory'])
 
                 ->where('status', $request->input('status'))
 

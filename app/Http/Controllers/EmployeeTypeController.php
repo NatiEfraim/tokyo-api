@@ -50,8 +50,8 @@ class EmployeeTypeController extends Controller
     {
         try {
 
-            $emp_types=EmployeeType::where('is_deleted',false)->get();
-            return response()->json($emp_types,Response::HTTP_OK);
+            $empTypeRecords=EmployeeType::where('is_deleted',false)->get();
+            return response()->json($empTypeRecords->isEmpty()? []:$empTypeRecords,Response::HTTP_OK);
 
         } catch (\Exception $e) {
             Log::error($e->getMessage());
