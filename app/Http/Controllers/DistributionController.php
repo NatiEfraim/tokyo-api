@@ -114,7 +114,7 @@ class DistributionController extends Controller
         try {
 
 
-            $distributions = Distribution::with(['itemType','inventory','department','createdForUser', 'quartermaster'])
+            $distributions = Distribution::with(['itemType','inventory','createdForUser'])
                 ->where('is_deleted', 0)
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
@@ -143,7 +143,7 @@ class DistributionController extends Controller
      *      path="/api/distributions/fetch-quartermaster/{id}",
      *      tags={"Distributions"},
      *      summary="fetch quartermaster by id records ",
-     *      description="Returns a single distribution by its ID.",
+     *      description="fetch quartermaster that sign on the records.",
      *      @OA\Parameter(
      *          name="id",
      *          in="path",
@@ -158,36 +158,10 @@ class DistributionController extends Controller
      *          response=200,
      *          description="Successful operation",
      *          @OA\JsonContent(
-     *              @OA\Property(property="id", type="integer", example=1),
-     *              @OA\Property(property="comment", type="string", example="Velit veritatis quia vel nemo qui. Eaque commodi expedita enim libero ut. Porro ducimus repellendus tenetur."),
-     *              @OA\Property(property="status", type="integer", example=1),
-     *              @OA\Property(property="quantity", type="integer", example=44),
-     *              @OA\Property(property="inventory_id", type="integer", example=24),
-     *              @OA\Property(property="created_at", type="string", format="date-time", example="2024-04-07T11:42:45.000000Z"),
-     *              @OA\Property(property="updated_at", type="string", format="date-time", example="2024-04-07T11:42:45.000000Z"),
-     *              @OA\Property(
-     *                  property="inventory",
-     *                  type="object",
-     *                  @OA\Property(property="id", type="integer", example=24),
-     *                  @OA\Property(property="quantity", type="integer", example=10),
-     *                  @OA\Property(property="sku", type="string", example="1359395842801"),
-     *                  @OA\Property(property="item_type", type="string", example="magni"),
-     *                  @OA\Property(property="detailed_description", type="string", example="Velit ut ipsam neque tempora est dicta. Et distinctio eligendi expedita corporis assumenda aspernatur hic.")
-     *              ),
-     *              @OA\Property(
-     *                  property="created_for_user",
-     *                  type="object",
-     *                  @OA\Property(property="id", type="integer", example=1),
-     *                  @OA\Property(property="name", type="string", example="Percival Schulist"),
-     *                  @OA\Property(property="emp_type_id", type="integer", example=2),
-     *                  @OA\Property(property="phone", type="string", example="0556926412"),
-     *                  @OA\Property(
-     *                      property="employee_type",
-     *                      type="object",
-     *                      @OA\Property(property="id", type="integer", example=2),
-     *                      @OA\Property(property="name", type="string", example="miluim")
-     *                  )
-     *              )
+     *              @OA\Property(property="quartermaster_name", type="string", example="Ramiro Adams"),
+     *              @OA\Property(property="quartermaster_id", type="integer", example=1),
+     *              @OA\Property(property="created_at_time", type="string", format="date-time", example="2024-04-07T11:42:45.000000Z"),
+     *              @OA\Property(property="created_at_date", type="string", format="date-time", example="2024-04-07T11:42:45.000000Z"),
      *          )
      *      ),
      *      @OA\Response(
@@ -342,13 +316,13 @@ class DistributionController extends Controller
 
             if ($roleName=='admin') {
                 //? fetch all records
-                $distributions = Distribution::with(['itemType', 'createdForUser', 'department', 'inventory'])
+                $distributions = Distribution::with(['itemType', 'createdForUser','inventory'])
                     ->where('is_deleted', 0)
                     ->orderBy('created_at', 'desc')
                     ->paginate(20);
             }else{
                 //? fetch records based on created_by
-                $distributions = Distribution::with(['itemType', 'createdForUser', 'department', 'inventory'])
+                $distributions = Distribution::with(['itemType', 'createdForUser', 'inventory'])
                     ->where('created_by', $user_auth->id)
                     ->where('is_deleted', 0)
                     ->orderBy('created_at', 'desc')
@@ -497,7 +471,7 @@ class DistributionController extends Controller
 
             
             // ? fetch records has been approved based on order_number
-            $distributions = Distribution::with(['createdForUser', 'itemType', 'department' , 'inventory'])
+            $distributions = Distribution::with(['createdForUser', 'itemType',  'inventory'])
             ->where('is_deleted', 0)
             ->where('order_number', $request->input('order_number'))
             ->get();
@@ -598,7 +572,7 @@ class DistributionController extends Controller
                 return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
             }
 
-            $distribution = Distribution::with(['itemType','createdForUser', 'department', 'inventory'])
+            $distribution = Distribution::with(['itemType','createdForUser','inventory'])
                 ->where('id', $id)
                 ->where('is_deleted', 0)
                 ->first();
@@ -1755,7 +1729,7 @@ class DistributionController extends Controller
 
             }else{
                 //? fetch all records without any query to search
-                $distributions = Distribution::with(['itemType', 'createdForUser','department'])
+                $distributions = Distribution::with(['itemType', 'createdForUser'])
                     ->where('status', $request->input('status'))
                     ->where('is_deleted', 0)
                     ->orderBy('created_at', 'desc')
@@ -1919,7 +1893,7 @@ class DistributionController extends Controller
             }
 
             //? fetch all distribution records based on order_number
-            $distributions= Distribution::with(['itemType',  'createdForUser','department'])
+            $distributions= Distribution::with(['itemType',  'createdForUser'])
                 ->where('order_number', $request->input('order_number'))
                 ->where('is_deleted',0)
                 ->get();
@@ -2125,7 +2099,7 @@ class DistributionController extends Controller
             } else {
                 //? fetch all distributions records.
 
-                $distributions = Distribution::with(['department', 'createdForUser', 'inventory','itemType','quartermaster'])
+                $distributions = Distribution::with(['createdForUser', 'inventory','itemType'])
                 ->where('is_deleted', 0)
                     ->orderBy('created_at', 'desc')
                     ->get()
@@ -2183,7 +2157,7 @@ class DistributionController extends Controller
             }
 
             // fetch all distributions records with associations
-            $distributions = Distribution::with(['itemType', 'createdForUser','department', 'inventory'])
+            $distributions = Distribution::with(['itemType', 'createdForUser', 'inventory'])
             ->where('is_deleted', 0)
             ->get();
 
@@ -2292,7 +2266,7 @@ class DistributionController extends Controller
 
             $query = $request->input('query');
 
-            return Distribution::with(['itemType', 'createdForUser','department','inventory', 'quartermaster'])
+            return Distribution::with(['itemType', 'createdForUser','inventory'])
             ->where('is_deleted', 0)
                 //? fetch records - by query - can be type or order_number
                 ->where(function ($queryBuilder) use ($query) {
@@ -2321,7 +2295,7 @@ class DistributionController extends Controller
 
             $query = $request->input('query');
 
-            return Distribution::with(['itemType', 'createdForUser','department', 'inventory'])
+            return Distribution::with(['itemType', 'createdForUser', 'inventory'])
 
                 ->where('status', $request->input('status'))
 
@@ -2341,8 +2315,12 @@ class DistributionController extends Controller
                     // Search by order number
                     $queryBuilder->orWhere('order_number', 'like', "%$query%");
 
-                    // Search by year
-                    $queryBuilder->orWhere('year', 'like', "%$query%");
+                // Search by year
+                // $queryBuilder->orWhere('year', 'like', "%$query%");
+                if (is_numeric($query) && strlen($query) == 4) {
+                    $queryBuilder->orWhereYear('created_at', $query);
+                }
+
 
                     // Search by full name
                     $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
@@ -2391,17 +2369,23 @@ class DistributionController extends Controller
 
 
 
-            //? fetch by department
+            //? fetch records only where created_for asscoiated with department_id
             if ($request->has('department_id') && empty($request->input('department_id')) == false) {
 
-                $query->where('department_id', $request->input('department_id'));
-                // $query->whereHas('createdForUser', function ($q) use ($request) {
-                //     $q->where('department_id', $request->input('department_id'));
-                // });
+                // $query->where('department_id', $request->input('department_id'));
+                $departmentId = $request->input('department_id');
+                $query->whereHas('createdForUser', function ($query) use ($departmentId) {
+                    $query->where('department_id', $departmentId);
+                });
+
+                
             }
             // Search by year
             if ($request->has('year') && empty($request->input('year'))==false) {
-                $query->where('year', $request->input('year'));
+                // $query->where('year', $request->input('year'));
+                $year = $request->input('year');
+                //? featch records  creatd by year.
+                $query->whereYear('created_at', $year);
             }
 
             // Search by user_id
@@ -2423,7 +2407,7 @@ class DistributionController extends Controller
 
 
             return $query
-                ->with(['itemType', 'department', 'createdForUser','inventory','quartermaster'])
+                ->with(['itemType',  'createdForUser','inventory'])
                 ->where('is_deleted',false)
                 ->get();
 
