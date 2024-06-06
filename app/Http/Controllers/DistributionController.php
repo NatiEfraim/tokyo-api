@@ -783,14 +783,15 @@ class DistributionController extends Controller
 
                ]);
             }
-
+            
+            //? update client records - from scratch
             $client=Client::where('personal_number',$request->input('personal_number'))
             ->where('is_deleted',0)
             ->first();
 
              if(is_null($client)){
 
-                //? update client records - from scratch
+                //? create client records - from scratch
                 $client = Client::create([
                     'name' => $request->input('name'),
                    'personal_number' => $request->input('personal_number'),

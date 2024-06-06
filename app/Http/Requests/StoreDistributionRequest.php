@@ -32,7 +32,7 @@ class StoreDistributionRequest extends FormRequest
                 'regex:/^\d{7}$/', // Ensure the value is exactly 7 digits
             ],
 
-            'phone' => 'required|string|unique:users|regex:/^05\d{8}$/',
+            // 'phone' => 'required|string|unique:users|regex:/^05\d{8}$/',
 
             'employee_type' => 'required|exists:employee_types,id,is_deleted,0',
 
