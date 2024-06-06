@@ -826,7 +826,7 @@ class ExportController extends Controller
                 // //? fetch all distributions records.
 
                 // Fetch all distributions records.
-                $distributions = Distribution::with(['inventory', 'itemType', 'department', 'inventory' ,'createdForUser'])
+                $distributions = Distribution::with([ 'itemType','createdForUser'])
                     ->where('is_deleted', 0)
                     ->orderBy('created_at', 'desc')
                     ->get()
@@ -873,7 +873,7 @@ class ExportController extends Controller
             $sheet->setCellValue('G1', 'סוג עובד');
             $sheet->setCellValue('H1', 'טלפון');
             $sheet->setCellValue('I1', 'מייל');
-            $sheet->setCellValue('J1', 'כמות פריט');
+            $sheet->setCellValue('J1', 'כמות פר פריט');
             $sheet->setCellValue('K1', 'כמות סה"כ');
             $sheet->setCellValue('L1', 'סוג פריט');
             $sheet->setCellValue('M1', 'הערות על הפריט');
@@ -883,6 +883,7 @@ class ExportController extends Controller
             $sheet->setCellValue('Q1', 'סטטוס');
             $sheet->setCellValue('R1', 'תאריך שינוי אחרון');
             $sheet->setCellValue('S1', 'מספר מק"ט');
+            $sheet->setCellValue('T1', 'כמות פר מק"ט');
 
                         $row = 2;
 
@@ -906,7 +907,8 @@ class ExportController extends Controller
                 $sheet->setCellValue('P' . $row, $distribution->quartermaster_comment ?? 'לא קיים');
                 $sheet->setCellValue('Q' . $row, $distribution->getStatusTranslation() ?? 'לא קיים');
                 $sheet->setCellValue('R' . $row, $distribution->updated_at_date ?? 'לא קיים');
-                $sheet->setCellValue('S' . $row, $distribution->inventory ? $distribution->inventory->sku : 'לא קיים');
+                $sheet->setCellValue('S' . $row, $distribution->sku ?? 'לא קיים');
+                $sheet->setCellValue('S' . $row, $distribution->quantity_per_inventory ??  'לא קיים');
 
 
                 // // Add the inventory items if available
@@ -949,7 +951,7 @@ class ExportController extends Controller
                 ],
             ];
 
-            $sheet->getStyle('A1:S1')->applyFromArray($headerStyle);
+            $sheet->getStyle('A1:T1')->applyFromArray($headerStyle);
 
             // Set & Style the cells
             $cellStyle = [
@@ -960,10 +962,10 @@ class ExportController extends Controller
             ];
 
             // apply styling to all cells in the sheet
-            $sheet->getStyle('A1:S' . ($row - 1))->applyFromArray($cellStyle);
+            $sheet->getStyle('A1:T' . ($row - 1))->applyFromArray($cellStyle);
 
             // set the size for rest of columns
-            foreach (range('A', 'S') as $column) {
+            foreach (range('A', 'T') as $column) {
                 $sheet->getColumnDimension($column)->setAutoSize(true);
             }
 
@@ -1193,27 +1195,10 @@ class ExportController extends Controller
                         return $distribution;
                     });
                 }
-
-                // // Loop through each record and add inventory_items object
-                // $distributions->transform(function ($distribution) {
-                //     $inventoryItems = json_decode($distribution->inventory_items, true);
-                //     // If inventory_items is not null, process it
-                //     if ($inventoryItems) {
-                //         $inventoryItems = array_map(function ($item) {
-                //             return [
-                //                 'sku' => $item['sku'],
-                //                 'quantity' => $item['quantity'],
-                //             ];
-                //         }, $inventoryItems);
-                //     }
-                //     $distribution->inventory_items = $inventoryItems;
-                //     return $distribution;
-                // });
-
                 
             } else {
                 //? fetch all distributions records.
-                $distributions = Distribution::with(['inventory', 'department', 'itemType','createdForUser'])
+                $distributions = Distribution::with([ 'itemType','createdForUser'])
                 ->where('is_deleted', 0)
                 ->orderBy('created_at', 'desc')
                 ->get()
@@ -1226,24 +1211,6 @@ class ExportController extends Controller
                     return $distribution;
                 });
 
-
-                // // Loop through each record and add inventory_items object
-                // $distributions->transform(function ($distribution) {
-                //     $inventoryItems = json_decode($distribution->inventory_items, true);
-                //     // If inventory_items is not null, process it
-                //     if ($inventoryItems) {
-                //         $inventoryItems = array_map(function ($item) {
-                //             return [
-                //                 'sku' => $item['sku'],
-                //                 'quantity' => $item['quantity'],
-                //             ];
-                //         }, $inventoryItems);
-                //     }
-                //     $distribution->inventory_items = $inventoryItems;
-                //     return $distribution;
-                // });
-
-                
             }
 
 
@@ -1274,9 +1241,9 @@ class ExportController extends Controller
             $query = Distribution::query();
 
 
+ 
 
-
-
+        
             //? search by the associated id
 
             //? fetch by status
@@ -1286,11 +1253,13 @@ class ExportController extends Controller
 
 
             //? fetch by department
-            if ($request->has('department_id')) {
+            //? fetch records only where created_for asscoiated with department_id
+            if ($request->has('department_id') && empty($request->input('department_id')) == false) {
 
-                
-                $query->whereHas('createdForUser', function ($q) use ($request) {
-                    $q->where('department_id', $request->input('department_id'));
+                // $query->where('department_id', $request->input('department_id'));
+                $departmentId = $request->input('department_id');
+                $query->whereHas('createdForUser', function ($query) use ($departmentId) {
+                    $query->where('department_id', $departmentId);
                 });
             }
 
@@ -1300,12 +1269,17 @@ class ExportController extends Controller
                 $query->where('order_number', $request->input('order_number'));
             }
 
-            if ($request->has('user_id')) {
-                // $pnInput = $request->personal_number;
-                $query->whereHas('createdForUser', function ($q) use ($request) {
-                    // $q->whereRaw('SUBSTRING(personal_number, 2) LIKE ?', ['%' . $request->input('personal_number') . '%']);
-                    $q->where('id', $request->input('user_id'));
-                });
+            // if ($request->has('user_id')) {
+            //     // $pnInput = $request->personal_number;
+            //     $query->whereHas('createdForUser', function ($q) use ($request) {
+            //         // $q->whereRaw('SUBSTRING(personal_number, 2) LIKE ?', ['%' . $request->input('personal_number') . '%']);
+            //         $q->where('id', $request->input('user_id'));
+            //     });
+            // }
+
+            // Search by user_id
+            if ($request->has('clients_id') && empty($request->input('clients_id')) == false) {
+                $query->whereIn('created_for', $request->input('clients_id'));
             }
 
 
@@ -1320,7 +1294,7 @@ class ExportController extends Controller
             // Ensure is_deleted is 0
             $query->where('is_deleted', 0);
 
-            return $query->with(['department', 'itemType','createdForUser'])
+            return $query->with(['itemType','createdForUser'])
             ->orderBy('created_at', 'desc')
             ->get();
         } catch (\Exception $e) {

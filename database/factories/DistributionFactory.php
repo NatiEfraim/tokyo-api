@@ -58,7 +58,9 @@ class DistributionFactory extends Factory
             'quartermaster_id' =>$randomUserId, //set relation
             'quantity_per_item' => $this->faker->numberBetween(1, 100), // Generate quantity per item
             'total_quantity' => $this->faker->numberBetween(1, 100), // Generate total quantity
+            'quantity_per_inventory' => $this->faker->numberBetween(1, 100), // Generate quantity per invetory
             'inventory_id' => $randomInventory->id, //set relation
+            'sku' => $randomInventory->sku, //set relation
         ];
     }
 }

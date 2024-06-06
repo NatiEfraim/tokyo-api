@@ -23,17 +23,21 @@ class Distribution extends Model
         'status',
         'total_quantity',
         'quantity_per_item',
+        'sku',
+        'quantity_per_inventory',
         'type_id',
-        'year',
-        'inventory_items',
-        'inventory_id',
-        'department_id',
         'created_by',
         'created_for',
         'quartermaster_id',
         'is_deleted',
         'created_at',
-        'updated_at'
+        'updated_at',
+
+        //! need to remove
+        'year',
+        'inventory_items',
+        'inventory_id',
+        'department_id',
     ];
 
     /**
@@ -42,12 +46,15 @@ class Distribution extends Model
      * @var array
      */
     protected $hidden = [
+        //! need to remove
+        'inventory_id',
+        'department_id',
 
-        // 'inventory_id',
-        // 'department_id',
-        // 'created_by',
-        // 'created_for',
-        // 'quartermaster_id',
+
+        
+        'created_by',
+        'created_for',
+        'quartermaster_id',
 
         'is_deleted',
         'created_at',

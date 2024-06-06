@@ -114,7 +114,7 @@ class DistributionController extends Controller
         try {
 
 
-            $distributions = Distribution::with(['itemType','inventory','createdForUser'])
+            $distributions = Distribution::with(['itemType','createdForUser'])
                 ->where('is_deleted', 0)
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
@@ -316,13 +316,13 @@ class DistributionController extends Controller
 
             if ($roleName=='admin') {
                 //? fetch all records
-                $distributions = Distribution::with(['itemType', 'createdForUser','inventory'])
+                $distributions = Distribution::with(['itemType', 'createdForUser'])
                     ->where('is_deleted', 0)
                     ->orderBy('created_at', 'desc')
                     ->paginate(20);
             }else{
                 //? fetch records based on created_by
-                $distributions = Distribution::with(['itemType', 'createdForUser', 'inventory'])
+                $distributions = Distribution::with(['itemType', 'createdForUser'])
                     ->where('created_by', $user_auth->id)
                     ->where('is_deleted', 0)
                     ->orderBy('created_at', 'desc')
@@ -471,7 +471,7 @@ class DistributionController extends Controller
 
             
             // ? fetch records has been approved based on order_number
-            $distributions = Distribution::with(['createdForUser', 'itemType',  'inventory'])
+            $distributions = Distribution::with(['createdForUser', 'itemType'])
             ->where('is_deleted', 0)
             ->where('order_number', $request->input('order_number'))
             ->get();
@@ -805,8 +805,8 @@ class DistributionController extends Controller
                     'order_number' => intval($orderNumber),
                     'user_comment' => $request->input('user_comment') ?? null,
                     'type_comment' => $comment??null,
-                    'total_quantity' => $allQuantity,
-                    'quantity_per_item' => $quantity,
+                    'total_quantity' => $allQuantity,//? all qty per order_number
+                    'quantity_per_item' => $quantity,//? qty per item_type selcted
                     'status' => DistributionStatus::PENDING->value,
                     'type_id' => $itemType,
                     'year' => $currentYear,
@@ -1105,8 +1105,16 @@ class DistributionController extends Controller
                         foreach ($items['items'] as $inventoryItem) {
 
 
+                            
+                            $allQuantity = array_sum(array_column($inventoryItem, 'quantity'));
+
+                            if ($allQuantity != $distributionRecord->quantity_per_item) {
+                                DB::rollBack(); // Rollback the transaction
+                                return response()->json(['message' => 'הכמות אינה תואמת לסך הכמות הנדרשת עבור פריט.'], Response::HTTP_OK);
+                            }
+
                             $idInventory = $inventoryItem['inventory_id']; // Save the inventory_id records
-                            $quantity = $inventoryItem['quantity'];
+                            $quantity = $inventoryItem['quantity'];//? qty per sku
 
 
                             $inventory = Inventory::where('id', $idInventory)
@@ -1141,6 +1149,7 @@ class DistributionController extends Controller
 
                             //? create a new records per each inveotry records.
                             Distribution::create([
+                                
                                 'order_number' =>$distributionRecord->order_number,
                                 'user_comment' => $distributionRecord->user_comment ?? null,
                                 'type_comment' =>  $distributionRecord->type_comment ?? null,
@@ -1149,23 +1158,29 @@ class DistributionController extends Controller
                                 'status' => DistributionStatus::APPROVED->value,
                                 'type_id' => $distributionRecord->type_id,
                                 'year' => $distributionRecord->year,
-                                'department_id' => $distributionRecord->department_id,
                                 'created_by' => $distributionRecord->created_by,
                                 'created_for' => $distributionRecord->created_for,
-                                'inventory_id' => $inventory->id //set relations
+                                'quantity_per_inventory' =>  $quantity, //set qty per invetory
+                                'sku' => $inventory->sku, //set relations
+                                
+                                'inventory_id' => $inventory->id, //set relations
+                                'department_id' => $distributionRecord->department_id,
                             ]);
                             
                         }
 
-                        // ? The admin has been approved - each records based on type_id - split to many records based on  sku
-                        $distributionRecord->update([
-                            'status' => DistributionStatus::APPROVED->value,
-                            'admin_comment' => $request->input('admin_comment'),
-                            'inventory_items' => json_encode($inventoryUpdates), // Save the inventory items
-                            'updated_at' => $currentTime,
-                            'is_deleted'=>1,
-                        ]);
+                        // // ? The admin has been approved - each records based on type_id - split to many records based on  sku
+                        // $distributionRecord->update([
+                        //     'status' => DistributionStatus::APPROVED->value,
+                        //     'admin_comment' => $request->input('admin_comment'),
+                        //     'inventory_items' => json_encode($inventoryUpdates), // Save the inventory items
+                        //     'updated_at' => $currentTime,
+                        //     'is_deleted'=>1,
+                        // ]);
 
+                        //? deleted records (copy records - as time as admin selcted sku)
+                        $distributionRecord->delete();
+                        
                         // Mark this type_id as processed
                         $processedTypeIds[] = $items['type_id'];
                     }
@@ -2099,7 +2114,7 @@ class DistributionController extends Controller
             } else {
                 //? fetch all distributions records.
 
-                $distributions = Distribution::with(['createdForUser', 'inventory','itemType'])
+                $distributions = Distribution::with(['createdForUser','itemType'])
                 ->where('is_deleted', 0)
                     ->orderBy('created_at', 'desc')
                     ->get()
@@ -2168,22 +2183,22 @@ class DistributionController extends Controller
                 return $distribution;
             });
 
-            //? decode - json of invetory_item fileds
-            $distributions->transform(function ($distribution) {
-                $inventoryItems = json_decode($distribution->inventory_items, true);
+            // //? decode - json of invetory_item fileds
+            // $distributions->transform(function ($distribution) {
+            //     $inventoryItems = json_decode($distribution->inventory_items, true);
 
-                if ($inventoryItems) {
-                    $inventoryItems = array_map(function ($item) {
-                        return [
-                            'sku' => $item['sku'],
-                            'quantity' => $item['quantity'],
-                        ];
-                    }, $inventoryItems);
-                }
+            //     if ($inventoryItems) {
+            //         $inventoryItems = array_map(function ($item) {
+            //             return [
+            //                 'sku' => $item['sku'],
+            //                 'quantity' => $item['quantity'],
+            //             ];
+            //         }, $inventoryItems);
+            //     }
 
-                $distribution->inventory_items = $inventoryItems;
-                return $distribution;
-            });
+            //     $distribution->inventory_items = $inventoryItems;
+            //     return $distribution;
+            // });
 
             // Get sorting parameters from the request
             $sortParams = $request->input('sort', []);
@@ -2266,7 +2281,7 @@ class DistributionController extends Controller
 
             $query = $request->input('query');
 
-            return Distribution::with(['itemType', 'createdForUser','inventory'])
+            return Distribution::with(['itemType', 'createdForUser'])
             ->where('is_deleted', 0)
                 //? fetch records - by query - can be type or order_number
                 ->where(function ($queryBuilder) use ($query) {
@@ -2295,7 +2310,7 @@ class DistributionController extends Controller
 
             $query = $request->input('query');
 
-            return Distribution::with(['itemType', 'createdForUser', 'inventory'])
+            return Distribution::with(['itemType', 'createdForUser'])
 
                 ->where('status', $request->input('status'))
 
@@ -2407,7 +2422,7 @@ class DistributionController extends Controller
 
 
             return $query
-                ->with(['itemType',  'createdForUser','inventory'])
+                ->with(['itemType',  'createdForUser'])
                 ->where('is_deleted',false)
                 ->get();
 

@@ -64,7 +64,7 @@
                 <th>סוג עובד</th>
                 <th>טלפון</th>
                 <th>מייל</th>
-                <th>כמות פריט</th>
+                <th>כמות פר פריט</th>
                 <th>כמות סה"כ</th>
                 <th>סוג פריט</th>
                 <th>הערות על הפריט</th>
@@ -74,6 +74,7 @@
                 <th>סטטוס</th>
                 <th>תאריך שינוי אחרון</th>
                 <th>מספר מק"ט</th>
+                <th>כמות פר מק"ט</th>
             </tr>
         </thead>
         <tbody>
@@ -98,7 +99,8 @@
                     <td>{{ $distribution->quartermaster_comment ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->getStatusTranslation() ?? 'לא קיים' }}</td>
                     <td>{{ $distribution->updated_at_date ?? 'לא קיים' }}</td>
-                    <td>{{ $distribution->inventory ? $distribution->inventory->sku : 'לא קיים' }}</td>
+                    <td>{{ $distribution->sku ?? 'לא קיים' }}</td>
+                    <td>{{ $distribution->quantity_per_inventory ?? 'לא קיים' }}</td>
                     {{-- <td>
                         @if (!empty($distribution->inventory_items))
                             <ul>
