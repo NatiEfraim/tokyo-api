@@ -46,7 +46,8 @@ class User extends Authenticatable
         'is_deleted',
         'created_at',
         'updated_at',
-        // 'emp_type_id',
+        'emp_type_id',
+        'department_id',
         'remember_token',
     ];
 

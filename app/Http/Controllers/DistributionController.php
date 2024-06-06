@@ -342,16 +342,17 @@ class DistributionController extends Controller
             // Create a new collection to store unique distributions by order_number
             $uniqueDistributions = collect();
 
-            // Create a set to track seen type_id
-            $seenItemType = [];
+            // Temporary storage to keep track of processed order_number and type_id combinations
+            $processedCombinations = [];
 
-            // Loop through the fetched distributions records
             foreach ($distributions as $distribution) {
-                // make sure the order_number has been seen before
-                if (!in_array($distribution->type_id, $seenItemType)) {
+                //? make sure not duplicate records 
+                $combinationKey = $distribution->order_number . '_' . $distribution->type_id;
+
+                if (!in_array($combinationKey, $processedCombinations)) {
                     $uniqueDistributions->push($distribution);
-                    // Mark this type_id as seen
-                    $seenItemType[] = $distribution->type_id;
+                    //? mark that key
+                    $processedCombinations[] = $combinationKey;
                 }
             }
 
@@ -1098,20 +1099,21 @@ class DistributionController extends Controller
 
 
                     if ($distributionRecord) {
+
+
+                        
                         $inventoryUpdates = []; // To store updated inventory items
 
+                        //? make sure sum of qty match with qty_total
+                        $allQuantity = array_sum(array_column($items['items'], 'quantity'));
 
+                        if ($allQuantity != $distributionRecord->quantity_per_item) {
+                            DB::rollBack(); // Rollback the transaction
+                            return response()->json(['message' => 'הכמות אינה תואמת לסך הכמות הנדרשת עבור פריט.'], Response::HTTP_OK);
+                        }
+                        
                         // Loop on each item within the type_id
                         foreach ($items['items'] as $inventoryItem) {
-
-
-                            
-                            $allQuantity = array_sum(array_column($inventoryItem, 'quantity'));
-
-                            if ($allQuantity != $distributionRecord->quantity_per_item) {
-                                DB::rollBack(); // Rollback the transaction
-                                return response()->json(['message' => 'הכמות אינה תואמת לסך הכמות הנדרשת עבור פריט.'], Response::HTTP_OK);
-                            }
 
                             $idInventory = $inventoryItem['inventory_id']; // Save the inventory_id records
                             $quantity = $inventoryItem['quantity'];//? qty per sku
