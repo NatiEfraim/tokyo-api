@@ -50,7 +50,7 @@ class DistributionFactory extends Factory
             'quartermaster_comment' => $this->faker->sentence, // Generate generate comment for quartermaster_comment
             'admin_comment' => $this->faker->sentence, // Generate generate comment for adamin
             'user_comment' => $this->faker->sentence, // Generate generate comment for user
-            'status' => $this->faker->numberBetween(0, 3),
+            'status' => $this->faker->numberBetween(1, 4),
             'type_id' => $randomType->id, //set relation
             'department_id' => $randomDepartemnt->id, //set relation
             'created_by' => $randomUser->id, //set relation

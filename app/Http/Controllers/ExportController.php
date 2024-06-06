@@ -317,7 +317,7 @@ class ExportController extends Controller
                 ->where('is_deleted', false)
                 ->orderBy('created_at', 'desc')
                 ->get()
-                    ->map(function ($inventory) {
+                    ->map(function ( $inventory) {
 
                     // Format the created_at and updated_at timestamps
                     $inventory->created_at_date = $inventory->created_at->format('d/m/Y');
@@ -710,7 +710,7 @@ class ExportController extends Controller
                 'sku' => 'nullable|string|max:255|exists:inventories,sku,is_deleted,0',
                 'inventory_id' => 'nullable|string|max:255|exists:inventories,id,is_deleted,0',
 
-                'status' => 'nullable|integer|between:0,2',
+                'status' => 'nullable|integer|between:1,4',
 
                 // 'name' => 'nullable|string|exists:departments,name,is_deleted,0',
                 'department_id' => 'nullable|string|exists:departments,id,is_deleted,0',
@@ -1107,7 +1107,7 @@ class ExportController extends Controller
                 'users.*' => 'required|exists:users,id,is_deleted,0',
 
                 
-                'status' => 'nullable|integer|between:0,2',
+                'status' => 'nullable|integer|between:1,4',
                 
                 'department_id' => 'nullable|string|exists:departments,id,is_deleted,0',
                 

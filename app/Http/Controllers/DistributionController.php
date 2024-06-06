@@ -270,7 +270,7 @@ class DistributionController extends Controller
 
                 'inventory_id' => 'nullable|string|max:255|exists:inventories,id,is_deleted,0',
 
-                'status' => 'nullable|integer|between:0,3',
+                'status' => 'nullable|integer|between:1,4',
 
                 'department_id' => 'nullable|string|exists:departments,id,is_deleted,0',
 
@@ -893,7 +893,7 @@ class DistributionController extends Controller
             //set the rules
             $rules = [
 
-                'status' => 'required|integer|between:1,2',
+                'status' => 'required|integer|between:2,3',
 
                 'admin_comment' => 'nullable|string|min:2|max:255',
 
@@ -924,7 +924,7 @@ class DistributionController extends Controller
             }
 
             if (is_null($request->input('inventory_items')) && $request->input('status') == DistributionStatus::APPROVED->value) {
-                return response()->json(['message' => 'חובה לשלוח סיבת ביטול.'], Response::HTTP_BAD_REQUEST);
+                return response()->json(['message' => 'יש להקצות פריטים.'], Response::HTTP_BAD_REQUEST);
             }
 
 
@@ -945,11 +945,10 @@ class DistributionController extends Controller
             $statusValue = (int) $request->input('status');
             $statusValue = match ($statusValue) {
 
-                DistributionStatus::APPROVED->value => 1,
+                DistributionStatus::APPROVED->value =>DistributionStatus::APPROVED->value,
 
-                DistributionStatus::CANCELD->value => 2,
+                DistributionStatus::CANCELD->value => DistributionStatus::CANCELD->value,
 
-                default => throw new \InvalidArgumentException('ערך סטטוס אינו תקין..'),
             };
 
 
@@ -1026,7 +1025,7 @@ class DistributionController extends Controller
                                 'type_comment' =>  $distributionRecord->type_comment ?? null,
                                 'total_quantity' => $distributionRecord->total_quantity,
                                 'quantity_per_item' =>$distributionRecord->quantity_per_item,
-                                'status' => $distributionRecord->status,
+                                'status' => DistributionStatus::APPROVED->value,
                                 'type_id' => $distributionRecord->type_id,
                                 'year' => $distributionRecord->year,
                                 'department_id' => $distributionRecord->department_id,
@@ -1037,9 +1036,9 @@ class DistributionController extends Controller
                             
                         }
 
-                        // Update the distribution record with the updated inventory items - to to set that deleted.
+                        // ? The admin has been approved - each records based on type_id - split to many records based on  sku
                         $distributionRecord->update([
-                            'status' => $statusValue,
+                            'status' => DistributionStatus::APPROVED->value,
                             'admin_comment' => $request->input('admin_comment'),
                             'inventory_items' => json_encode($inventoryUpdates), // Save the inventory items
                             'updated_at' => $currentTime,
@@ -1058,7 +1057,7 @@ class DistributionController extends Controller
                 //? Loop through each record and update the fields
                 foreach ($distributionRecords as $distributionRecord) {
                     $distributionRecord->update([
-                        'status' => $statusValue,
+                        'status' => DistributionStatus::CANCELD->value,
                         'admin_comment' => $request->input('admin_comment') ?? null,
                         'updated_at' => $currentTime,
                     ]);
@@ -1191,7 +1190,7 @@ class DistributionController extends Controller
             //set the rules
             $rules = [
 
-                'status' => 'required|integer|between:0,3',
+                'status' => 'required|integer|between:1,4',
                 'quartermaster_comment' => 'required|string|min:2|max:255',
                 'order_number' => 'required|integer|exists:distributions,order_number,is_deleted,0',
 
@@ -1206,9 +1205,6 @@ class DistributionController extends Controller
             }
 
 
-            if ($request->input('status')!==DistributionStatus::PENDING->value && $request->input('status')!==DistributionStatus::COLLECTED->value) {
-                return response()->json(['message' => 'ערך סטטוס אינו תקין.'], Response::HTTP_BAD_REQUEST);
-            }
 
             if (is_null($request->input('quartermaster_comment')) && $request->input('status')==DistributionStatus::PENDING->value) {
                 return response()->json(['message' => 'יש לשלוח הערה על ההזמנה למנהל.'], Response::HTTP_BAD_REQUEST);
@@ -1228,13 +1224,15 @@ class DistributionController extends Controller
 
             $statusValue = (int) $request->input('status');
             $statusValue = match ($statusValue) {
-                DistributionStatus::PENDING->value => 0,
-                DistributionStatus::COLLECTED->value => 3,
+                DistributionStatus::PENDING->value => DistributionStatus::PENDING->value,
+                DistributionStatus::COLLECTED->value =>DistributionStatus::COLLECTED->value,
 
-                default => throw new \InvalidArgumentException('ערך סטטוס אינו תקין..'),
+                default => DistributionStatus::INVALID->value,
             };
 
-
+            if ($statusValue == DistributionStatus::INVALID->value) {
+                return response()->json(['message' => 'ערך סטטוס אינו תקין.'], Response::HTTP_BAD_REQUEST);
+            }
 
             $currentTime = Carbon::now()->toDateTimeString();
 
@@ -1904,7 +1902,7 @@ class DistributionController extends Controller
 
                 // 'inventory_id' => 'nullable|string|max:255|exists:inventories,id,is_deleted,0',
 
-                'status' => 'nullable|integer|between:0,3',
+                'status' => 'nullable|integer|between:1,4',
 
                 'department_id' => 'nullable|string|exists:departments,id,is_deleted,0',
 
@@ -2225,6 +2223,19 @@ class DistributionController extends Controller
 
             $query = Distribution::query();
 
+            $inputStatus= $request->input('status');
+
+    
+            
+            // Search by status
+            if (
+                $inputStatus == DistributionStatus::PENDING->value
+                || $inputStatus == DistributionStatus::CANCELD->value
+                || $inputStatus == DistributionStatus::APPROVED->value
+                || $inputStatus == DistributionStatus::COLLECTED->value
+            ) {
+                $query->where('status', $request->input('status'));
+            }
 
             // Search by order_number
             if ($request->has('order_number') && empty($request->input('order_number'))==false) {
@@ -2232,10 +2243,6 @@ class DistributionController extends Controller
             }
 
 
-            // Search by status
-            if ($request->has('status')) {
-                $query->where('status', $request->input('status'));
-            }
 
             //? fetch by department
             if ($request->has('department_id') && empty($request->input('department_id')) == false) {
@@ -2265,6 +2272,7 @@ class DistributionController extends Controller
                 $query->whereDate('updated_at', $request->updated_at);
             }
 
+    
 
 
             return $query
