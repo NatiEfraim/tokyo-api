@@ -82,6 +82,10 @@ Route::controller(DistributionController::class)
 
         Route::get('/', 'index');
 
+        
+        //?fetch  history records - group by type_id fileds 
+        Route::get('/fetch-history', 'fetchRecordsBuType')->middleware(['role:admin|user']);
+
         //?search distributions records based on one query - only be type_id or order_number
         Route::get('/search-by-query', 'getRecordsByQuery');
 
@@ -94,7 +98,7 @@ Route::controller(DistributionController::class)
         //? fetch based on only order_number fileds - and group_by (given query is optional)
         Route::get('/fetch-records-by-order', 'fetchDistributionsRecordsByOrderNumber');
 
-        //? route for quartermaster - fetch all distributions records - only records apporved and invetories
+        //? route for quartermaster - fetch records - based on order_number. 
         Route::get('/fetch-approved', 'fetchApprovedDistribution')->middleware(['role:admin|quartermaster']);
 
         //?sort & fetch by quering
@@ -102,6 +106,7 @@ Route::controller(DistributionController::class)
 
 
         Route::get('/{id?}', 'getRecordById');
+        
         //? fetch quartermaster associated to the records 
         Route::get('/fetch-quartermaster/{id?}', 'fetchQuartermaster');
 
