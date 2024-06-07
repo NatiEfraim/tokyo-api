@@ -786,7 +786,7 @@ class DistributionController extends Controller
                 $orderNumber = random_int(1000000, 9999999); // Generates a random integer between 1000000 and 9999999
             } while ($existingOrderNumbersQuery->contains($orderNumber));
 
-            $orderNumber = (int)$orderNumber; // Cast to integer
+            // $orderNumber = (int)$orderNumber; // Cast to integer
 
 
             // Get the current year
@@ -803,17 +803,19 @@ class DistributionController extends Controller
 
 
                 Distribution::create([
-                    'order_number' => intval($orderNumber),
+                    'order_number' => (string)$orderNumber,
                     'user_comment' => $request->input('user_comment') ?? null,
                     'type_comment' => $comment??null,
                     'total_quantity' => $allQuantity,//? all qty per order_number
                     'quantity_per_item' => $quantity,//? qty per item_type selcted
                     'status' => DistributionStatus::PENDING->value,
                     'type_id' => $itemType,
-                    'year' => $currentYear,
-                    'department_id' => $request->input('department_id'),
                     'created_by' => $user_auth->id,
                     'created_for' => $client->id,
+
+
+                    // 'department_id' => $request->input('department_id'),
+                    // 'year' => $currentYear,
                 ]);
             }
 
@@ -1102,7 +1104,7 @@ class DistributionController extends Controller
 
 
                         
-                        $inventoryUpdates = []; // To store updated inventory items
+                        // $inventoryUpdates = []; // To store updated inventory items
 
                         //? make sure sum of qty match with qty_total
                         $allQuantity = array_sum(array_column($items['items'], 'quantity'));
@@ -1143,11 +1145,11 @@ class DistributionController extends Controller
                                 'updated_at' => $currentTime,
                             ]);
 
-                            // Add to the list of inventory updates
-                            $inventoryUpdates[] = [
-                                'sku' => $inventory->sku,//save sku
-                                'quantity' => $quantity,//save qty
-                            ];
+                            // // Add to the list of inventory updates
+                            // $inventoryUpdates[] = [
+                            //     'sku' => $inventory->sku,//save sku
+                            //     'quantity' => $quantity,//save qty
+                            // ];
 
                             //? create a new records per each inveotry records.
                             Distribution::create([
@@ -1159,14 +1161,15 @@ class DistributionController extends Controller
                                 'quantity_per_item' =>$distributionRecord->quantity_per_item,
                                 'status' => DistributionStatus::APPROVED->value,
                                 'type_id' => $distributionRecord->type_id,
-                                'year' => $distributionRecord->year,
                                 'created_by' => $distributionRecord->created_by,
                                 'created_for' => $distributionRecord->created_for,
                                 'quantity_per_inventory' =>  $quantity, //set qty per invetory
                                 'sku' => $inventory->sku, //set relations
-                                
                                 'inventory_id' => $inventory->id, //set relations
-                                'department_id' => $distributionRecord->department_id,
+                                'admin_comment' => $request->input('admin_comment') ?? null,
+
+                                // 'year' => $distributionRecord->year,
+                                // 'department_id' => $distributionRecord->department_id,
                             ]);
                             
                         }

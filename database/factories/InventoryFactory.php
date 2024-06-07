@@ -21,8 +21,8 @@ class InventoryFactory extends Factory
             //
             'quantity' => $this->faker->numberBetween(80, 100),
             'reserved' => $this->faker->numberBetween(20,50),
-            'sku' => $this->faker->unique()->ean13,
-            // 'item_type' => $this->faker->word,
+            // 'sku' => $this->faker->unique()->ean13,
+            'sku' => (string) $this->faker->unique()->numberBetween(1000000, 9999999),
             'type_id' => ItemType::inRandomOrder()->first()->id,
             'detailed_description' => $this->faker->text,
             'is_deleted' => false,

@@ -36,31 +36,33 @@ class DistributionFactory extends Factory
 
         $randomInventory = Inventory::inRandomOrder()->first();
         $randomType = ItemType::inRandomOrder()->first();
-        $randomDepartemnt = Department::inRandomOrder()->first();
+        // $randomDepartemnt = Department::inRandomOrder()->first();
         $randomUser = User::inRandomOrder()->first();
-        $randomUserId = User::inRandomOrder()->first()->id;
+        $randomUser = User::inRandomOrder()->first();
         $randomClient = Client::inRandomOrder()->first();
 
         return [
             //
 
-            'order_number' => $this->faker->unique()->numberBetween(1000000, 9999999),
-            'year' => $this->faker->year,
+            'order_number' => (string) $this->faker->unique()->numberBetween(1000000, 9999999),
             'type_comment' => $this->faker->sentence, // Generate inventory comment
             'quartermaster_comment' => $this->faker->sentence, // Generate generate comment for quartermaster_comment
             'admin_comment' => $this->faker->sentence, // Generate generate comment for adamin
             'user_comment' => $this->faker->sentence, // Generate generate comment for user
             'status' => $this->faker->numberBetween(1, 4),
             'type_id' => $randomType->id, //set relation
-            'department_id' => $randomDepartemnt->id, //set relation
             'created_by' => $randomUser->id, //set relation
             'created_for' =>  $randomClient->id, //set relation
-            'quartermaster_id' =>$randomUserId, //set relation
+            'quartermaster_id' =>$randomUser->id, //set relation
             'quantity_per_item' => $this->faker->numberBetween(1, 100), // Generate quantity per item
             'total_quantity' => $this->faker->numberBetween(1, 100), // Generate total quantity
             'quantity_per_inventory' => $this->faker->numberBetween(1, 100), // Generate quantity per invetory
-            'inventory_id' => $randomInventory->id, //set relation
             'sku' => $randomInventory->sku, //set relation
+            'inventory_id' => $randomInventory->id, //set relation
+            
+            
+            // 'department_id' => $randomDepartemnt->id, //set relation
+            // 'year' => $this->faker->year,
         ];
     }
 }

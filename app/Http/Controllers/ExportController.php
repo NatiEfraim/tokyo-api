@@ -724,7 +724,7 @@ class ExportController extends Controller
                 $sheet->setCellValue('Q' . $row, $distribution->getStatusTranslation() ?? 'לא קיים');
                 $sheet->setCellValue('R' . $row, $distribution->updated_at_date ?? 'לא קיים');
                 $sheet->setCellValue('S' . $row, $distribution->sku ?? 'לא קיים');
-                $sheet->setCellValue('S' . $row, $distribution->quantity_per_inventory ??  'לא קיים');
+                $sheet->setCellValue('T' . $row, $distribution->quantity_per_inventory ??  'לא קיים');
 
                 $row++;
             }

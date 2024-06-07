@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\DistributionStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -32,11 +33,11 @@ class Distribution extends Model
         'is_deleted',
         'created_at',
         'updated_at',
+        'inventory_id',
 
         //! need to remove
         'year',
         'inventory_items',
-        'inventory_id',
         'department_id',
     ];
 
@@ -46,21 +47,23 @@ class Distribution extends Model
      * @var array
      */
     protected $hidden = [
-        //! need to remove
-        'inventory_id',
-        'department_id',
-
-
         
+        
+        'type_id',
         'created_by',
         'created_for',
         'quartermaster_id',
-
+        
         'is_deleted',
         'created_at',
-        'updated_at'
-    ];
+        'updated_at',
+        'inventory_id',
 
+
+        //! need to remove
+        'department_id',
+    ];
+    
 
     /**
      * Get the depratment record associated with the distribution.
@@ -119,10 +122,10 @@ class Distribution extends Model
     public function getStatusTranslation()
     {
         $translations = [
-            0 => 'ממתין למשיכה',
-            1 =>  'אושר',
-            2 => 'בוטל',
-            3 => 'נאסף',
+            DistributionStatus::PENDING->value => 'ממתין למשיכה',
+            DistributionStatus::APPROVED->value =>  'אושר',
+            DistributionStatus::CANCELD->value => 'בוטל',
+            DistributionStatus::COLLECTED->value => 'נאסף',
         ];
 
         return $translations[$this->status] ?? 'לא מוגדר';
