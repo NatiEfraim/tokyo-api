@@ -308,30 +308,91 @@ class DistributionController extends Controller
      */
 
     // ? fetch all records - based on role of user
-    public function fetchRecordsByType()
+    public function fetchRecordsByType(Request $request)
     {
         try {
 
-            // $user_auth = Auth::user();
+            // set custom error messages in Hebrew
+            $customMessages = [
+                'query.required' => 'יש לשלוח שדה לחיפוש',
+                'query.string' => 'ערך השדה שנשלח אינו תקין.',
+            ];
+            //set the rules
+
+            $rules = [
+                'query' => 'required|string',
+            ];
+
+            // validate the request data
+            $validator = Validator::make($request->all(), $rules, $customMessages);
+
+            // Check if validation fails
+            if ($validator->fails()) {
+                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+
+
+
 
             $user_auth = auth()->user();
             $roleName=$user_auth->roles->first()->name;
 
+            $query = $request->input('query');
 
-            if ($roleName=='admin') {
-                //? fetch all records
-                $distributions = Distribution::with(['itemType', 'createdForUser'])
-                    ->where('is_deleted', 0)
-                    ->orderBy('created_at', 'desc')
-                    ->paginate(20);
-            }else{
-                //? fetch records based on created_by
-                $distributions = Distribution::with(['itemType', 'createdForUser'])
-                    ->where('created_by', $user_auth->id)
-                    ->where('is_deleted', 0)
-                    ->orderBy('created_at', 'desc')
-                    ->paginate(20);
+            // Build the base query
+            $baseQuery = Distribution::with(['itemType', 'createdForUser'])
+            ->where('is_deleted', 0)
+            ->orderBy('created_at', 'desc');
+
+            // Add role-based filtering
+            if ($roleName != 'admin') {
+                $baseQuery->where('created_by', $user_auth->id);
             }
+
+            // Add search query filtering if provided
+            if (!empty($query)) {
+                $baseQuery->where(function ($queryBuilder) use ($query) {
+
+
+                    // Search by item_type type field
+                    $queryBuilder->orWhereHas('itemType', function ($itemTypeQuery) use ($query) {
+                        $itemTypeQuery->where('type', 'like', "%$query%");
+                    });
+
+                    // Search by personal number
+                    $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
+                        $userQuery->where('personal_number', 'like', "%$query%");
+                    });
+
+                    
+                    // Search by full name
+                    $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
+                        $userQuery->where('name', 'like', "%$query%");
+                    });
+                    // // Search by order number
+                    // $queryBuilder->orWhere('order_number', 'like', "%$query%");
+                });
+            }
+
+            // Execute the query and paginate the results
+            $distributions = $baseQuery->paginate(20);
+
+
+            // if ($roleName=='admin') {
+            //     //? fetch all records
+            //     $distributions = Distribution::with(['itemType', 'createdForUser'])
+            //         ->where('is_deleted', 0)
+            //         ->orderBy('created_at', 'desc')
+            //         ->paginate(20);
+            // }else{
+            //     //? fetch records based on created_by
+            //     $distributions = Distribution::with(['itemType', 'createdForUser'])
+            //         ->where('created_by', $user_auth->id)
+            //         ->where('is_deleted', 0)
+            //         ->orderBy('created_at', 'desc')
+            //         ->paginate(20);
+            // }
             
 
 
@@ -812,7 +873,7 @@ class DistributionController extends Controller
                     'total_quantity' => $allQuantity,//? all qty per order_number
                     'quantity_per_item' => $quantity,//? qty per item_type selcted
                     'status' => DistributionStatus::PENDING->value,
-                    // 'type_id' => $itemType,
+                    'type_id' => $itemType,
                     'created_by' => $user_auth->id,
                     'created_for' => $client->id,
 
@@ -1380,15 +1441,54 @@ class DistributionController extends Controller
 
             $currentTime = Carbon::now()->toDateTimeString();
 
-            // Loop through each record and update the fields
-            foreach ($distributionRecords as $distributionRecord) {
-                $distributionRecord->update([
-                'status' => $statusValue,
-                'quartermaster_id' => $user->id,///save the user that sign on that order_number
-                'quartermaster_comment' => $request->input('quartermaster_comment')?? 'אין הערות אפסנאי.',//can be a comment or Reference Number
-                'updated_at' => $currentTime,
-            ]);
-    }
+            if($statusValue==   DistributionStatus::COLLECTED->value)
+            {
+                // Loop through each record and update the fields as collected items
+                foreach ($distributionRecords as $distributionRecord) {
+                    $distributionRecord->update([
+                    'status' =>  DistributionStatus::COLLECTED->value,
+                    'quartermaster_id' => $user->id,///save the user that sign on that order_number
+                    'quartermaster_comment' => $request->input('quartermaster_comment')?? 'אין הערות אפסנאי.',//can be a comment or Reference Number
+                    'updated_at' => $currentTime,
+                    ]);
+                }
+
+
+            }else{
+                // Collection to store unique distributions by type_id
+                $uniqueDistributions = collect();
+
+                // Loop through the fetched records and ensure unique type_id
+                foreach ($distributionRecords as $distribution) {
+                    $typeId = $distribution->type_id;
+
+                    if (!$uniqueDistributions->contains('type_id', $distribution->type_id)) {
+                        // Clone the original record to create a new unique record
+                        // $newDistribution = $distribution->replicate();
+                        // $newDistribution->save();
+                       $newDistribution= Distribution::create([
+                            'order_number' => $distribution->order_number,
+                            'user_comment' =>  $distribution->user_comment ?? 'אין הערות על ההזמנה.',
+                            'type_comment' => $distribution->type_comment ?? 'אין הערות על הפריט.',
+                            'total_quantity' => $distribution->total_quantity, //? all qty per order_number
+                            'quantity_per_item' => $distribution->quantity_per_item, //? qty per item_type selcted
+                            'status' => DistributionStatus::PENDING->value,///back to admin.
+                            'type_id' => $distribution->type_id,
+                            'created_by' => $distribution->created_by,
+                            'created_for' => $distribution->created_for,
+                            'quantity_per_inventory'=> 0,
+                            'sku' => null,
+                            'quartermaster_comment' =>  $request->input('quartermaster_comment') ?? 'אין הערות אפסנאי.',
+                            'admin_comment' =>$distribution->admin_comment ?? 'אין הערות מנהל.',
+
+                        ]);
+                        // Add the type_id to the unique collection
+                        $uniqueDistributions->push($newDistribution);
+                    }
+                    $distribution->delete();///remove from the database
+      
+                }
+            }
 
 
             return response()->json(['message' => 'שורה התעדכנה בהצלחה.'], Response::HTTP_OK);
