@@ -38,6 +38,11 @@ class StoreDistributionRequest extends FormRequest
 
             'user_comment' => 'nullable|string|min:2|max:255',
 
+
+            //?in case admin or quartermaster wants to make an order
+            'admin_comment' => 'nullable|string|min:2|max:255',
+            'quartermaster_comment' => 'nullable|string|min:2|max:255',
+
             'department_id' => 'required|exists:departments,id,is_deleted,0',
 
 
@@ -82,12 +87,17 @@ class StoreDistributionRequest extends FormRequest
             'employee_type.exists' => 'סוג העובד אינו קיים במערכת',
 
 
-            //? items comments
-            // 'general_comment.required' => 'שדה ההערה הוא חובה.',
-
             'user_comment.string' => 'שדה הערה כללית אינה תקינה.',
             'user_comment.min' => 'שדה הערה כללית אינה תקינה.',
             'user_comment.max' => 'שדה הערה כללית אינה תקינה.',
+
+            'quartermaster_comment.string' => 'שדה הערה כללית אינה תקינה.',
+            'quartermaster_comment.min' => 'שדה הערה כללית אינה תקינה.',
+            'quartermaster_comment.max' => 'שדה הערה כללית אינה תקינה.',
+
+            'admin_comment.string' => 'שדה הערה כללית אינה תקינה.',
+            'admin_comment.min' => 'שדה הערה כללית אינה תקינה.',
+            'admin_comment.max' => 'שדה הערה כללית אינה תקינה.',
 
             'status.between' => 'שדה הסטטוס אינו תקין.',
 

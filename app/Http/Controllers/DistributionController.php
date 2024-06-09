@@ -804,8 +804,8 @@ class DistributionController extends Controller
 
                 Distribution::create([
                     'order_number' => (string)$orderNumber,
-                    'user_comment' => $request->input('user_comment') ?? null,
-                    'type_comment' => $comment??null,
+                    'user_comment' => $request->input('user_comment') ?? 'אין הערות על ההזמנה.',
+                    'type_comment' => $comment?? 'אין הערות על הפריט.',
                     'total_quantity' => $allQuantity,//? all qty per order_number
                     'quantity_per_item' => $quantity,//? qty per item_type selcted
                     'status' => DistributionStatus::PENDING->value,
@@ -813,6 +813,9 @@ class DistributionController extends Controller
                     'created_by' => $user_auth->id,
                     'created_for' => $client->id,
 
+                    'sku' => 'לא הוקצה פריט.',
+                    'quartermaster_comment' =>  $request->input('quartermaster_comment') ?? 'אין הערות אפסנאי.',
+                    'admin_comment' => $request->input('admin_comment') ?? 'אין הערות מנהל.',
 
                     // 'department_id' => $request->input('department_id'),
                     // 'year' => $currentYear,
@@ -1166,7 +1169,8 @@ class DistributionController extends Controller
                                 'quantity_per_inventory' =>  $quantity, //set qty per invetory
                                 'sku' => $inventory->sku, //set relations
                                 'inventory_id' => $inventory->id, //set relations
-                                'admin_comment' => $request->input('admin_comment') ?? null,
+                                'admin_comment' => $request->input('admin_comment') ?? 'אין הערות מנהל.',
+                                'quartermaster_comment' => $request->input('quartermaster_comment') ?? 'אין הערות אפסנאי.',
 
                                 // 'year' => $distributionRecord->year,
                                 // 'department_id' => $distributionRecord->department_id,
@@ -1199,7 +1203,9 @@ class DistributionController extends Controller
                 foreach ($distributionRecords as $distributionRecord) {
                     $distributionRecord->update([
                         'status' => DistributionStatus::CANCELD->value,
-                        'admin_comment' => $request->input('admin_comment') ?? null,
+                        'sku' => 'לא הוקצה פריט.',
+                        'admin_comment' => $request->input('admin_comment') ?? 'אין הערות מנהל.',
+                        'quartermaster_comment' => $request->input('quartermaster_comment') ?? 'אין הערות אפסנאי.',
                         'updated_at' => $currentTime,
                     ]);
 
@@ -1382,7 +1388,7 @@ class DistributionController extends Controller
                 $distributionRecord->update([
                 'status' => $statusValue,
                 'quartermaster_id' => $user->id,///save the user that sign on that order_number
-                'quartermaster_comment' => $request->input('quartermaster_comment'),//can be a comment or Reference Number
+                'quartermaster_comment' => $request->input('quartermaster_comment')?? 'אין הערות אפסנאי.',//can be a comment or Reference Number
                 'updated_at' => $currentTime,
             ]);
     }
