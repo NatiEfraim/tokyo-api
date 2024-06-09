@@ -19,6 +19,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
+use App\Mail\DistributionSuccess;
+// use App\Mail\DistributionFailure;
+use Illuminate\Support\Facades\Mail;
+
 // use Illuminate\Validation\Rule;
 // use Illuminate\Support\Str;
 // use App\Models\Department;
@@ -786,7 +790,6 @@ class DistributionController extends Controller
                 $orderNumber = random_int(1000000, 9999999); // Generates a random integer between 1000000 and 9999999
             } while ($existingOrderNumbersQuery->contains($orderNumber));
 
-            // $orderNumber = (int)$orderNumber; // Cast to integer
 
 
             // Get the current year
@@ -817,12 +820,14 @@ class DistributionController extends Controller
                     'quartermaster_comment' =>  $request->input('quartermaster_comment') ?? 'אין הערות אפסנאי.',
                     'admin_comment' => $request->input('admin_comment') ?? 'אין הערות מנהל.',
 
-                    // 'department_id' => $request->input('department_id'),
-                    // 'year' => $currentYear,
                 ]);
             }
 
+            $orderNumber = (int)$orderNumber; // Cast to integer
 
+
+            // Send success email
+            Mail::to($user_auth->email)->send(new DistributionSuccess($user_auth, $client, $orderNumber));
 
             DB::commit();
 
@@ -1148,11 +1153,7 @@ class DistributionController extends Controller
                                 'updated_at' => $currentTime,
                             ]);
 
-                            // // Add to the list of inventory updates
-                            // $inventoryUpdates[] = [
-                            //     'sku' => $inventory->sku,//save sku
-                            //     'quantity' => $quantity,//save qty
-                            // ];
+
 
                             //? create a new records per each inveotry records.
                             Distribution::create([
@@ -1172,20 +1173,12 @@ class DistributionController extends Controller
                                 'admin_comment' => $request->input('admin_comment') ?? 'אין הערות מנהל.',
                                 'quartermaster_comment' => $request->input('quartermaster_comment') ?? 'אין הערות אפסנאי.',
 
-                                // 'year' => $distributionRecord->year,
-                                // 'department_id' => $distributionRecord->department_id,
+
                             ]);
                             
                         }
 
-                        // // ? The admin has been approved - each records based on type_id - split to many records based on  sku
-                        // $distributionRecord->update([
-                        //     'status' => DistributionStatus::APPROVED->value,
-                        //     'admin_comment' => $request->input('admin_comment'),
-                        //     'inventory_items' => json_encode($inventoryUpdates), // Save the inventory items
-                        //     'updated_at' => $currentTime,
-                        //     'is_deleted'=>1,
-                        // ]);
+
 
                         //? deleted records (copy records - as time as admin selcted sku)
                         $distributionRecord->delete();
