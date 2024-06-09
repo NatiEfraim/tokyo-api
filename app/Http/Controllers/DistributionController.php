@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 use App\Mail\DistributionSuccess;
-// use App\Mail\DistributionFailure;
+use App\Mail\DistributionFailure;
 use Illuminate\Support\Facades\Mail;
 
 // use Illuminate\Validation\Rule;
@@ -812,7 +812,7 @@ class DistributionController extends Controller
                     'total_quantity' => $allQuantity,//? all qty per order_number
                     'quantity_per_item' => $quantity,//? qty per item_type selcted
                     'status' => DistributionStatus::PENDING->value,
-                    'type_id' => $itemType,
+                    // 'type_id' => $itemType,
                     'created_by' => $user_auth->id,
                     'created_for' => $client->id,
 
@@ -837,6 +837,10 @@ class DistributionController extends Controller
             DB::rollBack(); // Rollback the transaction in case of any error
             Log::error($e->getMessage());
         }
+
+
+        // Send failure email
+        Mail::to($user_auth->email)->send(new DistributionFailure($user_auth));
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
