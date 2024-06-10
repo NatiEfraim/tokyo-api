@@ -221,6 +221,16 @@ class InventoryController extends Controller
             ->orderBy('id', 'asc')
                 ->get();
 
+            if(is_null($invetoriesRecords)==false)
+            {
+                $invetoriesRecords->each(function ($inventory) {
+    
+                    $inventory->available = $inventory->quantity - $inventory->reserved;
+                });
+
+            }
+
+
             return response()->json($invetoriesRecords->isEmpty()? []: $invetoriesRecords, Response::HTTP_OK);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
