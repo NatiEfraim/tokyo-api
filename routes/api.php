@@ -119,9 +119,6 @@ Route::controller(DistributionController::class)
         //?route for quartermaster - to sign for collected or back to liran
         Route::put('/changed-status', 'changeStatus')->middleware(['role:admin|quartermaster']);
 
-
-        Route::delete('/mass-destroy', 'massDestroy')->middleware(['role:admin']);
-
         Route::delete('/{id?}', 'destroy')->middleware(['role:admin']);
     });
 
