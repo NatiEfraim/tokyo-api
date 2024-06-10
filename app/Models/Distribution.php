@@ -34,6 +34,7 @@ class Distribution extends Model
         'created_at',
         'updated_at',
         'inventory_id',
+        'quantity_approved',
 
         //! need to remove
         'year',

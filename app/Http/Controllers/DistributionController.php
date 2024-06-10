@@ -384,8 +384,8 @@ class DistributionController extends Controller
 
             $distributions->each(function ($distribution) {
                 // Format the created_at and updated_at timestamps
-                $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
-                $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+                $distribution->created_at_date = optional($distribution->created_at)->format('d/m/Y');
+                $distribution->updated_at_date = optional($distribution->updated_at)->format('d/m/Y');
 
                 return $distribution;
             });
@@ -503,7 +503,7 @@ class DistributionController extends Controller
 
             // set validation rules
             $rules = [
-                'order_number' => 'nullable|string|exists:distributions,order_number,is_deleted,0',
+                'order_number' => 'required|string|exists:distributions,order_number,is_deleted,0',
             ];
 
             // Define custom error messages
@@ -532,8 +532,8 @@ class DistributionController extends Controller
             // Loop through each record and add inventory_items object
             $distributions->transform(function ($distribution) {
                 //?format each date.
-                $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
-                $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+                $distribution->created_at_date = optional($distribution->created_at)->format('d/m/Y');
+                $distribution->updated_at_date = optional($distribution->updated_at)->format('d/m/Y');
 
             return $distribution;
         });
@@ -1001,7 +1001,6 @@ class DistributionController extends Controller
             ];
 
 
-
             // validate the request data
             $validator = Validator::make($request->all(), $rules, $customMessages);
 
@@ -1017,7 +1016,6 @@ class DistributionController extends Controller
             if (is_null($request->input('inventory_items')) && $request->input('status') == DistributionStatus::APPROVED->value) {
                 return response()->json(['message' => 'יש להקצות פריטים.'], Response::HTTP_BAD_REQUEST);
             }
-
 
 
             // Fetch the records with the given order_number and is_deleted is false
@@ -1040,27 +1038,14 @@ class DistributionController extends Controller
                 return response()->json(['message' => 'לא נמצאו רשומות עם מספר הזמנה זה במערכת.'], Response::HTTP_BAD_REQUEST);
             }
 
-
-            $statusValue = (int) $request->input('status');
-            $statusValue = match ($statusValue) {
-
-                DistributionStatus::APPROVED->value =>DistributionStatus::APPROVED->value,
-
-                DistributionStatus::CANCELD->value => DistributionStatus::CANCELD->value,
-
-            };
-
-
-            $currentTime = Carbon::now()->toDateTimeString();
-
             DB::beginTransaction(); // Start a database transaction
 
             //? distribution records has been approved
+            // Track processed type_ids
+            $processedTypeIds = [];
 
-            if ($statusValue == DistributionStatus::APPROVED->value) {
+            if ($request->input('status') === DistributionStatus::APPROVED->value) {
 
-                // Track processed type_ids
-                $processedTypeIds = [];
                 // Loop through each type_id in the request
                 foreach ($request->input('inventory_items') as $key => $items) {
 
@@ -1069,7 +1054,8 @@ class DistributionController extends Controller
                     if (in_array($items['type_id'], $processedTypeIds)) {
                         continue;
                     }
-
+                    // Mark this type_id as processed
+                    $processedTypeIds[] = $items['type_id'];
 
                     // Find the first distribution record with the matching type_id that has not been processed
                     $distributionRecord = $distributionRecords->firstWhere('type_id', $items['type_id']);
@@ -1079,15 +1065,10 @@ class DistributionController extends Controller
 
 
                         
-                        // $inventoryUpdates = []; // To store updated inventory items
 
-                        // //? make sure sum of qty match with qty_total
-                        // $allQuantity = array_sum(array_column($items['items'], 'quantity'));
+                        // //? make sure sum of qty match with qty_total that admin allocated
+                        $allQuantity = array_sum(array_column($items['items'], 'quantity'));
 
-                        // if ($allQuantity != $distributionRecord->quantity_per_item) {
-                        //     DB::rollBack(); // Rollback the transaction
-                        //     return response()->json(['message' => 'הכמות אינה תואמת לסך הכמות הנדרשת עבור פריט.'], Response::HTTP_OK);
-                        // }
                         
                         // Loop on each item within the type_id
                         foreach ($items['items'] as $inventoryItem) {
@@ -1117,7 +1098,6 @@ class DistributionController extends Controller
                             // Update inventory records based on inventory_id
                             $inventory->update([
                                 'reserved' => $inventory->reserved + $quantity, // Increase the reserved
-                                'updated_at' => $currentTime,
                             ]);
 
 
@@ -1135,6 +1115,7 @@ class DistributionController extends Controller
                                 'created_by' => $distributionRecord->created_by,
                                 'created_for' => $distributionRecord->created_for,
                                 'quantity_per_inventory' =>  $quantity, //set qty per invetory
+                                'quantity_approved' =>    $allQuantity, //sum-up of qty that approved by admin.
                                 'sku' => $inventory->sku, //set relations
                                 'inventory_id' => $inventory->id, //set relations
                                 'admin_comment' => $request->input('admin_comment') ?? 'אין הערות מנהל.',
@@ -1144,14 +1125,10 @@ class DistributionController extends Controller
                             ]);
                             
                         }
-
-
-
                         //? deleted records (copy records - as time as admin selcted sku)
                         $distributionRecord->delete();
                         
-                        // Mark this type_id as processed
-                        $processedTypeIds[] = $items['type_id'];
+
                     }
                 }
 
@@ -1163,7 +1140,7 @@ class DistributionController extends Controller
 
 
                 //? distribution records has been canceld
-            } elseif ($statusValue == DistributionStatus::CANCELD->value) {
+            } elseif ($request->input('status') === DistributionStatus::CANCELD->value) {
 
                 //? Loop through each record and update the fields
                 foreach ($distributionRecords as $distributionRecord) {
@@ -1172,7 +1149,6 @@ class DistributionController extends Controller
                         'sku' => 'לא הוקצה פריט.',
                         'admin_comment' => $request->input('admin_comment') ?? 'אין הערות מנהל.',
                         'quartermaster_comment' => $request->input('quartermaster_comment') ?? 'אין הערות אפסנאי.',
-                        'updated_at' => $currentTime,
                     ]);
 
 
@@ -1183,6 +1159,16 @@ class DistributionController extends Controller
 
         }
 
+            ///rest of the records -that now has been approved
+            foreach ($distributionRecords as $record) {
+                if (!in_array($record->type_id, $processedTypeIds)) {
+                    $record->update([
+                        'status' => DistributionStatus::CANCELD->value,
+                    ]);
+                    // $record->status = 3; // Update status to 3
+                    // $record->save(); // Save the updated record
+                }
+            }
 
             DB::commit(); // commit all changes in database.
 
@@ -1775,8 +1761,8 @@ class DistributionController extends Controller
 
             $distributions->each(function ($distribution) {
                 // Format the created_at and updated_at timestamps
-                $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
-                $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+                $distribution->created_at_date = optional($distribution->created_at)->format('d/m/Y');
+                $distribution->updated_at_date = optional($distribution->updated_at)->format('d/m/Y');
 
                 return $distribution;
             });

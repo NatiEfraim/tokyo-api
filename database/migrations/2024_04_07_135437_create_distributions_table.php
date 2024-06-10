@@ -25,6 +25,7 @@ return new class extends Migration
             $table->longText('quartermaster_comment')->nullable();
             $table->string('sku')->nullable();
             $table->integer('quantity_per_inventory')->default(0); 
+            $table->integer('quantity_approved')->default(0); 
             $table->foreignId('type_id');
             $table->foreignId('created_by');
             $table->foreignId('quartermaster_id')->nullable();
