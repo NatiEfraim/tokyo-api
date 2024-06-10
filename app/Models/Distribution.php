@@ -58,7 +58,7 @@ class Distribution extends Model
         'is_deleted',
         'created_at',
         'updated_at',
-        'inventory_id',
+        // 'inventory_id',
 
 
         //! need to remove

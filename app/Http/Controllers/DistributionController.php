@@ -1316,15 +1316,16 @@ class DistributionController extends Controller
 
             // Fetch the records with the given order_number and is_deleted is false
             $distributionRecords = Distribution::where('order_number', $request->input('order_number'))
+                ->where('status',DistributionStatus::APPROVED->value)
                 ->where('is_deleted', false)
                 ->get();
-
 
             // Check if records exist
             if ($distributionRecords->isEmpty()) {
                 return response()->json(['message' => 'לא נמצאו רשומות עם מספר הזמנה זה במערכת.'], Response::HTTP_BAD_REQUEST);
             }
 
+            
             $statusValue = (int) $request->input('status');
             $statusValue = match ($statusValue) {
                 DistributionStatus::PENDING->value => DistributionStatus::PENDING->value,
@@ -1339,15 +1340,34 @@ class DistributionController extends Controller
 
             $currentTime = Carbon::now()->toDateTimeString();
 
+            DB::beginTransaction(); // Start a database transaction
+
+
             if($statusValue==   DistributionStatus::COLLECTED->value)
             {
                 // Loop through each record and update the fields as collected items
                 foreach ($distributionRecords as $distributionRecord) {
+
+                    //? fetch associated inventory_id records
+                    $inventoryRecord=Inventory::where('id', $distributionRecord->inventory_id)->where('is_deleted',false)->first();
+                    if (is_null($inventoryRecord)) {
+                        DB::rollBack(); // Rollback the transaction in case of any error
+
+                        return response()->json(['message' => 'לא נמצא פריט במלאי המערכת.'], Response::HTTP_BAD_REQUEST);
+
+                    }
+                    //?update each inveotry records reserved & quantity 
+                    $inventoryRecord->update([
+                        'reserved'=>  $inventoryRecord->reserved - $distributionRecord->quantity_per_inventory,
+                        'quantity'=>  $inventoryRecord->quantity - $distributionRecord->quantity_per_inventory,
+                    ]);
+
+
+
                     $distributionRecord->update([
                     'status' =>  DistributionStatus::COLLECTED->value,
                     'quartermaster_id' => $user->id,///save the user that sign on that order_number
                     'quartermaster_comment' => $request->input('quartermaster_comment')?? 'אין הערות אפסנאי.',//can be a comment or Reference Number
-                    'updated_at' => $currentTime,
                     ]);
                 }
 
@@ -1358,7 +1378,11 @@ class DistributionController extends Controller
 
                 // Loop through the fetched records and ensure unique type_id
                 foreach ($distributionRecords as $distribution) {
+
+
                     $typeId = $distribution->type_id;
+
+
 
                     if (!$uniqueDistributions->contains('type_id', $distribution->type_id)) {
                         // Clone the original record to create a new unique record
@@ -1375,6 +1399,7 @@ class DistributionController extends Controller
                             'created_by' => $distribution->created_by,
                             'created_for' => $distribution->created_for,
                             'quantity_per_inventory'=> 0,
+                            'quantity_approved'=>0,
                             'sku' => null,
                             'quartermaster_comment' =>  $request->input('quartermaster_comment') ?? 'אין הערות אפסנאי.',
                             'admin_comment' =>$distribution->admin_comment ?? 'אין הערות מנהל.',
@@ -1389,8 +1414,15 @@ class DistributionController extends Controller
             }
 
 
+
+
+            DB::commit(); // commit all changes in database.
+
+
             return response()->json(['message' => 'שורה התעדכנה בהצלחה.'], Response::HTTP_OK);
         } catch (\Exception $e) {
+
+            DB::rollBack(); // Rollback the transaction in case of any error
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
