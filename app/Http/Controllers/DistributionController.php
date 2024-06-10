@@ -320,7 +320,7 @@ class DistributionController extends Controller
             //set the rules
 
             $rules = [
-                'query' => 'required|string',
+                'query' => 'nullable|string',
             ];
 
             // validate the request data

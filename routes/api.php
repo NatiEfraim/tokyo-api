@@ -179,16 +179,16 @@ Route::controller(UserController::class)
 ///these routes the user must has permission_name='admin'
 Route::controller(ExportController::class)
     ->prefix('export')
-    ->middleware(['auth:api'])
+    ->middleware(['auth:api','role:admin'])
     ->group(function () {
         Route::get('/inventories', 'exportInventories');
         Route::get('/users', 'exportUsers');
         Route::get('/distributions', 'exportDistributions');
 
         //! need to remove those functons and endpoint
-        Route::get('/distributions-email', 'sendDistributionsByEmail');
-        Route::get('/users-email', 'sendUsersByEmail');
-        Route::get('/inventories-email', 'sendInventoriesByEmail');
+        // Route::get('/distributions-email', 'sendDistributionsByEmail');
+        // Route::get('/users-email', 'sendUsersByEmail');
+        // Route::get('/inventories-email', 'sendInventoriesByEmail');
     });
 
 

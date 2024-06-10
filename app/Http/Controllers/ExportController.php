@@ -58,7 +58,7 @@ class ExportController extends Controller
      */
 
     ///export inventories table and download as inventories.xlsx file
-    public function exportInventories(Request $request)
+    public function exportInventories()
     {
         try {
   
@@ -70,12 +70,11 @@ class ExportController extends Controller
                 ->map(function ($inventory) {
 
                     // Format the created_at and updated_at timestamps
-                    $inventory->created_at_date = $inventory->created_at->format('d/m/Y');
-                    $inventory->updated_at_date = $inventory->updated_at->format('d/m/Y');
+                    $inventory->created_at_date = optional($inventory->created_at)->format('d/m/Y') ?? null;
+                    $inventory->updated_at_date = optional($inventory->updated_at)->format('d/m/Y') ?? null;
                     $inventory->available = $inventory->quantity - $inventory->reserved;
 
-
-                    return $inventory;
+                return $inventory;
                 });
 
             // Create a new Spreadsheet object
@@ -100,7 +99,7 @@ class ExportController extends Controller
                 $sheet->setCellValue('A' . $row, $inventory->id ?? 'לא קיים');
                 $sheet->setCellValue('B' . $row, $inventory->available ?? 'לא קיים');
                 $sheet->setCellValue('C' . $row, $inventory->sku ?? 'לא קיים');
-                 $sheet->setCellValue('D' . $row, $inventory->itemType->type ?? 'לא קיים');
+                $sheet->setCellValue('D' . $row, $inventory->itemType->type ?? 'לא קיים');
                 $sheet->setCellValue('E' . $row, $inventory->detailed_description ?? 'לא קיים');
                 $sheet->setCellValue('F' . $row, $inventory->reserved ?? 'לא קיים');
                 $sheet->setCellValue('G' . $row, $inventory->created_at_date ?? 'לא קיים');
@@ -152,19 +151,20 @@ class ExportController extends Controller
                 $sheet->getColumnDimension($column)->setAutoSize(true);
             }
 
-            // $filename = 'inventories.xlsx';
-            $filename = 'inventories_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+            $fileName = 'inventories_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+
+            $writer = new Xlsx($spreadsheet);
 
             // Save the file to a temporary location
-            $writer = new Xlsx($spreadsheet);
-            $writer->save($filename);
+            $writer->save(storage_path('app/' .   $fileName));
 
             $headers = [
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'Content-Disposition' => "attachment; filename=\"$filename\"",
+                'Content-Disposition' => "attachment; filename=\"$fileName\"",
             ];
 
-            return response()->download($filename, $filename, $headers)->deleteFileAfterSend(true);
+            return response()->download(storage_path('app/' .  $fileName), $fileName, $headers)->deleteFileAfterSend(true);
+            
         } catch (\Exception $e) {
 
             Log::error($e->getMessage());
@@ -234,90 +234,91 @@ class ExportController extends Controller
      */
 
     //? send inventories records by email.
-    public function sendInventoriesByEmail(Request $request)
-    {
-        try {
-            // set validation rules
-            $rules = [
-                'users' => 'required|array',
-                'users.*' => 'required|exists:users,id,is_deleted,0',
-                'sku' => 'nullable|string|max:255|exists:inventories,sku,is_deleted,0',
+    //* need to remove function.
+    // public function sendInventoriesByEmail(Request $request)
+    // {
+    //     try {
+    //         // set validation rules
+    //         $rules = [
+    //             'users' => 'required|array',
+    //             'users.*' => 'required|exists:users,id,is_deleted,0',
+    //             'sku' => 'nullable|string|max:255|exists:inventories,sku,is_deleted,0',
 
-            ];
+    //         ];
 
-            // Define custom error messages
-            $customMessages = [
-                'users.required' => 'חובה לשלוח משתמש אחד לפחות.',
-                'users.array' => 'שדה משתמש שנשלח אינו תקין.',
-                'users.*.required' => 'שדה זה נדרש.',
-                'users.*.exists' => 'הערך שהוזן לא חוקי.',
+    //         // Define custom error messages
+    //         $customMessages = [
+    //             'users.required' => 'חובה לשלוח משתמש אחד לפחות.',
+    //             'users.array' => 'שדה משתמש שנשלח אינו תקין.',
+    //             'users.*.required' => 'שדה זה נדרש.',
+    //             'users.*.exists' => 'הערך שהוזן לא חוקי.',
 
-                'sku.string' => 'שדה שהוזן אינו בפורמט תקין',
-                'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
-                'sku.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
-            ];
+    //             'sku.string' => 'שדה שהוזן אינו בפורמט תקין',
+    //             'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
+    //             'sku.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
+    //         ];
 
-            // validate the request with custom error messages
-            $validator = Validator::make($request->all(), $rules, $customMessages);
-
-
-            // Check if validation fails
-            if ($validator->fails()) {
-                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-            }
-
-            if ($request->input('sku')) {
-
-                $inventories = Inventory::where('sku', $request->input('sku'))
-                ->where('is_deleted', false)
-                ->orderBy('created_at', 'desc')
-                ->get()
-                    ->map(function ( $inventory) {
-
-                    // Format the created_at and updated_at timestamps
-                    $inventory->created_at_date = $inventory->created_at->format('d/m/Y');
-                    $inventory->updated_at_date = $inventory->updated_at->format('d/m/Y');
-                    $inventory->available = $inventory->quantity - $inventory->reserved;
+    //         // validate the request with custom error messages
+    //         $validator = Validator::make($request->all(), $rules, $customMessages);
 
 
-                    return $inventory;
-                });
+    //         // Check if validation fails
+    //         if ($validator->fails()) {
+    //             return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+    //         }
 
-            } else {
+    //         if ($request->input('sku')) {
 
-                // Fetch all inventories
-                $inventories = Inventory::where('is_deleted', false)
-                ->orderBy('created_at', 'desc')
-                ->get()
-                ->map(function ($inventory) {
+    //             $inventories = Inventory::where('sku', $request->input('sku'))
+    //             ->where('is_deleted', false)
+    //             ->orderBy('created_at', 'desc')
+    //             ->get()
+    //                 ->map(function ( $inventory) {
 
-                    // Format the created_at and updated_at timestamps
-                    $inventory->created_at_date = $inventory->created_at->format('d/m/Y');
-                    $inventory->updated_at_date = $inventory->updated_at->format('d/m/Y');
-                    $inventory->available = $inventory->quantity - $inventory->reserved;
-
-
-                    return $inventory;
-                });
-            }
+    //                 // Format the created_at and updated_at timestamps
+    //                 $inventory->created_at_date = $inventory->created_at->format('d/m/Y');
+    //                 $inventory->updated_at_date = $inventory->updated_at->format('d/m/Y');
+    //                 $inventory->available = $inventory->quantity - $inventory->reserved;
 
 
+    //                 return $inventory;
+    //             });
 
-            $users = User::whereIn('id', $request->users)->get();
+    //         } else {
 
-            // Get an array of user emails
-            $emails = $users->pluck('email')->toArray();
+    //             // Fetch all inventories
+    //             $inventories = Inventory::where('is_deleted', false)
+    //             ->orderBy('created_at', 'desc')
+    //             ->get()
+    //             ->map(function ($inventory) {
 
-            // Send email to all users using BCC
-            Mail::bcc($emails)->send(new InventoryMail($inventories));
+    //                 // Format the created_at and updated_at timestamps
+    //                 $inventory->created_at_date = $inventory->created_at->format('d/m/Y');
+    //                 $inventory->updated_at_date = $inventory->updated_at->format('d/m/Y');
+    //                 $inventory->available = $inventory->quantity - $inventory->reserved;
 
-            return response()->json(['message' => 'מייל נשלח בהצלחה'], Response::HTTP_OK);
-        } catch (\Exception $e) {
-            Log::error($e->getMessage());
-        }
 
-        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
-    }
+    //                 return $inventory;
+    //             });
+    //         }
+
+
+
+    //         $users = User::whereIn('id', $request->users)->get();
+
+    //         // Get an array of user emails
+    //         $emails = $users->pluck('email')->toArray();
+
+    //         // Send email to all users using BCC
+    //         Mail::bcc($emails)->send(new InventoryMail($inventories));
+
+    //         return response()->json(['message' => 'מייל נשלח בהצלחה'], Response::HTTP_OK);
+    //     } catch (\Exception $e) {
+    //         Log::error($e->getMessage());
+    //     }
+
+    //     return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    // }
 
 
 
@@ -366,8 +367,8 @@ class ExportController extends Controller
                 ->map(function ($user) {
 
                     // Format the created_at and updated_at timestamps
-                    $user->created_at_date = $user->created_at->format('d/m/Y');
-                    $user->updated_at_date = $user->updated_at->format('d/m/Y');
+                    $user->created_at_date = optional($user->created_at)->format('d/m/Y')??null;
+                    $user->updated_at_date = optional($user->updated_at)->format('d/m/Y')??null;
 
                     return $user;
                 });
@@ -453,18 +454,19 @@ class ExportController extends Controller
 
             // create Excel file
             $writer = new Xlsx($spreadsheet);
-            // $filename = 'users.xlsx';
-            $filename = 'users_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
 
-            $writer->save($filename);
+            $fileName = 'users_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+
+            $writer->save(storage_path('app/' .   $fileName));
 
             $headers = [
                 "Content-Type" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                "Content-Disposition" => "attachment; filename=\"$filename\""
+                "Content-Disposition" => "attachment; filename=\"$fileName\""
             ];
 
 
-            return response()->download($filename, $filename, $headers)->deleteFileAfterSend(true);
+            return response()->download(storage_path('app/' .  $fileName), $fileName, $headers)->deleteFileAfterSend(true);
+            
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
@@ -526,66 +528,67 @@ class ExportController extends Controller
      * )
      */
 
+    //* need to remove function.
 
-    public function sendUsersByEmail(Request $request)
-    {
-        try {
-
-
-            // set validation rules
-            $rules = [
-                'users' => 'required|array',
-                'users.*' => 'required|exists:users,id,is_deleted,0',
-            ];
-
-            // Define custom error messages
-            $customMessages = [
-                'users.required' => 'חובה לשלוח משתמש אחד לפחות.',
-                'users.array' => 'שדה משתמש שנשלח אינו תקין.',
-                'users.*.required' => 'שדה זה נדרש.',
-                'users.*.exists' => 'הערך שהוזן לא חוקי.',
-            ];
-
-            // validate the request with custom error messages
-            $validator = Validator::make($request->all(), $rules, $customMessages);
+    // public function sendUsersByEmail(Request $request)
+    // {
+    //     try {
 
 
-            // Check if validation fails
-            if ($validator->fails()) {
-                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-            }
+    //         // set validation rules
+    //         $rules = [
+    //             'users' => 'required|array',
+    //             'users.*' => 'required|exists:users,id,is_deleted,0',
+    //         ];
+
+    //         // Define custom error messages
+    //         $customMessages = [
+    //             'users.required' => 'חובה לשלוח משתמש אחד לפחות.',
+    //             'users.array' => 'שדה משתמש שנשלח אינו תקין.',
+    //             'users.*.required' => 'שדה זה נדרש.',
+    //             'users.*.exists' => 'הערך שהוזן לא חוקי.',
+    //         ];
+
+    //         // validate the request with custom error messages
+    //         $validator = Validator::make($request->all(), $rules, $customMessages);
+
+
+    //         // Check if validation fails
+    //         if ($validator->fails()) {
+    //             return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+    //         }
 
 
 
-            // Fetch users_fetch
-            $users_fetch = User::where('is_deleted', false)
-                ->orderBy('created_at', 'desc')
-                ->get()
-                ->map(function ($user) {
+    //         // Fetch users_fetch
+    //         $users_fetch = User::where('is_deleted', false)
+    //             ->orderBy('created_at', 'desc')
+    //             ->get()
+    //             ->map(function ($user) {
 
-                // Format the created_at and updated_at timestamps
-                $user->created_at_date = $user->created_at->format('d/m/Y');
-                $user->updated_at_date = $user->updated_at->format('d/m/Y');
+    //             // Format the created_at and updated_at timestamps
+    //             $user->created_at_date = $user->created_at->format('d/m/Y');
+    //             $user->updated_at_date = $user->updated_at->format('d/m/Y');
 
-                return $user;
-            });
+    //             return $user;
+    //         });
 
 
-            $users = User::whereIn('id', $request->users)->get();
+    //         $users = User::whereIn('id', $request->users)->get();
 
-            // Get an array of user emails
-            $emails = $users->pluck('email')->toArray();
+    //         // Get an array of user emails
+    //         $emails = $users->pluck('email')->toArray();
 
-            // Send email to all users using BCC
-            Mail::bcc($emails)->send(new UserMail($users_fetch));
+    //         // Send email to all users using BCC
+    //         Mail::bcc($emails)->send(new UserMail($users_fetch));
 
-            return response()->json(['message' => 'מייל נשלח בהצלחה'], Response::HTTP_OK);
-        } catch (\Exception $e) {
-            Log::error($e->getMessage());
-        }
+    //         return response()->json(['message' => 'מייל נשלח בהצלחה'], Response::HTTP_OK);
+    //     } catch (\Exception $e) {
+    //         Log::error($e->getMessage());
+    //     }
 
-        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
-    }
+    //     return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    // }
 
 
     /**
@@ -654,7 +657,7 @@ class ExportController extends Controller
      * )
      */
 
-    public function exportDistributions(Request $request)
+    public function exportDistributions()
     {
         try {
      
@@ -665,10 +668,16 @@ class ExportController extends Controller
                 ->where('is_deleted', 0)
                 ->orderBy('created_at', 'desc')
                 ->get()
+
                 ->map(function ($distribution) {
+
                     // Format the created_at and updated_at timestamps
-                    $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
-                    $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+
+                    $distribution->created_at_date = optional($distribution->created_at)->format('d/m/Y')??null;
+
+                    $distribution->updated_at_date = optional($distribution->updated_at)->format('d/m/Y')??null;
+
+
                     return $distribution;
                 });
 
@@ -773,18 +782,20 @@ class ExportController extends Controller
             }
 
             // $filename = 'inventories.xlsx';
-            $filename = 'distributions_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+            $fileName = 'distributions_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
 
             // Save the file to a temporary location
             $writer = new Xlsx($spreadsheet);
-            $writer->save($filename);
+
+            $writer->save(storage_path('app/' .   $fileName));
 
             $headers = [
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'Content-Disposition' => "attachment; filename=\"$filename\"",
+                'Content-Disposition' => "attachment; filename=\"$fileName\"",
             ];
 
-            return response()->download($filename, $filename, $headers)->deleteFileAfterSend(true);
+            return response()->download(storage_path('app/' .  $fileName), $fileName, $headers)->deleteFileAfterSend(true);
+
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
@@ -902,136 +913,138 @@ class ExportController extends Controller
      * )
      */
 
-    public function sendDistributionsByEmail(Request $request)
-    {
-        try {
-            // set validation rules
-            $rules = [
+         //* need to remove function.
 
-                'users' => 'required|array',
-                'users.*' => 'required|exists:users,id,is_deleted,0',
+    // public function sendDistributionsByEmail(Request $request)
+    // {
+    //     try {
+    //         // set validation rules
+    //         $rules = [
 
-                
-                'status' => 'nullable|integer|between:1,4',
-                
-                'department_id' => 'nullable|string|exists:departments,id,is_deleted,0',
-                
-                
-                'personal_number' => 'nullable|min:1|max:7',
-                
-                
-                'created_at' => [
-                    'nullable',
-                    'date',
-                ],
-                
-                'updated_at' => [
-                    'nullable',
-                    'date',
-                ],
-                
-                
-                
-                // 'sku' => 'nullable|string|max:255|exists:inventories,sku,is_deleted,0',
-                // 'name' => 'nullable|string|exists:departments,name,is_deleted,0',
-            ];
-
-            // Define custom error messages
-            $customMessages = [
-
-
-                'users.required' => 'חובה לשלוח משתמש אחד לפחות.',
-                'users.array' => 'שדה משתמש שנשלח אינו תקין.',
-                'users.*.required' => 'שדה זה נדרש.',
-                'users.*.exists' => 'הערך שהוזן לא חוקי.',
-
-
-                'department_id.exists' => 'מחלקה אינה קיימת במערכת.',
+    //             'users' => 'required|array',
+    //             'users.*' => 'required|exists:users,id,is_deleted,0',
 
                 
+    //             'status' => 'nullable|integer|between:1,4',
                 
-                'name.string' => 'שדה ערך שם מחלקה אינו תקין.',
-                
-                'status.between' => 'שדה הסטטוס אינו תקין.',
+    //             'department_id' => 'nullable|string|exists:departments,id,is_deleted,0',
                 
                 
-                'personal_number.min' => 'מספר אישי אינו תקין.',
-                'personal_number.max' => 'מספר אישי אינו תקין.',
+    //             'personal_number' => 'nullable|min:1|max:7',
+                
+                
+    //             'created_at' => [
+    //                 'nullable',
+    //                 'date',
+    //             ],
+                
+    //             'updated_at' => [
+    //                 'nullable',
+    //                 'date',
+    //             ],
                 
                 
                 
-                'created_at.date' => 'שדה תאריך התחלה אינו תקין.',
-                'created_at.exists' => 'שדה תאריך אינו קיים במערכת.',
-                'updated_at.date' => 'שדה תאריך סיום אינו תקין.',
-                'updated_at.exists' => 'שדה תאריך סיום אינו קיים במערכת.',
+    //             // 'sku' => 'nullable|string|max:255|exists:inventories,sku,is_deleted,0',
+    //             // 'name' => 'nullable|string|exists:departments,name,is_deleted,0',
+    //         ];
+
+    //         // Define custom error messages
+    //         $customMessages = [
+
+
+    //             'users.required' => 'חובה לשלוח משתמש אחד לפחות.',
+    //             'users.array' => 'שדה משתמש שנשלח אינו תקין.',
+    //             'users.*.required' => 'שדה זה נדרש.',
+    //             'users.*.exists' => 'הערך שהוזן לא חוקי.',
+
+
+    //             'department_id.exists' => 'מחלקה אינה קיימת במערכת.',
+
                 
-                // 'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
-                // 'sku.string' => 'שדה שהוזן אינו בפורמט תקין',
-                // 'sku.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
-            ];
-
-            // validate the request with custom error messages
-            $validator = Validator::make($request->all(), $rules, $customMessages);
-
-
-            // Check if validation fails
-            if ($validator->fails()) {
-                return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-            }
-
-
-            if (
-                $request->has('status')
-                || $request->has('department_id')
-                || $request->has('personal_number')
-                || $request->has('created_at')
-                || $request->has('updated_at')
-            ) {
-                //? one or more of th search based on value filter send
-                $distributions = $this->fetchDistributions($request);
-                if ($distributions) {
-
-                    $distributions->map(function ($distribution) {
-                        $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
-                        $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
-
-                        return $distribution;
-                    });
-                }
                 
-            } else {
-                //? fetch all distributions records.
-                $distributions = Distribution::with([ 'itemType','createdForUser'])
-                ->where('is_deleted', 0)
-                ->orderBy('created_at', 'desc')
-                ->get()
-                ->map(function ($distribution) {
+    //             'name.string' => 'שדה ערך שם מחלקה אינו תקין.',
+                
+    //             'status.between' => 'שדה הסטטוס אינו תקין.',
+                
+                
+    //             'personal_number.min' => 'מספר אישי אינו תקין.',
+    //             'personal_number.max' => 'מספר אישי אינו תקין.',
+                
+                
+                
+    //             'created_at.date' => 'שדה תאריך התחלה אינו תקין.',
+    //             'created_at.exists' => 'שדה תאריך אינו קיים במערכת.',
+    //             'updated_at.date' => 'שדה תאריך סיום אינו תקין.',
+    //             'updated_at.exists' => 'שדה תאריך סיום אינו קיים במערכת.',
+                
+    //             // 'sku.max' => 'אורך שדה מק"ט חייב להכיל לכל היותר 255 תווים',
+    //             // 'sku.string' => 'שדה שהוזן אינו בפורמט תקין',
+    //             // 'sku.exists' => 'שדה מק"ט שנשלח אינו קיים במערכת.',
+    //         ];
 
-                    // Format the created_at and updated_at timestamps
-                    $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
-                    $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
-
-                    return $distribution;
-                });
-
-            }
+    //         // validate the request with custom error messages
+    //         $validator = Validator::make($request->all(), $rules, $customMessages);
 
 
-            $users = User::whereIn('id', $request->users)->get();
+    //         // Check if validation fails
+    //         if ($validator->fails()) {
+    //             return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+    //         }
 
-            // Get an array of user emails
-            $emails = $users->pluck('email')->toArray();
 
-            // Send email to all users using BCC
-            Mail::bcc($emails)->send(new DistributionMail($distributions));
+    //         if (
+    //             $request->has('status')
+    //             || $request->has('department_id')
+    //             || $request->has('personal_number')
+    //             || $request->has('created_at')
+    //             || $request->has('updated_at')
+    //         ) {
+    //             //? one or more of th search based on value filter send
+    //             $distributions = $this->fetchDistributions($request);
+    //             if ($distributions) {
 
-            return response()->json(['message' => 'מייל נשלח בהצלחה'], Response::HTTP_OK);
-        } catch (\Exception $e) {
-            Log::error($e->getMessage());
-        }
+    //                 $distributions->map(function ($distribution) {
+    //                     $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+    //                     $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
 
-        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
-    }
+    //                     return $distribution;
+    //                 });
+    //             }
+                
+    //         } else {
+    //             //? fetch all distributions records.
+    //             $distributions = Distribution::with([ 'itemType','createdForUser'])
+    //             ->where('is_deleted', 0)
+    //             ->orderBy('created_at', 'desc')
+    //             ->get()
+    //             ->map(function ($distribution) {
+
+    //                 // Format the created_at and updated_at timestamps
+    //                 $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+    //                 $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+
+    //                 return $distribution;
+    //             });
+
+    //         }
+
+
+    //         $users = User::whereIn('id', $request->users)->get();
+
+    //         // Get an array of user emails
+    //         $emails = $users->pluck('email')->toArray();
+
+    //         // Send email to all users using BCC
+    //         Mail::bcc($emails)->send(new DistributionMail($distributions));
+
+    //         return response()->json(['message' => 'מייל נשלח בהצלחה'], Response::HTTP_OK);
+    //     } catch (\Exception $e) {
+    //         Log::error($e->getMessage());
+    //     }
+
+    //     return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    // }
 
 
 
