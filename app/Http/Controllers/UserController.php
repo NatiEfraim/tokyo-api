@@ -553,7 +553,124 @@ class UserController extends Controller
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
-
+    /**
+     * Update user fields.
+     *
+     * @OA\Put(
+     *     path="/api/users/{id}",
+     *     summary="Update user fields",
+     *     tags={"Users"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="User ID",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer",
+     *             format="int64"
+     *         )
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="name",
+     *                     type="string",
+     *                     example="John Doe",
+     *                     description="User's name"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="personal_number",
+     *                     type="string",
+     *                     example="1234567",
+     *                     description="User's personal number"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="employee_type",
+     *                     type="integer",
+     *                     format="int64",
+     *                     example=1,
+     *                     description="User's employee type (ID)"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="permission_code",
+     *                     type="integer",
+     *                     format="int64",
+     *                     example=2,
+     *                     description="User's permission code (ID)"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="User details updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="פירטי משתמש עודכנו בהצלחה."
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad Request",
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="חובה לשלוח מספר אישי וסוג עובד יחד"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden",
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="המשתמש אינו מורשה לבצע פעולה זו."
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="User not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="משתמש אינו קיים במערכת."
+     *             )
+     *         )
+     *     ),
+     *      @OA\Response(
+     *          response=422,
+     *          description="Unprocessable Content",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="הנתונים שנשלחו אינם תקינים.")
+     *          )
+     *      ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="התרחש בעיית שרתת יש לנסות שוב מאוחר יותר."
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    
     public function update(Request $request,$id=null)
     {
         try {
