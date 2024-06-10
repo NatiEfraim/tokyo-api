@@ -8,6 +8,7 @@ use App\Enums\DistributionStatus;
 use App\Http\Requests\StoreDistributionRequest;
 use App\Http\Requests\UpdateDistributionRequest;
 use App\Mail\ApprovedOrder;
+use App\Mail\CanceledOrder;
 use App\Models\Client;
 use App\Models\Distribution;
 use App\Models\Inventory;
@@ -1178,7 +1179,7 @@ class DistributionController extends Controller
             }
 
                 // Send cancel order email
-                Mail::to($createdByUser->email)->send(new ApprovedOrder($createdByUser,  $request->input('order_number')));
+                Mail::to($createdByUser->email)->send(new CanceledOrder($createdByUser,  $request->input('order_number')));
 
         }
 
