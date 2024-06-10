@@ -7,6 +7,7 @@ use App\Enums\EmployeeType;
 use App\Enums\DistributionStatus;
 use App\Http\Requests\StoreDistributionRequest;
 use App\Http\Requests\UpdateDistributionRequest;
+use App\Mail\ApprovedOrder;
 use App\Models\Client;
 use App\Models\Distribution;
 use App\Models\Inventory;
@@ -21,6 +22,7 @@ use Illuminate\Support\Facades\Validator;
 
 use App\Mail\DistributionSuccess;
 use App\Mail\DistributionFailure;
+use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 
 // use Illuminate\Validation\Rule;
@@ -949,7 +951,7 @@ class DistributionController extends Controller
 
         try {
 
-
+            $user_auth = Auth::user();
 
             // set custom error messages in Hebrew
             $customMessages = [
@@ -993,9 +995,11 @@ class DistributionController extends Controller
 
                 'inventory_items.*.items.*.quantity' => 'required|integer|min:0',
 
-                'order_number' => 'nullable|integer|exists:distributions,order_number,is_deleted,0',
+                'order_number' => 'required|integer|exists:distributions,order_number,is_deleted,0',
 
             ];
+
+
 
             // validate the request data
             $validator = Validator::make($request->all(), $rules, $customMessages);
@@ -1021,6 +1025,14 @@ class DistributionController extends Controller
             ->get();
 
 
+            $createdByUser=User::where('id',$distributionRecords[0]->created_by)->where('is_deleted',false)->first();
+
+
+
+
+            if (is_null($createdByUser)) {
+                return response()->json(['message' => 'לא נמצא משתמש במערכת עבור הזמנה זו.'], Response::HTTP_BAD_REQUEST);
+            }
 
             // Check if records exist
             if ($distributionRecords->isEmpty()) {
@@ -1068,13 +1080,13 @@ class DistributionController extends Controller
                         
                         // $inventoryUpdates = []; // To store updated inventory items
 
-                        //? make sure sum of qty match with qty_total
-                        $allQuantity = array_sum(array_column($items['items'], 'quantity'));
+                        // //? make sure sum of qty match with qty_total
+                        // $allQuantity = array_sum(array_column($items['items'], 'quantity'));
 
-                        if ($allQuantity != $distributionRecord->quantity_per_item) {
-                            DB::rollBack(); // Rollback the transaction
-                            return response()->json(['message' => 'הכמות אינה תואמת לסך הכמות הנדרשת עבור פריט.'], Response::HTTP_OK);
-                        }
+                        // if ($allQuantity != $distributionRecord->quantity_per_item) {
+                        //     DB::rollBack(); // Rollback the transaction
+                        //     return response()->json(['message' => 'הכמות אינה תואמת לסך הכמות הנדרשת עבור פריט.'], Response::HTTP_OK);
+                        // }
                         
                         // Loop on each item within the type_id
                         foreach ($items['items'] as $inventoryItem) {
@@ -1142,8 +1154,8 @@ class DistributionController extends Controller
                     }
                 }
 
-                //? need to send email on the approved order.
-
+                // Send aproved order email
+                Mail::to($createdByUser->email)->send(new ApprovedOrder($createdByUser,  $request->input('order_number')));
 
 
 
@@ -1164,6 +1176,10 @@ class DistributionController extends Controller
 
 
             }
+
+                // Send cancel order email
+                Mail::to($createdByUser->email)->send(new ApprovedOrder($createdByUser,  $request->input('order_number')));
+
         }
 
 
