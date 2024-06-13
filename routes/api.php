@@ -114,7 +114,7 @@ Route::controller(DistributionController::class)
         Route::post('/allocation', 'allocationRecords')->middleware(['role:admin']);
 
         //? route for liran canceled records items
-        Route::post('/canceled', 'allocationRecords')->middleware(['role:admin']);
+        Route::post('/canceled', 'canceledRecords')->middleware(['role:admin']);
         
         //? route for to make order on item  route for user
         Route::post('/', 'store')->middleware(['role:admin|user']);

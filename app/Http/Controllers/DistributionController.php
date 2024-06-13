@@ -888,60 +888,6 @@ class DistributionController extends Controller
         try {
             $user_auth = Auth::user();
 
-            // // set custom error messages in Hebrew
-            // $customMessages = [
-
-            //     'status.required' => 'חובה לשלוח שדה סטטוס לעידכון.',
-            //     'status.integer' => 'שדה סטטוס שנשלח אינו בפורמט תקין.',
-            //     'status.between' => 'ערך הסטטוס שנשלח אינו תקין.',
-
-            //     'admin_comment.string' => 'אחת מהשדות שנשלחו אינם תקינים.',
-            //     'admin_comment.required' => '.',
-            //     'admin_comment.min' => 'אחת מהשדות שנשלחו אינם תקינים.',
-            //     'admin_comment.max' => 'אחת מהשדות שנשלחו אינם תקינים.',
-
-            //     'inventory_items.array' => 'נתון שנשלח אינו תקין.',
-            //     'inventory_items.*.inventory_id.required' => 'חובה לשלוח מזהה פריט במערך הפריטים.',
-            //     'inventory_items.*.inventory_id.exists' => 'מזהה הפריט שנשלח במערך אינו קיים או נמחק.',
-            //     'inventory_items.*.quantity.required' => 'חובה לשלוח כמות לכל פריט במערך.',
-            //     'inventory_items.*.quantity.integer' => 'הכמות שנשלחה עבור פריט במערך אינה בפורמט תקין.',
-            //     'inventory_items.*.quantity.min' => 'הכמות שנשלחה עבור פריט במערך חייבת להיות גדולה או שווה ל-0.',
-
-            //     'order_number.required' => 'חובה לשלוח מספר הזמנה.',
-            //     'order_number.integer' => 'אחת מהשדות שנשלחו אינם תקינים.',
-            //     'order_number.exists' => 'מספר הזמנה אינה קיימת במערכת.',
-
-            // ];
-
-            // //set the rules
-            // $rules = [
-
-            //     'status' => 'required|integer|between:2,3',
-
-            //     'admin_comment' => 'nullable|string|min:2|max:255',
-
-            //     'inventory_items' => 'nullable|array',
-
-            //     'inventory_items.*.type_id' => 'required|exists:item_types,id,is_deleted,0',
-
-            //     'inventory_items.*.items' => 'required|array',
-
-            //     'inventory_items.*.items.*.inventory_id' => 'required|exists:inventories,id,is_deleted,0',
-
-            //     'inventory_items.*.items.*.quantity' => 'required|integer|min:0',
-
-            //     'order_number' => 'required|integer|exists:distributions,order_number,is_deleted,0',
-
-            // ];
-
-            // // validate the request data
-            // $validator = Validator::make($request->all(), $rules, $customMessages);
-
-            // // Check if validation fails
-            // if ($validator->fails()) {
-            //     return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-            // }
-
             if (is_null($request->input('admin_comment')) && $request->input('status') == DistributionStatus::CANCELD->value) {
                 return response()->json(['message' => 'חובה לשלוח סיבת ביטול.'], Response::HTTP_BAD_REQUEST);
             }
@@ -1161,38 +1107,6 @@ class DistributionController extends Controller
         try {
             $user = auth()->user();
 
-            // // set custom error messages in Hebrew
-            // $customMessages = [
-
-            //     'status.required' => 'חובה לשלוח שדה סטטוס לעידכון.',
-            //     'status.integer' => 'שדה סטטוס שנשלח אינו בפורמט תקין.',
-            //     'status.between' => 'ערך הסטטוס שנשלח אינו תקין.',
-
-            //     'quartermaster_comment.string' => 'אחת מהשדות שנשלחו אינם תקינים.',
-            //     'quartermaster_comment.required' => 'אחת מהשדות שנשלחו אינם תקינים.',
-            //     'quartermaster_comment.min' => 'אחת מהשדות שנשלחו אינם תקינים.',
-            //     'quartermaster_comment.max' => 'אחת מהשדות שנשלחו אינם תקינים.',
-
-            //     'order_number.required' => 'חובה לשלוח מספר הזמנה.',
-            //     'order_number.integer' => 'אחת מהשדות שנשלחו אינם תקינים.',
-            //     'order_number.exists' => 'מספר הזמנה אינה קיימת במערכת.',
-
-            // ];
-
-            // //set the rules
-            // $rules = [
-            //     'status' => 'required|integer|between:1,4',
-            //     'quartermaster_comment' => 'required|string|min:2|max:255',
-            //     'order_number' => 'required|integer|exists:distributions,order_number,is_deleted,0',
-            // ];
-
-            // // validate the request data
-            // $validator = Validator::make($request->all(), $rules, $customMessages);
-
-            // // Check if validation fails
-            // if ($validator->fails()) {
-            //     return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-            // }
 
             if (is_null($request->input('quartermaster_comment')) && $request->input('status') == DistributionStatus::PENDING->value) {
                 return response()->json(['message' => 'יש לשלוח הערה על ההזמנה למנהל.'], Response::HTTP_BAD_REQUEST);
@@ -1312,35 +1226,7 @@ class DistributionController extends Controller
     public function canceledRecords(CanceledDistributionRequest $request)
     {
         try {
-            // // set custom error messages in Hebrew
-            // $customMessages = [
-            //     'order_number.required' => 'חובה לשלוח מספר הזמנה.',
-            //     'order_number.integer' => 'אחת מהשדות שנשלחו אינם תקינים.',
-            //     'order_number.exists' => 'מספר הזמנה אינה קיימת במערכת.',
-            //     'inventory_items.required' => 'חובה לשלוח פרטי מלאי.',
-            //     'inventory_items.array' => 'שדה פרטי המלאי חייב להיות מערך.',
-            //     'inventory_items.*.id.required' => 'חובה לשלוח מזהה פריט מלאי.',
-            //     'inventory_items.*.id.integer' => 'מזהה פריט מלאי חייב להיות מספר שלם.',
-            //     'inventory_items.*.id.exists' => 'מזהה פריט מלאי אינו תקין.',
-            //     'inventory_items.*.admin_comment.required' => 'חובה לשלוח תגובת מנהל.',
-            //     'inventory_items.*.admin_comment.string' => 'תגובת מנהל חייבת להיות מחרוזת.',
-            // ];
 
-            // //set the rules
-            // $rules = [
-            //     'order_number' => 'required|integer|exists:distributions,order_number,is_deleted,0',
-            //     'inventory_items' => 'required|array',
-            //     'inventory_items.*.id' => 'required|integer|exists:distributions,id,is_deleted,0',
-            //     'inventory_items.*.admin_comment' => 'required|string',
-            // ];
-
-            // // validate the request data
-            // $validator = Validator::make($request->all(), $rules, $customMessages);
-
-            // // Check if validation fails
-            // if ($validator->fails()) {
-            //     return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-            // }
 
             if (is_null($request->input('quartermaster_comment')) && $request->input('status') == DistributionStatus::PENDING->value) {
                 return response()->json(['message' => 'יש לשלוח הערה על ההזמנה למנהל.'], Response::HTTP_BAD_REQUEST);
