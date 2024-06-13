@@ -1256,8 +1256,12 @@ class DistributionController extends Controller
                 }
                 //? update each records as canceled.
                 $distributionRecord->update([
+
+
                     'status' => DistributionStatus::CANCELD->value,
                     'admin_comment' => $items['admin_comment'],
+
+                    
                 ]);
             }
 
