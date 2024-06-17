@@ -84,7 +84,7 @@ Route::controller(DistributionController::class)
 
         
         //?fetch  history records - group by type_id fileds 
-        Route::get('/fetch-history', 'fetchRecordsByType')->middleware(['role:admin|user']);
+        Route::get('/fetch-history', 'fetchRecordsByType')->middleware(['role:admin|user|quartermaster']);
 
         //?search distributions records based on one query - only be type_id or order_number
         Route::get('/search-by-query', 'getRecordsByQuery');
@@ -93,7 +93,7 @@ Route::controller(DistributionController::class)
         Route::get('/search-by-filter', 'getRecordsByFilter')->middleware(['role:admin']);
 
         //? search records by order_number.
-        Route::get('/search-by-order', 'getRecordsByOrder')->middleware(['role:admin|quartermaster']);
+        Route::get('/search-by-order', 'getRecordsByOrder');
 
         //? fetch based on only order_number fileds - and group_by (given query is optional)
         Route::get('/fetch-records-by-order', 'fetchDistributionsRecordsByOrderNumber')->middleware(['role:admin|quartermaster']);

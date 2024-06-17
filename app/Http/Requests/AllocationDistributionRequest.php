@@ -30,11 +30,13 @@ class AllocationDistributionRequest extends FormRequest
 
             'inventory_items' => 'nullable|array',
 
-            'inventory_items.*.type_id' => 'required|exists:item_types,id,is_deleted,0',
+            'inventory_items.*.type_id' => 'required|integer|exists:item_types,id,is_deleted,0',
 
-            'inventory_items.*.items' => 'required|array',
+            'inventory_items.*.admin_comment' => 'nullable|string|min:2|max:255',
 
-            'inventory_items.*.items.*.inventory_id' => 'required|exists:inventories,id,is_deleted,0',
+            'inventory_items.*.items' => 'nullable|array',
+
+            'inventory_items.*.items.*.inventory_id' => 'required|integer|exists:inventories,id,is_deleted,0',
 
             'inventory_items.*.items.*.quantity' => 'required|integer|min:0',
 
@@ -54,26 +56,37 @@ class AllocationDistributionRequest extends FormRequest
     {
         return [
 
+            'status.required' => 'שדה הסטטוס נדרש.',
+            'status.integer' => 'שדה הסטטוס חייב להיות מספר שלם.',
+            'status.between' => 'שדה הסטטוס חייב להיות בין 2 ל-3.',
 
-            'status.required' => 'חובה לשלוח שדה סטטוס לעידכון.',
-            'status.integer' => 'שדה סטטוס שנשלח אינו בפורמט תקין.',
-            'status.between' => 'ערך הסטטוס שנשלח אינו תקין.',
+            'admin_comment.string' => 'שדה תגובת המנהל חייב להיות מחרוזת.',
+            'admin_comment.min' => 'שדה תגובת המנהל חייב להיות לפחות 2 תווים.',
+            'admin_comment.max' => 'שדה תגובת המנהל חייב להיות עד 255 תווים.',
 
-            'admin_comment.string' => 'אחת מהשדות שנשלחו אינם תקינים.',
-            'admin_comment.required' => '.',
-            'admin_comment.min' => 'אחת מהשדות שנשלחו אינם תקינים.',
-            'admin_comment.max' => 'אחת מהשדות שנשלחו אינם תקינים.',
+            'inventory_items.array' => 'שדה פריטי המלאי אינו תקין.',
 
-            'inventory_items.array' => 'נתון שנשלח אינו תקין.',
-            'inventory_items.*.inventory_id.required' => 'חובה לשלוח מזהה פריט במערך הפריטים.',
-            'inventory_items.*.inventory_id.exists' => 'מזהה הפריט שנשלח במערך אינו קיים או נמחק.',
-            'inventory_items.*.quantity.required' => 'חובה לשלוח כמות לכל פריט במערך.',
-            'inventory_items.*.quantity.integer' => 'הכמות שנשלחה עבור פריט במערך אינה בפורמט תקין.',
-            'inventory_items.*.quantity.min' => 'הכמות שנשלחה עבור פריט במערך חייבת להיות גדולה או שווה ל-0.',
+            'inventory_items.*.type_id.required' => 'שדה מזהה סוג הפריט נדרש.',
+            'inventory_items.*.type_id.integer' => 'שדה מזהה סוג הפריט חייב להיות מספר שלם.',
+            'inventory_items.*.type_id.exists' => 'שדה מזהה סוג הפריט לא קיים או נמחק.',
 
-            'order_number.required' => 'חובה לשלוח מספר הזמנה.',
-            'order_number.integer' => 'אחת מהשדות שנשלחו אינם תקינים.',
-            'order_number.exists' => 'מספר הזמנה אינה קיימת במערכת.',
+            'inventory_items.*.admin_comment.string' => 'שדה תגובת המנהל בפריטי המלאי אינו תקין.',
+            'inventory_items.*.admin_comment.min' => 'שדה תגובת המנהל בפריטי המלאי אינו תקין.',
+            'inventory_items.*.admin_comment.max' => 'שדה תגובת המנהל בפריטי המלאי אינו תקין.',
+
+            'inventory_items.*.items.array' => 'שדה הפריטים אינו תקין.',
+
+            'inventory_items.*.items.*.inventory_id.required' => 'שדה מזהה המלאי נדרש.',
+            'inventory_items.*.items.*.inventory_id.integer' => 'שדה מזהה המלאי חייב להיות מספר שלם.',
+            'inventory_items.*.items.*.inventory_id.exists' => 'שדה מזהה המלאי לא קיים או נמחק.',
+
+            'inventory_items.*.items.*.quantity.required' => 'שדה הכמות נדרש.',
+            'inventory_items.*.items.*.quantity.integer' => 'שדה הכמות חייב להיות מספר שלם.',
+            'inventory_items.*.items.*.quantity.min' => 'שדה הכמות חייב להיות לפחות 0.',
+
+            'order_number.required' => 'שדה מספר ההזמנה נדרש.',
+            'order_number.integer' => 'שדה מספר ההזמנה חייב להיות מספר שלם.',
+            'order_number.exists' => 'שדה מספר ההזמנה לא קיים או נמחק.',
 
         ];
     }

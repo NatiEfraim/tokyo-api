@@ -187,7 +187,7 @@ class DistributionController extends Controller
     {
         try {
             if (is_null($id)) {
-                return response()->json(['message' => 'יש לשלוח מזהה שורה .'], Response::HTTP_BAD_REQUEST);
+                return response()->json(['message' => 'יש לשלוח מזהה שורה.'], Response::HTTP_BAD_REQUEST);
             }
 
             // Fetch distribution by ID
@@ -886,6 +886,8 @@ class DistributionController extends Controller
     public function allocationRecords(AllocationDistributionRequest $request)
     {
         try {
+
+
             $user_auth = Auth::user();
 
             if (is_null($request->input('admin_comment')) && $request->input('status') == DistributionStatus::CANCELD->value) {
@@ -914,10 +916,12 @@ class DistributionController extends Controller
 
             DB::beginTransaction(); // Start a database transaction
 
-            //? distribution records has been approved
+
+
             // Track processed type_ids
             $processedTypeIds = [];
-
+            
+            //? distribution records has been approved
             if ($request->input('status') === DistributionStatus::APPROVED->value) {
                 // Loop through each type_id in the request
                 foreach ($request->input('inventory_items') as $key => $items) {
@@ -928,58 +932,91 @@ class DistributionController extends Controller
                     // Mark this type_id as processed
                     $processedTypeIds[] = $items['type_id'];
 
+                    //? make sure admin approved that type order.
+                    $sizeArrayItem=count($items['items']);
+
+                    if
+                    ((($sizeArrayItem==0)&&(is_null($request->input($items['admin_comment'])))) 
+                    || (($sizeArrayItem !== 0) && (is_null($request->input($items['admin_comment']))==false))) {
+
+                        DB::rollBack(); // Rollback the transaction
+
+                        return response()->json(['message' => 'הנתונים שנשלחו אינם תקינים.'], Response::HTTP_BAD_REQUEST);
+
+                    }
+
+
                     // Find the first distribution record with the matching type_id that has not been processed
                     $distributionRecord = $distributionRecords->firstWhere('type_id', $items['type_id']);
 
                     if ($distributionRecord) {
-                        // //? make sure sum of qty match with qty_total that admin allocated
-                        $allQuantity = array_sum(array_column($items['items'], 'quantity'));
 
-                        // Loop on each item within the type_id
-                        foreach ($items['items'] as $inventoryItem) {
-                            $idInventory = $inventoryItem['inventory_id']; // Save the inventory_id records
-                            $quantity = $inventoryItem['quantity']; //? qty per sku
+                        if ($sizeArrayItem == 0) {
 
-                            $inventory = Inventory::where('id', $idInventory)->where('is_deleted', false)->first();
+                            //? records has not approved!
 
-                            if (is_null($inventory) || $inventory->type_id !== $items['type_id']) {
-                                DB::rollBack(); // Rollback the transaction
-                                return response()->json(['message' => 'אחד מהפרטים שבמלאי שנשלחו אינם תקינים.'], Response::HTTP_BAD_REQUEST);
-                            }
-
-                            $available = $inventory->quantity - $inventory->reserved;
-
-                            if ($quantity > $available) {
-                                DB::rollBack(); // Rollback the transaction
-                                return response()->json(['message' => 'כמות שנשלח עבור ' . $inventory->sku . ' חסרה במלאי.'], Response::HTTP_OK);
-                            }
-
-                            // Update inventory records based on inventory_id
-                            $inventory->update([
-                                'reserved' => $inventory->reserved + $quantity, // Increase the reserved
+                            $distributionRecord->update([
+                                'status' => DistributionStatus::CANCELD->value,
+                                'admin_comment' => $items['admin_comment'],//save admin comment for each records that not approved
                             ]);
 
-                            //? create a new records per each inveotry records.
-                            Distribution::create([
-                                'order_number' => $distributionRecord->order_number,
-                                'user_comment' => $distributionRecord->user_comment ?? null,
-                                'type_comment' => $distributionRecord->type_comment ?? null,
-                                'total_quantity' => $distributionRecord->total_quantity,
-                                'quantity_per_item' => $distributionRecord->quantity_per_item,
-                                'status' => DistributionStatus::APPROVED->value,
-                                'type_id' => $distributionRecord->type_id,
-                                'created_by' => $distributionRecord->created_by,
-                                'created_for' => $distributionRecord->created_for,
-                                'quantity_per_inventory' => $quantity, //set qty per invetory
-                                'quantity_approved' => $allQuantity, //sum-up of qty that approved by admin.
-                                'sku' => $inventory->sku, //set relations
-                                'inventory_id' => $inventory->id, //set relations
-                                'admin_comment' => $request->input('admin_comment') ?? 'אין הערות מנהל.',
-                                'quartermaster_comment' => $request->input('quartermaster_comment') ?? 'אין הערות אפסנאי.',
-                            ]);
+
+
+
+                        }else {
+
+                            //? records has been approved!
+                            // //? make sure sum of qty match with qty_total that admin allocated
+                            $allQuantity = array_sum(array_column($items['items'], 'quantity'));
+
+                            // Loop on each item within the type_id
+                            foreach ($items['items'] as $inventoryItem) {
+                                $idInventory = $inventoryItem['inventory_id']; // Save the inventory_id records
+                                $quantity = $inventoryItem['quantity']; //? qty per sku
+
+                                $inventory = Inventory::where('id', $idInventory)->where('is_deleted', false)->first();
+
+                                if (is_null($inventory) || $inventory->type_id !== $items['type_id']) {
+                                    DB::rollBack(); // Rollback the transaction
+                                    return response()->json(['message' => 'אחד מהפרטים שבמלאי שנשלחו אינם תקינים.'], Response::HTTP_BAD_REQUEST);
+                                }
+
+                                $available = $inventory->quantity - $inventory->reserved;
+
+                                if ($quantity > $available) {
+                                    DB::rollBack(); // Rollback the transaction
+                                    return response()->json(['message' => 'כמות שנשלח עבור ' . $inventory->sku . ' חסרה במלאי.'], Response::HTTP_OK);
+                                }
+
+                                // Update inventory records based on inventory_id
+                                $inventory->update([
+                                    'reserved' => $inventory->reserved + $quantity, // Increase the reserved
+                                ]);
+
+                                //? create a new records per each inveotry records.
+                                Distribution::create([
+                                    'order_number' => $distributionRecord->order_number,
+                                    'user_comment' => $distributionRecord->user_comment ?? null,
+                                    'type_comment' => $distributionRecord->type_comment ?? null,
+                                    'total_quantity' => $distributionRecord->total_quantity,
+                                    'quantity_per_item' => $distributionRecord->quantity_per_item,
+                                    'status' => DistributionStatus::APPROVED->value,
+                                    'type_id' => $distributionRecord->type_id,
+                                    'created_by' => $distributionRecord->created_by,
+                                    'created_for' => $distributionRecord->created_for,
+                                    'quantity_per_inventory' => $quantity, //set qty per invetory
+                                    'quantity_approved' => $allQuantity, //sum-up of qty that approved by admin.
+                                    'sku' => $inventory->sku, //set relations
+                                    'inventory_id' => $inventory->id, //set relations
+                                    'admin_comment' => $request->input('admin_comment') ?? 'אין הערות מנהל.',
+                                    'quartermaster_comment' => $request->input('quartermaster_comment') ?? 'אין הערות אפסנאי.',
+                                ]);
+                            }
+                            //? deleted records (copy records - as time as admin selcted sku)
+                            $distributionRecord->delete();
                         }
-                        //? deleted records (copy records - as time as admin selcted sku)
-                        $distributionRecord->delete();
+                                            
+
                     }
                 }
 
@@ -1002,14 +1039,14 @@ class DistributionController extends Controller
                 Mail::to($createdByUser->email)->send(new CanceledOrder($createdByUser, $request->input('order_number')));
             }
 
-            ///rest of the records -that now has been approved
-            foreach ($distributionRecords as $record) {
-                if (!in_array($record->type_id, $processedTypeIds)) {
-                    $record->update([
-                        'status' => DistributionStatus::CANCELD->value,
-                    ]);
-                }
-            }
+            // ///rest of the records -that now has been approved
+            // foreach ($distributionRecords as $record) {
+            //     if (!in_array($record->type_id, $processedTypeIds)) {
+            //         $record->update([
+            //             'status' => DistributionStatus::CANCELD->value,
+            //         ]);
+            //     }
+            // }
 
             DB::commit(); // commit all changes in database.
 
