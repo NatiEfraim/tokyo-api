@@ -48,6 +48,7 @@ class DistributionFactory extends Factory
             'type_comment' => $this->faker->sentence, // Generate inventory comment
             'quartermaster_comment' => $this->faker->sentence, // Generate generate comment for quartermaster_comment
             'admin_comment' => $this->faker->sentence, // Generate generate comment for adamin
+            'canceled_reason' => $this->faker->sentence, // Generate generate reson of cancel for adamin
             'user_comment' => $this->faker->sentence, // Generate generate comment for user
             'status' => $this->faker->numberBetween(1, 4),
             'type_id' => $randomType->id, //set relation

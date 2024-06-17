@@ -32,7 +32,7 @@ class AllocationDistributionRequest extends FormRequest
 
             'inventory_items.*.type_id' => 'required|integer|exists:item_types,id,is_deleted,0',
 
-            'inventory_items.*.admin_comment' => 'nullable|string|min:2|max:255',
+            'inventory_items.*.canceled_reason' => 'nullable|string|min:2|max:255',
 
             'inventory_items.*.items' => 'nullable|array',
 
@@ -70,9 +70,9 @@ class AllocationDistributionRequest extends FormRequest
             'inventory_items.*.type_id.integer' => 'שדה מזהה סוג הפריט חייב להיות מספר שלם.',
             'inventory_items.*.type_id.exists' => 'שדה מזהה סוג הפריט לא קיים או נמחק.',
 
-            'inventory_items.*.admin_comment.string' => 'שדה תגובת המנהל בפריטי המלאי אינו תקין.',
-            'inventory_items.*.admin_comment.min' => 'שדה תגובת המנהל בפריטי המלאי אינו תקין.',
-            'inventory_items.*.admin_comment.max' => 'שדה תגובת המנהל בפריטי המלאי אינו תקין.',
+            'inventory_items.*.canceled_reason.string' => 'שדה תגובת המנהל בפריטי המלאי אינו תקין.',
+            'inventory_items.*.canceled_reason.min' => 'שדה תגובת המנהל בפריטי המלאי אינו תקין.',
+            'inventory_items.*.canceled_reason.max' => 'שדה תגובת המנהל בפריטי המלאי אינו תקין.',
 
             'inventory_items.*.items.array' => 'שדה הפריטים אינו תקין.',
 

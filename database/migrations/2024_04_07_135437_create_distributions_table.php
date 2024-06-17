@@ -22,6 +22,7 @@ return new class extends Migration
             $table->integer('total_quantity'); 
             $table->longText('user_comment')->nullable();
             $table->longText('admin_comment')->nullable();
+            $table->longText('canceled_reason')->nullable();
             $table->longText('quartermaster_comment')->nullable();
             $table->string('sku')->nullable();
             $table->integer('quantity_per_inventory')->default(0); 

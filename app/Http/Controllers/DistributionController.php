@@ -332,7 +332,8 @@ class DistributionController extends Controller
                 ->orderBy('created_at', 'desc');
 
             // Add role-based filtering
-            if ($roleName != 'admin') {
+            if ($roleName == 'user') {
+                //? fetch records only what the user has been created.
                 $baseQuery->where('created_by', $user_auth->id);
             }
 
@@ -807,6 +808,7 @@ class DistributionController extends Controller
                     'sku' => 'לא הוקצה פריט.',
                     'quartermaster_comment' => $request->input('quartermaster_comment') ?? 'אין הערות אפסנאי.',
                     'admin_comment' => $request->input('admin_comment') ?? 'אין הערות מנהל.',
+                    'canceled_reason' => $request->input('canceled_reason') ?? 'אין סיבת ביטול.',
                 ]);
             }
 
@@ -936,8 +938,8 @@ class DistributionController extends Controller
                     $sizeArrayItem=count($items['items']);
 
                     if
-                    ((($sizeArrayItem==0)&&(is_null($request->input($items['admin_comment'])))) 
-                    || (($sizeArrayItem !== 0) && (is_null($request->input($items['admin_comment']))==false))) {
+                    ((($sizeArrayItem==0)&&(is_null($request->input($items['canceled_reason'])))) 
+                    || (($sizeArrayItem !== 0) && (is_null($request->input($items['canceled_reason']))==false))) {
 
                         DB::rollBack(); // Rollback the transaction
 
@@ -957,7 +959,7 @@ class DistributionController extends Controller
 
                             $distributionRecord->update([
                                 'status' => DistributionStatus::CANCELD->value,
-                                'admin_comment' => $items['admin_comment'],//save admin comment for each records that not approved
+                                'canceled_reason' => $items['canceled_reason'],//save canceled_reason for each records that not approved
                             ]);
 
 
@@ -1010,6 +1012,7 @@ class DistributionController extends Controller
                                     'inventory_id' => $inventory->id, //set relations
                                     'admin_comment' => $request->input('admin_comment') ?? 'אין הערות מנהל.',
                                     'quartermaster_comment' => $request->input('quartermaster_comment') ?? 'אין הערות אפסנאי.',
+                                    'canceled_reason' => $distributionRecord->canceled_reason?? 'אין סיבת ביטול.',
                                 ]);
                             }
                             //? deleted records (copy records - as time as admin selcted sku)
@@ -1241,6 +1244,8 @@ class DistributionController extends Controller
                             'sku' => null,
                             'quartermaster_comment' => $request->input('quartermaster_comment') ?? 'אין הערות אפסנאי.',
                             'admin_comment' => $distribution->admin_comment ?? 'אין הערות מנהל.',
+                            'canceled_reason' => $distribution->canceled_reason ?? 'אין סיבת ביטול.',
+
                         ]);
                         // Add the type_id to the unique collection
                         $uniqueDistributions->push($newDistribution);
