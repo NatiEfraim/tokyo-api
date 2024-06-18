@@ -35,11 +35,12 @@ class Distribution extends Model
         'updated_at',
         'inventory_id',
         'quantity_approved',
+        'canceled_reason',
 
         //! need to remove
-        'year',
-        'inventory_items',
-        'department_id',
+        // 'year',
+        // 'inventory_items',
+        // 'department_id',
     ];
 
     /**
@@ -61,8 +62,8 @@ class Distribution extends Model
         // 'inventory_id',
 
 
-        //! need to remove
-        'department_id',
+        // //! need to remove
+        // 'department_id',
     ];
     
 

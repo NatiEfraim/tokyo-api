@@ -916,13 +916,16 @@ class DistributionController extends Controller
                 return response()->json(['message' => 'לא נמצא משתמש במערכת עבור הזמנה זו.'], Response::HTTP_BAD_REQUEST);
             }
 
+
+
+
             DB::beginTransaction(); // Start a database transaction
 
 
 
             // Track processed type_ids
             $processedTypeIds = [];
-            
+
             //? distribution records has been approved
             if ($request->input('status') === DistributionStatus::APPROVED->value) {
                 // Loop through each type_id in the request
@@ -938,8 +941,8 @@ class DistributionController extends Controller
                     $sizeArrayItem=count($items['items']);
 
                     if
-                    ((($sizeArrayItem==0)&&(is_null($request->input($items['canceled_reason'])))) 
-                    || (($sizeArrayItem !== 0) && (is_null($request->input($items['canceled_reason']))==false))) {
+                    ((($sizeArrayItem==0)&&(is_null($items['canceled_reason']))) 
+                    || (($sizeArrayItem !== 0) && (is_null($items['canceled_reason'])==false))) {
 
                         DB::rollBack(); // Rollback the transaction
 
