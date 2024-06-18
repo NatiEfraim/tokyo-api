@@ -1045,14 +1045,6 @@ class DistributionController extends Controller
                 Mail::to($createdByUser->email)->send(new CanceledOrder($createdByUser, $request->input('order_number')));
             }
 
-            // ///rest of the records -that now has been approved
-            // foreach ($distributionRecords as $record) {
-            //     if (!in_array($record->type_id, $processedTypeIds)) {
-            //         $record->update([
-            //             'status' => DistributionStatus::CANCELD->value,
-            //         ]);
-            //     }
-            // }
 
             DB::commit(); // commit all changes in database.
 
@@ -1229,9 +1221,7 @@ class DistributionController extends Controller
                     ]);
 
                     if (!$uniqueDistributions->contains('type_id', $distribution->type_id)) {
-                        // Clone the original record to create a new unique record
-                        // $newDistribution = $distribution->replicate();
-                        // $newDistribution->save();
+         
                         $newDistribution = Distribution::create([
                             'order_number' => $distribution->order_number,
                             'user_comment' => $distribution->user_comment ?? 'אין הערות על ההזמנה.',
@@ -1267,11 +1257,14 @@ class DistributionController extends Controller
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
+
+    
     //? canceled records by order_number along id. only admin.
     public function canceledRecords(CanceledDistributionRequest $request)
     {
-        try {
 
+
+        try {
 
             if (is_null($request->input('quartermaster_comment')) && $request->input('status') == DistributionStatus::PENDING->value) {
                 return response()->json(['message' => 'יש לשלוח הערה על ההזמנה למנהל.'], Response::HTTP_BAD_REQUEST);
@@ -1291,22 +1284,14 @@ class DistributionController extends Controller
                 // Find the first distribution record with the matching type_id that has not been processed
                 $distributionRecord = $distributionRecords->firstWhere('id', $items['id']);
 
-                // $distributionRecord = Distribution::where('id', $items['id'])
-                //     ->where('is_deleted', false)
-                //     ->first();
-
                 if (is_null($distributionRecord)) {
                     DB::rollBack(); // Rollback the transaction in case of any error
                     return response()->json(['message' => 'לא נמצאו רשומות עם מספר מזהה זה במערכת.'], Response::HTTP_BAD_REQUEST);
                 }
                 //? update each records as canceled.
                 $distributionRecord->update([
-
-
                     'status' => DistributionStatus::CANCELD->value,
                     'admin_comment' => $items['admin_comment'],
-
-                    
                 ]);
             }
 

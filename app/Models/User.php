@@ -52,6 +52,13 @@ class User extends Authenticatable
     ];
 
     /**
+     * The relationships that should always be eagerly loaded.
+     *
+     * @var array<int, string>
+     */
+    protected $with = ['employeeType', 'roles'];
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -72,17 +79,12 @@ class User extends Authenticatable
         return $this->belongsTo(EmployeeType::class, 'emp_type_id');
     }
 
-       /**
-     * Get the roles for the user.
-     */
-    // public function roles()
-    // {
-    //     return $this->belongsToMany(Role::class, 'model_has_roles', 'model_id', 'role_id')
-    //                 ->where('model_type', self::class);
-    // }
 
-  /**
+
+    /**
      * Get the translated employee type attribute.
+     *
+     * @return string
      */
 
     public function getTranslatedEmployeeTypeAttribute()

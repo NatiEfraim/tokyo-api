@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Enums\EmployeeType;
+use App\Enums\Status;
 use App\Http\Requests\StoreUserRequest;
 use App\Models\User;
+use App\Services\User\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
@@ -23,6 +25,13 @@ class UserController extends Controller
     const MIN_LEN = 1;
     const MAX_LEN = 7;
 
+
+    protected $_userService;
+
+    public function __construct()
+    {
+        $this->_userService= new UserService();
+    }
 
     /**
      * @OA\Get(
@@ -86,35 +95,50 @@ class UserController extends Controller
     {
 
         try {
+            
 
-       // Fetch users with their employeeType and roles
-        $users = User::with(['employeeType', 'roles'])
-            ->where('is_deleted', false)
-            ->paginate(10);
+            $result = $this->_userService->fetchUsersRecords();
 
-            // Initialize an empty array to hold the formatted users
-            $formattedUsers = [];
+            // Use match to handle different status cases
+            return match ($result['status']) {
 
-            // Use foreach to format the users data to include role name
-            foreach ($users as $user) {
-                $formattedUsers[] = [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'personal_number' => $user->personal_number,
-                        'email' => $user->email,
-                        'phone' => $user->phone,
-                        'employee_type' => $user->getTranslatedEmployeeTypeAttribute()?? null,
-                        'role' => $user->translateRoleAttribute() ?? null,//set asscoiae
-                    ];
-            }
+                Status::OK => response()->json($result['data'], Response::HTTP_OK),
 
-        return response()->json([
-            'data' => $formattedUsers,
-            'current_page' => $users->currentPage(),
-            'last_page' => $users->lastPage(),
-            'per_page' => $users->perPage(),
-            'total' => $users->total(),
-        ], Response::HTTP_OK);
+                Status::NOT_FOUND => response()->json(['message' => 'לא נמצאו משתמשים במערכת.'], Response::HTTP_NOT_FOUND),
+
+                Status::INTERNAL_SERVER_ERROR => response()->json(['message' => 'התרחש בעיית שרתת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR),
+
+                default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
+            };
+
+    //    // Fetch users with their employeeType and roles
+    //     $users = User::with(['employeeType', 'roles'])
+    //         ->where('is_deleted', false)
+    //         ->paginate(10);
+
+    //         // Initialize an empty array to hold the formatted users
+    //         $formattedUsers = [];
+
+    //         // Use foreach to format the users data to include role name
+    //         foreach ($users as $user) {
+    //             $formattedUsers[] = [
+    //                     'id' => $user->id,
+    //                     'name' => $user->name,
+    //                     'personal_number' => $user->personal_number,
+    //                     'email' => $user->email,
+    //                     'phone' => $user->phone,
+    //                     'employee_type' => $user->getTranslatedEmployeeTypeAttribute()?? null,
+    //                     'role' => $user->translateRoleAttribute() ?? null,//set asscoiae
+    //                 ];
+    //         }
+
+    //     return response()->json([
+    //         'data' => $formattedUsers,
+    //         'current_page' => $users->currentPage(),
+    //         'last_page' => $users->lastPage(),
+    //         'per_page' => $users->perPage(),
+    //         'total' => $users->total(),
+    //     ], Response::HTTP_OK);
 
 
         } catch (\Exception $e) {
@@ -178,34 +202,48 @@ class UserController extends Controller
     {
         try {
 
-            $user = auth()->user();
+            $result = $this->_userService->fetchCurrentUser();
 
+            // Use match to handle different status cases
+            return match ($result['status']) {
 
-            // Make sure the user has an associated employeeType record
-            if (is_null($user->employeeType)) {
-                return response()->json(['message' => 'המשתמש לא מקושר לסוג עובד.'], Response::HTTP_CONFLICT);
-            }
+                Status::OK => response()->json($result['data'], Response::HTTP_OK),
 
+                Status::NOT_FOUND => response()->json(['message' => 'לא נמצאו משתמשים במערכת.'], Response::HTTP_NOT_FOUND),
 
+                Status::INTERNAL_SERVER_ERROR => response()->json(['message' => 'התרחש בעיית שרתת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR),
 
-            $user->population = match ($user->emp_type_id) {
-                EmployeeType::KEVA->value, EmployeeType::SADIR->value => 's' . $user->personal_number,
-                EmployeeType::MILUIM->value => 'm' . $user->personal_number,
-                EmployeeType::OVED_TZAHAL->value => 'c' . $user->personal_number,
-                default => throw new \InvalidArgumentException('סוג עובד לא תקין.')
+                default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
             };
+
+            // $user = auth()->user();
+
+
+            // // Make sure the user has an associated employeeType record
+            // if (is_null($user->employeeType)) {
+            //     return response()->json(['message' => 'המשתמש לא מקושר לסוג עובד.'], Response::HTTP_CONFLICT);
+            // }
+
+
+
+            // $user->population = match ($user->emp_type_id) {
+            //     EmployeeType::KEVA->value, EmployeeType::SADIR->value => 's' . $user->personal_number,
+            //     EmployeeType::MILUIM->value => 'm' . $user->personal_number,
+            //     EmployeeType::OVED_TZAHAL->value => 'c' . $user->personal_number,
+            //     default => throw new \InvalidArgumentException('סוג עובד לא תקין.')
+            // };
                     
 
-            $userData = [
+            // $userData = [
 
 
-            'name' => $user->name,
-            'personal_number' =>   $user->population,
-            'role' => $user->roles->first()->name?? null,
+            // 'name' => $user->name,
+            // 'personal_number' =>   $user->population,
+            // 'role' => $user->roles->first()->name?? null,
 
-            ];
+            // ];
 
-            return response()->json($userData, Response::HTTP_OK);
+            // return response()->json($userData, Response::HTTP_OK);
 
         } catch (\Exception $e) {
 
@@ -306,71 +344,86 @@ class UserController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
+            $result=$this->_userService->searchUsersRecords($request);
 
-            $searchQuery = $request->input('query');
+            // Use match to handle different status cases
+            return match ($result['status']) {
 
-            $searchQuery = str_replace(' ', '', $request->input('query'));
+                Status::OK => response()->json($result['data'], Response::HTTP_OK),
 
-            if ((ctype_digit($searchQuery) == true) && (strlen($searchQuery) < self::MIN_LEN || strlen($searchQuery) > self::MAX_LEN)) {
-                return response()->json(['message' => 'נתונים שנשנלחו אינם בפורמט תקין'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            }
+                Status::NOT_FOUND => response()->json(['message' => 'לא נמצאו משתמשים במערכת.'], Response::HTTP_NOT_FOUND),
 
-            if ((ctype_digit($searchQuery) == true)) {
+                Status::INTERNAL_SERVER_ERROR => response()->json(['message' => 'התרחש בעיית שרתת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR),
 
-                //? search user by personal_number
-                $user_search_for = User::with(['employeeType','roles'])
-                    ->where('personal_number', 'like', '%' . $searchQuery . '%')
-                    ->where('is_deleted', false)
-                    ->orderBy('id', 'asc')
-                    ->get();
+                default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
+            };
 
-                // Initialize an empty array to hold the formatted users
-                $formattedUsers = [];
 
-                // Use foreach to format the users data to include role name
-                foreach ($user_search_for as $user) {
-                    $formattedUsers[] = [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'personal_number' => $user->personal_number,
-                        'email' => $user->email,
-                        'phone' => $user->phone,
-                        'employee_type' => $user->getTranslatedEmployeeTypeAttribute() ?? null,
-                        'role' => $user->translateRoleAttribute() ?? null,//set role associated.
+
+            // $searchQuery = $request->input('query');
+
+            // $searchQuery = str_replace(' ', '', $request->input('query'));
+
+            // if ((ctype_digit($searchQuery) == true) && (strlen($searchQuery) < self::MIN_LEN || strlen($searchQuery) > self::MAX_LEN)) {
+            //     return response()->json(['message' => 'נתונים שנשנלחו אינם בפורמט תקין'], Response::HTTP_UNPROCESSABLE_ENTITY);
+            // }
+
+            // if ((ctype_digit($searchQuery) == true)) {
+
+            //     //? search user by personal_number
+            //     $user_search_for = User::with(['employeeType','roles'])
+            //         ->where('personal_number', 'like', '%' . $searchQuery . '%')
+            //         ->where('is_deleted', false)
+            //         ->orderBy('id', 'asc')
+            //         ->get();
+
+            //     // Initialize an empty array to hold the formatted users
+            //     $formattedUsers = [];
+
+            //     // Use foreach to format the users data to include role name
+            //     foreach ($user_search_for as $user) {
+            //         $formattedUsers[] = [
+            //             'id' => $user->id,
+            //             'name' => $user->name,
+            //             'personal_number' => $user->personal_number,
+            //             'email' => $user->email,
+            //             'phone' => $user->phone,
+            //             'employee_type' => $user->getTranslatedEmployeeTypeAttribute() ?? null,
+            //             'role' => $user->translateRoleAttribute() ?? null,//set role associated.
                    
-                    ];
-                }
-                    return response()->json($formattedUsers,Response::HTTP_OK);
-            }
+            //         ];
+            //     }
+            //         return response()->json($formattedUsers,Response::HTTP_OK);
+            // }
 
 
-            // Search users by name (ignoring spaces)
-            $user_search_for = User::with(['employeeType', 'roles'])
-            ->whereRaw("REPLACE(name, ' ', '') LIKE ?", ['%' . $searchQuery . '%'])
-            ->where('is_deleted', false)
-                ->orderBy('id', 'asc')
-                ->get();
+            // // Search users by name (ignoring spaces)
+            // $user_search_for = User::with(['employeeType', 'roles'])
+            // ->whereRaw("REPLACE(name, ' ', '') LIKE ?", ['%' . $searchQuery . '%'])
+            // ->where('is_deleted', false)
+            //     ->orderBy('id', 'asc')
+            //     ->get();
 
 
 
-            // Initialize an empty array to hold the formatted users
-            $formattedUsers = [];
+            // // Initialize an empty array to hold the formatted users
+            // $formattedUsers = [];
 
-            // Use foreach to format the users data to include role name
-            foreach ($user_search_for as $user) {
-                $formattedUsers[] = [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'personal_number' => $user->personal_number,
-                    'email' => $user->email,
-                    'phone' => $user->phone,
-                    'employee_type' => $user->getTranslatedEmployeeTypeAttribute() ?? null,
-                    'role' => $user->translateRoleAttribute() ?? null,//set asscoiae
-                ];
-            }
+            // // Use foreach to format the users data to include role name
+            // foreach ($user_search_for as $user) {
+            //     $formattedUsers[] = [
+            //         'id' => $user->id,
+            //         'name' => $user->name,
+            //         'personal_number' => $user->personal_number,
+            //         'email' => $user->email,
+            //         'phone' => $user->phone,
+            //         'employee_type' => $user->getTranslatedEmployeeTypeAttribute() ?? null,
+            //         'role' => $user->translateRoleAttribute() ?? null,//set asscoiae
+            //     ];
+            // }
                 
 
-            return response()->json($formattedUsers, Response::HTTP_OK);
+            // return response()->json($formattedUsers, Response::HTTP_OK);
 
         } catch (\Exception $e) {
             Log::error($e->getMessage());
@@ -489,20 +542,15 @@ class UserController extends Controller
                 ]);
 
 
-            // // // Assign role based on the received value.
-            switch ($request->input('role')) {
-                case 1:
-                    $role = Role::where('name', 'admin')->first();
-                    break;
-                case 2:
-                    $role = Role::where('name', 'user')->first();
-                    break;
-                case 3:
-                    $role = Role::where('name', 'quartermaster')->first();
-                    break;
-                default:
-                    throw new \InvalidArgumentException('Invalid role value.');
-            }
+                $roleValue = $request->input('role');
+
+                // Assign role based on the received value using match expression
+                $role = match ($roleValue) {
+                    1 => Role::where('name', 'admin')->first(),
+                    2 => Role::where('name', 'user')->first(),
+                    3 => Role::where('name', 'quartermaster')->first(),
+                    default => throw new \InvalidArgumentException('Invalid role value.'),
+                };
 
             // Assign the role to the new user.
             $user_exsist->assignRole($role);
@@ -523,20 +571,15 @@ class UserController extends Controller
 
 
 
-            // // // Assign role based on the received value.
-            switch ($request->input('role')) {
-                case 1:
-                    $role = Role::where('name', 'admin')->first();
-                    break;
-                case 2:
-                    $role = Role::where('name', 'user')->first();
-                    break;
-                case 3:
-                    $role = Role::where('name', 'quartermaster')->first();
-                    break;
-                default:
-                    throw new \InvalidArgumentException('Invalid role value.');
-            }
+                $roleValue = $request->input('role');
+
+                // Assign role based on the received value using match expression
+                $role = match ($roleValue) {
+                    1 => Role::where('name', 'admin')->first(),
+                    2 => Role::where('name', 'user')->first(),
+                    3 => Role::where('name', 'quartermaster')->first(),
+                    default => throw new \InvalidArgumentException('Invalid role value.'),
+                };
 
             // Assign the role to the new user.
             $newUser->assignRole($role);
@@ -706,6 +749,7 @@ class UserController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
+
             $user = User::where('id', $id)->where('is_deleted', false)->first();
 
             if (is_null($user)) {
@@ -796,16 +840,11 @@ class UserController extends Controller
                 return response()->json(['message' => 'חובה לשלוח מספר מזהה של הבקשה.'], Response::HTTP_BAD_REQUEST);
             }
 
-
             $user_exsist = User::where('id', $id)->where('is_deleted', false)->first();
-
-
 
             if (is_null($user_exsist)) {
                 return response()->json(['message' => 'משתמש אינו קיים במערכת.'], Response::HTTP_BAD_REQUEST);
             }
-
-
             //doft deleted user
             $user_exsist->update(['is_deleted' => true]);
 
