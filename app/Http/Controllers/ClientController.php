@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Client;
+use App\Services\Client\ClientService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use App\Enums\EmployeeType;
+use App\Enums\Status;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -17,6 +19,12 @@ class ClientController extends Controller
     const MIN_LEN = 1;
     const MAX_LEN = 7;
 
+protected $_clientService;
+
+    public function __construct()
+    {
+        $this->_clientService = new ClientService();
+    }
 
     //
     /**
@@ -71,33 +79,18 @@ class ClientController extends Controller
 
         try {
 
-            // Fetch users with their employeeType and roles
-            $clients = Client::select('id','name', 'emp_type_id', 'personal_number')
-            ->where('is_deleted',false)
-            ->get();
+            $result = $this->_clientService->fetchCleintsRecords();
 
-            $clients->each(function ($client) {
-                
-                    if ($client->emp_type_id) {
-                    //? set and format poplution for each client records
-                    //set the first letter for the persnal_number
-                    $client->population = match ($client->emp_type_id) {
-                        EmployeeType::KEVA->value, EmployeeType::SADIR->value => 's' . $client->personal_number,
-                        EmployeeType::MILUIM->value => 'm' . $client->personal_number,
-                        EmployeeType::OVED_TZAHAL->value => 'c' . $client->personal_number,
-                        default => throw new \InvalidArgumentException('סוג עובד לא תקין.')
-                    };
-                    
-                    }
-                $client->makeHidden(['personal_number', 'emp_type_id']);
-                
-                return $client;
-            });
+            // Use match to handle different status cases
+            return match ($result['status']) {
 
-            
-            return response()->json($clients->isEmpty() ? [] : $clients, Response::HTTP_OK);
+                Status::OK => response()->json($result['data'], Response::HTTP_OK),
 
-            
+                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+
+                default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
+            };
+
         } catch (\Exception $e) {
             
             Log::error($e->getMessage());
@@ -197,73 +190,19 @@ class ClientController extends Controller
             }
 
 
-            $searchQuery = $request->input('query');
+            $result = $this->_clientService->searchClients($request);
 
-            $searchQuery = str_replace(' ', '', $request->input('query'));
+            // Use match to handle different status cases
+            return match ($result['status']) {
 
-            if ((ctype_digit($searchQuery) == true) && (strlen($searchQuery) < self::MIN_LEN || strlen($searchQuery) > self::MAX_LEN)) {
-                return response()->json(['message' => 'נתונים שנשנלחו אינם בפורמט תקין'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            }
+                Status::OK => response()->json($result['data'], Response::HTTP_OK),
 
-            if ((ctype_digit($searchQuery) == true)) {
+                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
 
-                //? search user by personal_number
-                $clientsRecords = Client::with(['employeeType'])
-                    ->where('personal_number', 'like', '%' . $searchQuery . '%')
-                    ->where('is_deleted', false)
-                    ->orderBy('id', 'asc')
-                    ->get();
+                Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
 
-                $clientsRecords->each(function ($client) {
-
-                    if ($client->emp_type_id) {
-                        //? set and format poplution for each client records
-                        //set the first letter for the persnal_number
-                        $client->population = match ($client->emp_type_id) {
-                            EmployeeType::KEVA->value, EmployeeType::SADIR->value => 's' . $client->personal_number,
-                            EmployeeType::MILUIM->value => 'm' . $client->personal_number,
-                            EmployeeType::OVED_TZAHAL->value => 'c' . $client->personal_number,
-                            default => throw new \InvalidArgumentException('סוג עובד לא תקין.')
-                        };
-                    }
-                    $client->makeHidden(['personal_number', 'emp_type_id']);
-
-                    return $client;
-                });
-
-                    return response()->json($clientsRecords,Response::HTTP_OK);
-            }
-
-
-            // Search users by name (ignoring spaces)
-            $clientsRecords = Client::with(['employeeType'])
-            ->whereRaw("REPLACE(name, ' ', '') LIKE ?", ['%' . $searchQuery . '%'])
-            ->where('is_deleted', false)
-                ->orderBy('id', 'asc')
-                ->get();
-
-
-
-            $clientsRecords->each(function ($client) {
-
-                if ($client->emp_type_id) {
-                    //? set and format poplution for each client records
-                    //set the first letter for the persnal_number
-                    $client->population = match ($client->emp_type_id) {
-                        EmployeeType::KEVA->value, EmployeeType::SADIR->value => 's' . $client->personal_number,
-                        EmployeeType::MILUIM->value => 'm' . $client->personal_number,
-                        EmployeeType::OVED_TZAHAL->value => 'c' . $client->personal_number,
-                        default => throw new \InvalidArgumentException('סוג עובד לא תקין.')
-                    };
-                }
-                $client->makeHidden(['personal_number', 'emp_type_id']);
-
-                return $client;
-            });
-
-                
-
-            return response()->json($clientsRecords->isEmpty() ? []  : $clientsRecords, Response::HTTP_OK);
+                default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
+            };
 
         } catch (\Exception $e) {
             Log::error($e->getMessage());
