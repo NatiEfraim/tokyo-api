@@ -117,7 +117,7 @@ Route::controller(DistributionController::class)
         // Route::post('/canceled', 'canceledRecords')->middleware(['role:admin']);
         
         //? route for to make order on item  route for user
-        Route::post('/', 'store')->middleware(['role:admin|user']);
+        Route::post('/', 'store');
         
         //?route for quartermaster - to sign for collected or back to liran
         Route::put('/changed-status', 'changeStatus')->middleware(['role:admin|quartermaster']);

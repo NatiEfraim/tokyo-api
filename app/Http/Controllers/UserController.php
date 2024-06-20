@@ -152,8 +152,26 @@ class UserController extends Controller
     public function getRoles()
     {
         try {
-            $roles = Role::all(['id','name']);
-            return response()->json($roles, Response::HTTP_OK);
+
+            // Fetch all roles
+            $roles = Role::all(['id', 'name']);
+
+            // Define the translations
+            $translations = [
+                'admin' => 'מנהל',
+                'quartermaster' => 'אפסנאי',
+                'user' => 'ראש מדור',
+            ];
+
+            // Map through roles and translate the names
+            $translatedRoles = $roles->map(function ($role) use ($translations) {
+                return [
+                    'id' => $role->id,
+                    'name' => $translations[$role->name] ?? $role->name,
+                ];
+            });
+
+            return response()->json($translatedRoles, Response::HTTP_OK);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }

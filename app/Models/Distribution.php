@@ -97,11 +97,14 @@ class Distribution extends Model
         return $this->belongsTo(User::class);
     }
 
-
+    /**
+     * Get the user record associated with the distribution.
+     */
     public function createdForUser()
     {
         return $this->belongsTo(Client::class, 'created_for')
-            ->select('id', 'name', 'emp_type_id', 'phone', 'email', 'personal_number', 'department_id')->with(['employeeType', 'department']);
+            ->select('id', 'name', 'emp_type_id', 'phone', 'email', 'personal_number', 'department_id')
+            ->with(['employeeType', 'department']);
     }
 
     //? fetch associated quartermaster user records 

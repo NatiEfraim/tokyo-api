@@ -51,7 +51,25 @@ class EmployeeTypeController extends Controller
         try {
 
             $empTypeRecords=EmployeeType::where('is_deleted',false)->get();
-            return response()->json($empTypeRecords->isEmpty()? []:$empTypeRecords,Response::HTTP_OK);
+
+            // Define the translations
+            $translations = [
+                'civilian_employee' => 'אע"צ',
+                'sadir' => 'סדיר',
+                'miluim' => 'מילואים',
+                'keva' => 'קבע',
+            ];
+
+            // Map through empType and translate the names
+            $translatedEmpTypes = $empTypeRecords->map(function ($empType) use ($translations) {
+                return [
+                    'id' => $empType->id,
+                    'name' => $translations[$empType->name] ?? $empType->name,
+                ];
+            });
+
+
+            return response()->json($translatedEmpTypes->isEmpty()? []: $translatedEmpTypes,Response::HTTP_OK);
 
         } catch (\Exception $e) {
             Log::error($e->getMessage());

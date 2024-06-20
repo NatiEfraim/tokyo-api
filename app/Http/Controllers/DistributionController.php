@@ -277,7 +277,8 @@ class DistributionController extends Controller
      *                      property="employee_type",
      *                      type="object",
      *                      @OA\Property(property="id", type="integer", example=2),
-     *                      @OA\Property(property="name", type="string", example="miluim")
+     *                      @OA\Property(property="name", type="string", example="miluim"),
+     *                      @OA\Property(property="population", type="string", example="מילואים"),
      *                  ),
      *                  @OA\Property(
      *                      property="department",
@@ -366,6 +367,10 @@ class DistributionController extends Controller
                 // Format the created_at and updated_at timestamps
                 $distribution->created_at_date = optional($distribution->created_at)->format('d/m/Y');
                 $distribution->updated_at_date = optional($distribution->updated_at)->format('d/m/Y');
+                // Translate each name of employee_type fields 
+                if ($distribution->createdForUser && $distribution->createdForUser->employeeType) {
+                    $distribution->createdForUser->employeeType->population = $distribution->createdForUser->employeeType->translated_employee_type;
+                }
 
                 return $distribution;
             });
@@ -1258,7 +1263,7 @@ class DistributionController extends Controller
     }
 
 
-    
+    //! need to remove that function.
     //? canceled records by order_number along id. only admin.
     public function canceledRecords(CanceledDistributionRequest $request)
     {
@@ -1479,7 +1484,8 @@ class DistributionController extends Controller
      *                      property="employee_type",
      *                      type="object",
      *                      @OA\Property(property="id", type="integer", example=2),
-     *                      @OA\Property(property="name", type="string", example="miluim")
+     *                      @OA\Property(property="name", type="string", example="miluim"),
+     *                      @OA\Property(property="population", type="string", example="מילואים")
      *                  )
      *              )
      *          )
@@ -1494,9 +1500,12 @@ class DistributionController extends Controller
      * )
      */
 
+     //? group-by records  by order_number
     public function fetchDistributionsRecordsByOrderNumber(Request $request)
     {
         try {
+
+
             // set custom error messages in Hebrew
             $customMessages = [
                 'status.required' => 'יש לשלוח שדה לחיפוש',
@@ -1509,9 +1518,10 @@ class DistributionController extends Controller
 
             //set the rules
             $rules = [
-                'status' => 'required|integer|between:0,3',
+                'status' => 'required|integer|between:1,4',
                 'query' => 'nullable|string|min:1|max:255',
             ];
+
 
             // validate the request data
             $validator = Validator::make($request->all(), $rules, $customMessages);
@@ -1537,9 +1547,16 @@ class DistributionController extends Controller
                 // Format the created_at and updated_at timestamps
                 $distribution->created_at_date = optional($distribution->created_at)->format('d/m/Y');
                 $distribution->updated_at_date = optional($distribution->updated_at)->format('d/m/Y');
+                //translate each name of employee_type fileds 
+                if ($distribution->createdForUser && $distribution->createdForUser->employeeType) {
+                    $distribution->createdForUser->employeeType->population = $distribution->createdForUser->employeeType->translated_employee_type;
+                }
 
                 return $distribution;
             });
+
+
+    
 
             // Create a new collection to store unique distributions by order_number
             $uniqueDistributions = collect();

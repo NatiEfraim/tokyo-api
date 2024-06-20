@@ -62,7 +62,11 @@ class Client extends Model
         return $this->belongsTo(Department::class,'department_id');
     }
 
-
+    /**
+     * Get the translated employee type attribute.
+     *
+     * @return string
+     */
     public function getTranslatedEmployeeTypeAttribute()
     {
         $employeeTypes = [

@@ -37,4 +37,21 @@ class EmployeeType extends Model
         return $this->hasMany(Client::class, 'emp_type_id');
     }
 
+    /**
+     * Get the translated employee type attribute.
+     *
+     * @return string
+     */
+
+    public function getTranslatedEmployeeTypeAttribute()
+    {
+        $employeeTypes = [
+            'civilian_employee' => 'אע"צ',
+            'sadir' => 'סדיר',
+            'miluim' => 'מילואים',
+            'keva' => 'קבע',
+        ];
+
+        return $employeeTypes[$this->name] ?? 'חסר';
+    }
 }
