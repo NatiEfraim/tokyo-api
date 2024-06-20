@@ -196,10 +196,15 @@ Route::controller(ExportController::class)
     ->prefix('item-type')
     ->middleware(['auth:api'])
     ->group(function () {
+
         Route::get('/', 'index');
+
         Route::get('/search-record', 'searchRecords');
+
         Route::post('/', 'store');
+        
         Route::put('/{id?}', 'update');
-        Route::delete('/{id?}', 'destroy');
+
+        // Route::delete('/{id?}', 'destroy');
 
     });

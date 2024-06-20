@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Status;
 use App\Models\ItemType;
+use App\Services\ItemType\ItemTypeService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-// use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
@@ -16,6 +17,15 @@ use Carbon\Carbon;
 class ItemTypeController extends Controller
 {
     //
+
+    protected $_itemTypeSerivce;
+
+    public function __construct()
+    {
+       $this->_itemTypeSerivce = new ItemTypeService();
+    }
+
+
     /**
      * Display a listing of the item types.
      *
@@ -55,11 +65,22 @@ class ItemTypeController extends Controller
     {
         try {
 
-            $itemTypes=ItemType::where('is_deleted',false)->get();
-            return response()->json($itemTypes,Response::HTTP_OK);
+            $result =$this->_itemTypeSerivce->index();
+
+            // Use match to handle different status cases
+            return match ($result['status']) {
+
+                Status::OK => response()->json($result['data'], Response::HTTP_OK),
+
+                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+
+                default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
+            };
 
         } catch (\Exception $e) {
+
             Log::error($e->getMessage());
+
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
@@ -141,31 +162,23 @@ class ItemTypeController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-            $currentTime = Carbon::now()->toDateTimeString();
+            $result = $this->_itemTypeSerivce->store($request);
+
+            // Use match to handle different status cases
+            return match ($result['status']) {
+
+                Status::CREATED => response()->json($result['message'], Response::HTTP_CREATED),
+
+                Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
+
+                Status::UNPROCESSABLE_ENTITY => response()->json($result['message'], Response::HTTP_UNPROCESSABLE_ENTITY),
+
+                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+
+                default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
+            };
 
 
-            $itemTypeRecord=ItemType::where('type',$request->input('type'))->where('is_deleted',true)->first();
-            if (is_null($itemTypeRecord)) {
-                //? create new itemTypeRecord record
-                ItemType::create([
-                    'type' => $request->input('type'),
-                    'icon_number' => $request->input('icon_number'),
-                    'created_at' => $currentTime,
-                    'updated_at' => $currentTime,
-                ]);
-            }else {
-                //? updated itemTypeRecord records that exist in the depatments table
-                $itemTypeRecord->update([
-                    'type' =>  $request->input('type'),
-                    'icon_number' => $request->input('icon_number'),
-                    'is_deleted' => 0,
-                    'updated_at' =>  $currentTime,
-                ]);
-            }
-
-
-
-            return response()->json(['message' => 'המחלקה נוצרה בהצלחה.'], Response::HTTP_CREATED);
         } catch (\Exception $e) {
 
             Log::error($e->getMessage());
@@ -223,21 +236,25 @@ class ItemTypeController extends Controller
 
     public function destroy($id = null)
     {
-        if (is_null($id)) {
-            return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
-        }
-
+        
         try {
-            $itemTypeRecord = ItemType::where('is_deleted', 0)->where('id', $id)->first();
 
-            if (is_null($itemTypeRecord)) {
-                return response()->json(['message' => 'שורה אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
-            }
-            $itemTypeRecord->update([
-                'is_deleted' => true,
-            ]);
+            $result = $this->_itemTypeSerivce->destroy($id);
 
-            return response()->json(['message' => 'שורה נמחקה בהצלחה.'], Response::HTTP_OK);
+            // Use match to handle different status cases
+            return match ($result['status']) {
+
+                Status::OK => response()->json($result['message'], Response::HTTP_OK),
+
+                Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
+
+                Status::UNPROCESSABLE_ENTITY => response()->json($result['message'], Response::HTTP_UNPROCESSABLE_ENTITY),
+
+                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+
+                default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
+            };
+
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
@@ -317,25 +334,22 @@ class ItemTypeController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-            $itemTypeRecord = ItemType::where('is_deleted', 0)
-                ->where('id', $id)
-                ->first();
 
+            $result = $this->_itemTypeSerivce->update($request,$id);
 
-            if (is_null($itemTypeRecord)) {
-                return response()->json(['message' => 'שורה אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
-            }
+            // Use match to handle different status cases
+            return match ($result['status']) {
 
-            $currentTime = Carbon::now()->toDateTimeString();
+                Status::OK => response()->json($result['message'], Response::HTTP_OK),
 
-            $itemTypeRecord->update([
-                'type' =>$request->input('type'),
-                'updated_at' =>   $currentTime
-            ]);
+                Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
 
+                Status::UNPROCESSABLE_ENTITY => response()->json($result['message'], Response::HTTP_UNPROCESSABLE_ENTITY),
 
+                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
 
-            return response()->json(['message' => 'שורה התעדכנה בהצלחה.'], Response::HTTP_OK);
+                default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
+            };
 
         } catch (\Exception $e) {
 
@@ -422,16 +436,26 @@ class ItemTypeController extends Controller
             }
 
 
-            // Search by type
-            $itemTypeRecord = ItemType::where('type', 'LIKE', '%' . $request->input('query') . '%')
-            ->where('is_deleted', false)->get();
+            $result = $this->_itemTypeSerivce->searchRecords($request);
 
+            // Use match to handle different status cases
+            return match ($result['status']) {
 
-            return response()->json($itemTypeRecord->isEmpty() ? [] : $itemTypeRecord, Response::HTTP_OK);
+                Status::OK => response()->json($result['data'], Response::HTTP_OK),
+
+                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+
+                Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
+
+                default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
+            };
          
         } catch (\Exception $e) {
+
             Log::error($e->getMessage());
+
         }
+        
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 

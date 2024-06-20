@@ -107,8 +107,6 @@ class UserController extends Controller
 
                 Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
 
-                Status::UNPROCESSABLE_ENTITY => response()->json($result['message'], Response::HTTP_UNPROCESSABLE_ENTITY),
-
                 Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
 
                 default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
