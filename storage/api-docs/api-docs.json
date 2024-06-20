@@ -933,6 +933,10 @@
                                                         "name": {
                                                             "type": "string",
                                                             "example": "miluim"
+                                                        },
+                                                        "population": {
+                                                            "type": "string",
+                                                            "example": "מילואים"
                                                         }
                                                     },
                                                     "type": "object"
@@ -1715,88 +1719,6 @@
                 ]
             }
         },
-        "/api/distribution/{id}": {
-            "put": {
-                "tags": [
-                    "Distributions"
-                ],
-                "summary": "Update distribution record",
-                "description": "Update an existing distribution record by providing the ID.",
-                "operationId": "6b27941186332feb1a4d989a3939dda1",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID of the distribution record to update",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "description": "Updated distribution record data",
-                    "required": false,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "comment"
-                                ],
-                                "properties": {
-                                    "comment": {
-                                        "type": "string",
-                                        "example": "This is an updated comment"
-                                    },
-                                    "status": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "quantity": {
-                                        "type": "integer",
-                                        "example": 10
-                                    },
-                                    "inventory_id": {
-                                        "type": "integer",
-                                        "example": 123
-                                    },
-                                    "department_id": {
-                                        "type": "integer",
-                                        "example": 456
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Success: Distribution record updated successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "שורה התעדכנה בהצלחה."
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request: Missing or invalid input"
-                    },
-                    "500": {
-                        "description": "Server error"
-                    }
-                }
-            }
-        },
         "/api/distributions/search-by-query": {
             "get": {
                 "tags": [
@@ -2089,6 +2011,10 @@
                                                         "name": {
                                                             "type": "string",
                                                             "example": "miluim"
+                                                        },
+                                                        "population": {
+                                                            "type": "string",
+                                                            "example": "מילואים"
                                                         }
                                                     },
                                                     "type": "object"
@@ -2751,142 +2677,6 @@
                         }
                     }
                 }
-            }
-        },
-        "/api/send-distributions-by-email": {
-            "post": {
-                "tags": [
-                    "Distributions"
-                ],
-                "summary": "Send distributions by email",
-                "description": "Send distribution records by email to specified users.",
-                "operationId": "sendDistributionsByEmail",
-                "requestBody": {
-                    "description": "Request body",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "users"
-                                ],
-                                "properties": {
-                                    "users": {
-                                        "description": "Array of user IDs to send email to",
-                                        "type": "array",
-                                        "items": {
-                                            "type": "integer",
-                                            "example": 1
-                                        }
-                                    },
-                                    "sku": {
-                                        "description": "SKU of the inventory",
-                                        "type": "string",
-                                        "maxLength": 255,
-                                        "example": "ABC123"
-                                    },
-                                    "status": {
-                                        "description": "Status of the distribution",
-                                        "type": "integer",
-                                        "enum": [
-                                            0,
-                                            1,
-                                            2
-                                        ],
-                                        "example": 1
-                                    },
-                                    "name": {
-                                        "description": "Name of the department",
-                                        "type": "string",
-                                        "example": "Sales"
-                                    },
-                                    "personal_number": {
-                                        "description": "Personal number of the user",
-                                        "type": "string",
-                                        "maxLength": 7,
-                                        "minLength": 1,
-                                        "example": "1234567"
-                                    },
-                                    "created_at": {
-                                        "description": "Filter by creation date (YYYY-MM-DD)",
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2024-04-15"
-                                    },
-                                    "updated_at": {
-                                        "description": "Filter by last updated date (YYYY-MM-DD)",
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2024-04-15"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Success response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Email sent successfully"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "messages": {
-                                            "type": "object",
-                                            "example": {
-                                                "sku": [
-                                                    "The SKU field is not in the correct format."
-                                                ],
-                                                "personal_number": [
-                                                    "The personal number field must be between 1 and 7 characters."
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "An internal server error occurred. Please try again later."
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
             }
         },
         "/api/inventories": {

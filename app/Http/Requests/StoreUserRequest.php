@@ -34,7 +34,6 @@ class StoreUserRequest extends FormRequest
 
             'employee_type' => 'required|exists:employee_types,id,is_deleted,0',
 
-            // 'role' => 'required|between:0,3',
             'role' => 'required|integer|exists:roles,id',
 
         ];
@@ -64,9 +63,9 @@ class StoreUserRequest extends FormRequest
             // 'role.required' => 'יש לבחור שדה תפקיד',
             // 'role.between' => 'שדה תפקיד אינו תקין.',
 
-                            'role.required' => 'יש לשלוח שדה תקיד עבור משתמש.',
-                'role.integer' => 'שדה תפקיד אינו תקין',
-                'role.exists' => 'שדה תפקיד שנשלח אינו קיים במערכת.',
+            'role.required' => 'יש לשלוח שדה תקיד עבור משתמש.',
+            'role.integer' => 'שדה תפקיד אינו תקין',
+            'role.exists' => 'שדה תפקיד שנשלח אינו קיים במערכת.',
 
 
             'phone.required' => 'מספר הטלפון הוא שדה חובה',
@@ -75,6 +74,7 @@ class StoreUserRequest extends FormRequest
             'phone.regex' => 'מספר הטלפון חייב להיות בפורמט תקין של מספר ישראלי',
             'employee_type.required' => 'סוג העובד הוא שדה חובה',
             'employee_type.exists' => 'סוג העובד אינו קיים במערכת',
+            
         ];
     }
 }
