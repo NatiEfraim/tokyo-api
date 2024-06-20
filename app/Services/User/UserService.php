@@ -34,13 +34,13 @@ class UserService
      *
      */
 
-public function fetchUsersRecords()
-{
+    public function fetchUsersRecords()
+    {
         try {
 
             // Fetch users with their employeeType and roles
             $users = User::with(['employeeType', 'roles'])
-                ->where('is_deleted', false)
+            ->where('is_deleted', false)
                 ->paginate(10);
 
             // Initialize an empty array to hold the formatted users
@@ -59,7 +59,7 @@ public function fetchUsersRecords()
                 ];
             }
 
-            $data= [
+            $data = [
                 'data' => $formattedUsers,
                 'current_page' => $users->currentPage(),
                 'last_page' => $users->lastPage(),
@@ -78,7 +78,7 @@ public function fetchUsersRecords()
         return [
             'status' => Status::INTERNAL_SERVER_ERROR,
             'message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.',
-        ];    
+        ];
     }
 
     /**
