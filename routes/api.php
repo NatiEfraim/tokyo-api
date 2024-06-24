@@ -35,11 +35,7 @@ Route::controller(InventoryController::class)
     ->middleware(['auth:api'])
     ->group(function () {
 
-
-
-
         Route::get('/', 'index');
-
 
         //? fetch sku & id only
         Route::get('/sku-records', 'getSkuRecords');
@@ -53,15 +49,10 @@ Route::controller(InventoryController::class)
         //? sort by sku based on type_id
         Route::get('/fetch-by-sku', 'fetchBySku');
 
-        
-
         //? fetch all reports records by sku of invetory records (property sku:5487415).
         Route::get('/history', 'fetchReport')->middleware(['role:admin']);
 
         Route::get('/{id?}', 'getRecordById');
-
-
-
 
         Route::put('/{id?}', 'update')->middleware(['role:admin|quartermaster']);
 
@@ -82,7 +73,6 @@ Route::controller(DistributionController::class)
 
         Route::get('/', 'index');
 
-        
         //?fetch  history records - group by type_id fileds 
         Route::get('/fetch-history', 'fetchRecordsByType')->middleware(['role:admin|user|quartermaster']);
 
@@ -109,13 +99,9 @@ Route::controller(DistributionController::class)
 
         Route::get('/{id?}', 'getRecordById');
         
-
         //? route for liran allocations records items
         Route::post('/allocation', 'allocationRecords')->middleware(['role:admin']);
 
-        // //? route for liran canceled records items
-        // Route::post('/canceled', 'canceledRecords')->middleware(['role:admin']);
-        
         //? route for to make order on item  route for user
         Route::post('/', 'store');
         
@@ -129,25 +115,34 @@ Route::controller(DepartmentController::class)
     ->prefix('departments')
     ->middleware(['auth:api'])
     ->group(function () {
+
         Route::get('/', 'index');
+
         Route::post('/', 'store')->middleware(['role:admin|user']);
+
         Route::delete('/mass-destroy', 'massDestroy')->middleware(['role:admin']);
+
         Route::delete('/{id?}', 'destroy')->middleware(['role:admin']);
+
     });
 
 Route::controller(EmployeeTypeController::class)
     ->prefix('employee-types')
     ->middleware(['auth:api'])
     ->group(function () {
+
         Route::get('/', 'index');
+
     });
     
 Route::controller(ClientController::class)
     ->prefix('clients')
     ->middleware(['auth:api'])
     ->group(function () {
+
         //?fetch all clients id & name
         Route::get('/', 'index');
+
         //? search clients records - based on pn or name.
         Route::get('/search', 'searchClients')->middleware(['role:admin|quartermaster']);
     });
@@ -166,12 +161,12 @@ Route::controller(UserController::class)
         //? fetch all roles 
         Route::get('/roles', 'getRoles')->middleware(['role:admin']);
 
-
         Route::post('/', 'store')->middleware(['role:admin']);
         
         Route::put('/{id?}', 'update')->middleware(['role:admin']);
 
         Route::delete('/mass-destroy', 'massDestroy')->middleware(['role:admin']);
+
         Route::delete('/{id?}', 'destroy')->middleware(['role:admin']);
     });
 
@@ -181,14 +176,13 @@ Route::controller(ExportController::class)
     ->prefix('export')
     ->middleware(['auth:api','role:admin'])
     ->group(function () {
+
         Route::get('/inventories', 'exportInventories');
+
         Route::get('/users', 'exportUsers');
+        
         Route::get('/distributions', 'exportDistributions');
 
-        //! need to remove those functons and endpoint
-        // Route::get('/distributions-email', 'sendDistributionsByEmail');
-        // Route::get('/users-email', 'sendUsersByEmail');
-        // Route::get('/inventories-email', 'sendInventoriesByEmail');
     });
 
 
@@ -205,6 +199,6 @@ Route::controller(ExportController::class)
         
         Route::put('/{id?}', 'update');
 
-        // Route::delete('/{id?}', 'destroy');
+        Route::delete('/{id?}', 'destroy');
 
     });

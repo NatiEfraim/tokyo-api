@@ -7,6 +7,7 @@ use App\Models\Inventory;
 use App\Models\ItemType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 
  class ItemTypeService{
@@ -215,9 +216,15 @@ use Illuminate\Support\Facades\Log;
                 ];
             }
 
+            DB::beginTransaction(); // Start a database transaction
+
+
             $itemTypeRecord = ItemType::where('is_deleted', 0)->where('id', $id)->first();
 
             if (is_null($itemTypeRecord)) {
+
+                DB::rollBack(); // Rollback the transaction in case of any error
+
 
                 return [
                     'status' => Status::BAD_REQUEST,
@@ -234,12 +241,19 @@ use Illuminate\Support\Facades\Log;
                 'is_deleted' => true,
             ]);
 
+            DB::commit(); // commit all changes in database.
+
+
             return [
                 'status' => Status::OK,
                 'message' => 'סוג פריט נמחק מהמערכת.',
             ];
 
+
+
         } catch (\Exception $e) {
+            
+            DB::rollBack(); // Rollback the transaction in case of any error
             Log::error($e->getMessage());
         }
 
