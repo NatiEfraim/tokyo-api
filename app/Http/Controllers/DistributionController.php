@@ -1568,16 +1568,24 @@ class DistributionController extends Controller
 
     public function getRecordsByQuery(Request $request)
     {
+
+
+
         try {
+
+
             // set custom error messages in Hebrew
             $customMessages = [
                 'query.required' => 'יש לשלוח שדה לחיפוש',
                 'query.string' => 'ערך השדה שנשלח אינו תקין.',
             ];
-            //set the rules
 
+
+            //set the rules
             $rules = [
+
                 'query' => 'required|string',
+
             ];
 
             // validate the request data
@@ -1588,19 +1596,42 @@ class DistributionController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-            //? one or more of th search based on value filter send
-            $distributions = $this->fetchDistributions($request); ///private function
 
-            if ($distributions) {
-                $distributions->map(function ($distribution) {
-                    $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
-                    $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+            $result = $this->_distributionService->getRecordsByQuery($request);
 
-                    return $distribution;
-                });
-            }
 
-            return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
+            // Use match to handle different status cases
+            return match ($result['status']) {
+
+                Status::OK => response()->json($result['data'], Response::HTTP_OK),
+
+                Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
+
+                Status::UNPROCESSABLE_ENTITY => response()->json($result['message'], Response::HTTP_UNPROCESSABLE_ENTITY),
+
+                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+
+                default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
+            };
+
+
+
+            // //? one or more of th search based on value filter send
+            // $distributions = $this->fetchDistributions($request); ///private function
+
+            // if ($distributions) {
+            //     $distributions->map(function ($distribution) {
+            //         $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+            //         $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+
+            //         return $distribution;
+            //     });
+            // }
+
+            // return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
+
+
+
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
@@ -1705,53 +1736,78 @@ class DistributionController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-            if ($request->input('query')) {
-                //? search records based on query and given status
-                $distributions = $this->fetchDistributionsByStatus($request); ///private function
-            } else {
-                //? fetch all records without any query to search
-                $distributions = Distribution::with(['itemType', 'createdForUser'])
-                    ->where('status', $request->input('status'))
-                    ->where('is_deleted', 0)
-                    ->orderBy('created_at', 'desc')
-                    ->paginate(20);
-            }
 
-            $distributions->each(function ($distribution) {
-                // Format the created_at and updated_at timestamps
-                $distribution->created_at_date = optional($distribution->created_at)->format('d/m/Y');
-                $distribution->updated_at_date = optional($distribution->updated_at)->format('d/m/Y');
-                //translate each name of employee_type fileds 
-                if ($distribution->createdForUser && $distribution->createdForUser->employeeType) {
-                    $distribution->createdForUser->employeeType->population = $distribution->createdForUser->employeeType->translated_employee_type;
-                }
+            $result = $this->_distributionService->getRecordsByQuery($request);
 
-                return $distribution;
-            });
+
+            // Use match to handle different status cases
+            return match ($result['status']) {
+
+                Status::OK => response()->json($result['data'], Response::HTTP_OK),
+
+                Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
+
+                Status::UNPROCESSABLE_ENTITY => response()->json($result['message'], Response::HTTP_UNPROCESSABLE_ENTITY),
+
+                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+
+                default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
+            };
+
+
+
+            // if ($request->input('query')) {
+            //     //? search records based on query and given status
+            //     $distributions = $this->fetchDistributionsByStatus($request); ///private function
+            // } else {
+            //     //? fetch all records without any query to search
+            //     $distributions = Distribution::with(['itemType', 'createdForUser'])
+            //         ->where('status', $request->input('status'))
+            //         ->where('is_deleted', 0)
+            //         ->orderBy('created_at', 'desc')
+            //         ->paginate(20);
+            // }
+
+            // $distributions->each(function ($distribution) {
+            //     // Format the created_at and updated_at timestamps
+            //     $distribution->created_at_date = optional($distribution->created_at)->format('d/m/Y');
+            //     $distribution->updated_at_date = optional($distribution->updated_at)->format('d/m/Y');
+            //     //translate each name of employee_type fileds 
+            //     if ($distribution->createdForUser && $distribution->createdForUser->employeeType) {
+            //         $distribution->createdForUser->employeeType->population = $distribution->createdForUser->employeeType->translated_employee_type;
+            //     }
+
+            //     return $distribution;
+            // });
 
 
     
 
-            // Create a new collection to store unique distributions by order_number
-            $uniqueDistributions = collect();
+            // // Create a new collection to store unique distributions by order_number
+            // $uniqueDistributions = collect();
 
-            // Create a set to track seen order_numbers
-            $seenOrderNumbers = [];
+            // // Create a set to track seen order_numbers
+            // $seenOrderNumbers = [];
 
-            // Loop through the fetched distributions
-            foreach ($distributions as $distribution) {
-                // make sure the order_number has been seen before
-                if (!in_array($distribution->order_number, $seenOrderNumbers)) {
-                    $uniqueDistributions->push($distribution);
-                    // Mark this order_number as seen
-                    $seenOrderNumbers[] = $distribution->order_number;
-                }
-            }
+            // // Loop through the fetched distributions
+            // foreach ($distributions as $distribution) {
+            //     // make sure the order_number has been seen before
+            //     if (!in_array($distribution->order_number, $seenOrderNumbers)) {
+            //         $uniqueDistributions->push($distribution);
+            //         // Mark this order_number as seen
+            //         $seenOrderNumbers[] = $distribution->order_number;
+            //     }
+            // }
 
-            return response()->json($uniqueDistributions->isEmpty() ? [] : $uniqueDistributions, Response::HTTP_OK);
+            // return response()->json($uniqueDistributions->isEmpty() ? [] : $uniqueDistributions, Response::HTTP_OK);
+
+
         } catch (\Exception $e) {
+
             Log::error($e->getMessage());
+
         }
+
         return response()->json(['message' => 'התרחש בעיית שרת.נסה שוב מאוחר יותר'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
@@ -1861,13 +1917,36 @@ class DistributionController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-            //? fetch all distribution records based on order_number
-            $distributions = Distribution::with(['itemType', 'createdForUser'])
-                ->where('order_number', $request->input('order_number'))
-                ->where('is_deleted', 0)
-                ->get();
 
-            return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
+            $result = $this->_distributionService->getRecordsByOrder($request);
+
+
+            // Use match to handle different status cases
+            return match ($result['status']) {
+
+                Status::OK => response()->json($result['data'], Response::HTTP_OK),
+
+                Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
+
+                Status::UNPROCESSABLE_ENTITY => response()->json($result['message'], Response::HTTP_UNPROCESSABLE_ENTITY),
+
+                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+
+                default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
+            };
+
+
+
+            // //? fetch all distribution records based on order_number
+            // $distributions = Distribution::with(['itemType', 'createdForUser'])
+            //     ->where('order_number', $request->input('order_number'))
+            //     ->where('is_deleted', 0)
+            //     ->get();
+
+            // return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
+
+
+
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
@@ -1975,6 +2054,10 @@ class DistributionController extends Controller
     public function getRecordsByFilter(Request $request)
     {
         try {
+
+
+
+
             // set validation rules
             $rules = [
                 // 'inventory_id' => 'nullable|string|max:255|exists:inventories,id,is_deleted,0',
@@ -2023,40 +2106,76 @@ class DistributionController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-            if ($request->has('clients_id') || $request->has('year') || $request->has('status') || $request->has('order_number') || $request->has('inventory_id') || $request->has('department_id') || $request->has('created_at') || $request->has('updated_at')) {
-                //? one or more of th search based on value filter send
 
-                $distributions = $this->fetchDistributionsByFilter($request);
 
-                if ($distributions) {
-                    $distributions->map(function ($distribution) {
-                        //? format date on each records
-                        $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
-                        $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
 
-                        return $distribution;
-                    });
-                }
-            } else {
-                //? fetch all distributions records.
+            $result = $this->_distributionService->getRecordsByFilter($request);
 
-                $distributions = Distribution::with(['createdForUser', 'itemType'])
-                    ->where('is_deleted', 0)
-                    ->orderBy('created_at', 'desc')
-                    ->get()
-                    ->map(function ($distribution) {
-                        // Format the created_at and updated_at timestamps
-                        $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
-                        $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
 
-                        return $distribution;
-                    });
-            }
+            // Use match to handle different status cases
+            return match ($result['status']) {
 
-            return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
+                Status::OK => response()->json($result['data'], Response::HTTP_OK),
+
+                Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
+
+                Status::UNPROCESSABLE_ENTITY => response()->json($result['message'], Response::HTTP_UNPROCESSABLE_ENTITY),
+
+                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+
+                default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
+            };
+
+
+
+
+            // if (
+            //     $request->has('clients_id')
+            //     || $request->has('year')
+            //     || $request->has('status')
+            //     || $request->has('order_number')
+            //     || $request->has('inventory_id')
+            //     || $request->has('department_id')
+            //     || $request->has('created_at')
+            //     || $request->has('updated_at')
+            // ) {
+            //     //? one or more of th search based on value filter send
+
+            //     $distributions = $this->fetchDistributionsByFilter($request);
+
+            //     if ($distributions) {
+            //         $distributions->map(function ($distribution) {
+            //             //? format date on each records
+            //             $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+            //             $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+
+            //             return $distribution;
+            //         });
+            //     }
+            // } else {
+            //     //? fetch all distributions records.
+
+            //     $distributions = Distribution::with(['createdForUser', 'itemType'])
+            //         ->where('is_deleted', 0)
+            //         ->orderBy('created_at', 'desc')
+            //         ->get()
+            //         ->map(function ($distribution) {
+            //             // Format the created_at and updated_at timestamps
+            //             $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+            //             $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+
+            //             return $distribution;
+            //         });
+            // }
+
+            // return response()->json($distributions->isEmpty() ? [] : $distributions, Response::HTTP_OK);
+
+
+
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
+
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
@@ -2093,89 +2212,105 @@ class DistributionController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-            // fetch all distributions records with associations
-            $distributions = Distribution::with(['itemType', 'createdForUser', 'inventory'])
-                ->where('is_deleted', 0)
-                ->get();
 
-            //? format date fileds
-            $distributions->each(function ($distribution) {
-                $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
-                $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
-                return $distribution;
-            });
 
-            // //? decode - json of invetory_item fileds
-            // $distributions->transform(function ($distribution) {
-            //     $inventoryItems = json_decode($distribution->inventory_items, true);
 
-            //     if ($inventoryItems) {
-            //         $inventoryItems = array_map(function ($item) {
-            //             return [
-            //                 'sku' => $item['sku'],
-            //                 'quantity' => $item['quantity'],
-            //             ];
-            //         }, $inventoryItems);
-            //     }
 
-            //     $distribution->inventory_items = $inventoryItems;
+            $result = $this->_distributionService->sortByQuery($request);
+
+
+            // Use match to handle different status cases
+            return match ($result['status']) {
+
+                Status::OK => response()->json($result['data'], Response::HTTP_OK),
+
+                Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
+
+                Status::UNPROCESSABLE_ENTITY => response()->json($result['message'], Response::HTTP_UNPROCESSABLE_ENTITY),
+
+                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+
+                default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
+            };
+
+
+
+            // // fetch all distributions records with associations
+            // $distributions = Distribution::with(['itemType', 'createdForUser', 'inventory'])
+            //     ->where('is_deleted', 0)
+            //     ->get();
+
+            // //? format date fileds
+            // $distributions->each(function ($distribution) {
+            //     $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+            //     $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
             //     return $distribution;
             // });
 
-            // Get sorting parameters from the request
-            $sortParams = $request->input('sort', []);
+            // // Get sorting parameters from the request
+            // $sortParams = $request->input('sort', []);
 
-            // Apply multiple sorting parameters
-            if (!empty($sortParams)) {
-                $distributions = $distributions->sortBy(function ($distribution) use ($sortParams) {
-                    $sortValues = [];
+            // // Apply multiple sorting parameters
+            // if (!empty($sortParams)) {
+            //     $distributions = $distributions->sortBy(function ($distribution) use ($sortParams) {
+            //         $sortValues = [];
 
-                    foreach ($sortParams as $sort) {
-                        $sortField = $sort['field'];
-                        if ($sortField == 'order_number') {
-                            //? sort the records by order_number fileds
-                            $sortValues[] = $distribution->order_number;
-                        } elseif ($sortField == 'year') {
-                            //? sort by year
-                            $sortValues[] = $distribution->year;
-                        } elseif ($sortField == 'type_id') {
-                            //? sort the records by type of item_types associated records.
-                            $sortValues[] = $distribution->itemType->type ?? '';
-                        } elseif ($sortField == 'department_id') {
-                            //? sort by department name associated by department_id
-                            $sortValues[] = $distribution->createdForUser->department->name ?? '';
-                        } elseif ($sortField == 'created_at') {
-                            $sortValues[] = $distribution->created_at;
-                        }
-                    }
+            //         foreach ($sortParams as $sort) {
+            //             $sortField = $sort['field'];
+            //             if ($sortField == 'order_number') {
+            //                 //? sort the records by order_number fileds
+            //                 $sortValues[] = $distribution->order_number;
+            //             } elseif ($sortField == 'year') {
+            //                 //? sort by year
+            //                 $sortValues[] = $distribution->year;
+            //             } elseif ($sortField == 'type_id') {
+            //                 //? sort the records by type of item_types associated records.
+            //                 $sortValues[] = $distribution->itemType->type ?? '';
+            //             } elseif ($sortField == 'department_id') {
+            //                 //? sort by department name associated by department_id
+            //                 $sortValues[] = $distribution->createdForUser->department->name ?? '';
+            //             } elseif ($sortField == 'created_at') {
+            //                 $sortValues[] = $distribution->created_at;
+            //             }
+            //         }
 
-                    return $sortValues;
-                });
+            //         return $sortValues;
+            //     });
 
-                foreach ($sortParams as $sort) {
-                    $sortField = $sort['field'];
-                    $sortDirection = strtolower($sort['direction']) === 'desc' ? 'desc' : 'asc';
+            //     foreach ($sortParams as $sort) {
+            //         $sortField = $sort['field'];
+            //         $sortDirection = strtolower($sort['direction']) === 'desc' ? 'desc' : 'asc';
 
-                    $distributions = $sortDirection === 'asc' ? $distributions->sortBy($sortField) : $distributions->sortByDesc($sortField);
-                }
-            }
+            //         $distributions = $sortDirection === 'asc' ? $distributions->sortBy($sortField) : $distributions->sortByDesc($sortField);
+            //     }
+            // }
 
-            // Convert to collection after sorting to maintain collection methods
-            $distributions = $distributions->values();
+            // // Convert to collection after sorting to maintain collection methods
+            // $distributions = $distributions->values();
 
-            // Paginate the sorted collection
-            $perPage = 20;
-            $currentPage = LengthAwarePaginator::resolveCurrentPage();
-            $currentItems = $distributions->slice(($currentPage - 1) * $perPage, $perPage)->all();
-            $paginatedDistributions = new LengthAwarePaginator($currentItems, $distributions->count(), $perPage, $currentPage);
+            // // Paginate the sorted collection
+            // $perPage = 20;
+            // $currentPage = LengthAwarePaginator::resolveCurrentPage();
+            // $currentItems = $distributions->slice(($currentPage - 1) * $perPage, $perPage)->all();
+            // $paginatedDistributions = new LengthAwarePaginator($currentItems, $distributions->count(), $perPage, $currentPage);
 
-            // Return the paginated and sorted results
-            return response()->json($paginatedDistributions, Response::HTTP_OK);
+            // // Return the paginated and sorted results
+            // return response()->json($paginatedDistributions, Response::HTTP_OK);
+
+
         } catch (\Exception $e) {
+
             Log::error($e->getMessage());
+
         }
+
+
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
+
+
+
+
 
     //? search based on request->input('query').
     private function fetchDistributions(Request $request)
@@ -2305,4 +2440,6 @@ class DistributionController extends Controller
             return response()->json(['message' => 'התרחשה בעיה בשרת. נסה שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    
 }

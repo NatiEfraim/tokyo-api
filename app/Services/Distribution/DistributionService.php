@@ -894,11 +894,460 @@ class DistributionService{
             'status' => Status::INTERNAL_SERVER_ERROR,
             'message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.',
         ];  
-        
+
+    }
+
+    /**
+     * fetch distributions records based on query in the budy request
+     **/   
+
+    public function getRecordsByQuery(Request $request)
+    {
+        try {
+
+
+            //? one or more of th search based on value filter send
+            $distributions = $this->fetchDistributions($request); ///private function
+
+            if (is_null($distributions)) {
+                return [
+                        'status' => Status::INTERNAL_SERVER_ERROR,
+                        'message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.',
+                    ];
+            }
+
+            $distributions->map(function ($distribution) {
+                $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+                $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+
+                return $distribution;
+            });
+
+
+            return [
+                'status' => Status::OK,
+                'data' => $distributions,
+            ];  
+
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+
+        return [
+            'status' => Status::INTERNAL_SERVER_ERROR,
+            'message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.',
+        ];  
+    }
+
+    /**
+     * search distributions records based on query in the budy request and group-by order_number fileds
+     **/   
+
+
+    public function fetchDistributionsRecordsByOrderNumber(Request $request)
+    {
+        try {
+
+
+
+
+            if ($request->input('query')) {
+                //? search records based on query and given status
+                $distributions = $this->fetchDistributionsByStatus($request); ///private function
+            } else {
+                //? fetch all records without any query to search
+                $distributions = Distribution::with(['itemType', 'createdForUser'])
+                ->where('status', $request->input('status'))
+                    ->where('is_deleted', 0)
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(20);
+            }
+
+            $distributions->each(function ($distribution) {
+                // Format the created_at and updated_at timestamps
+                $distribution->created_at_date = optional($distribution->created_at)->format('d/m/Y');
+                $distribution->updated_at_date = optional($distribution->updated_at)->format('d/m/Y');
+                //translate each name of employee_type fileds 
+                if ($distribution->createdForUser && $distribution->createdForUser->employeeType) {
+                    $distribution->createdForUser->employeeType->population = $distribution->createdForUser->employeeType->translated_employee_type;
+                }
+
+                return $distribution;
+            });
+
+
+
+
+            // Create a new collection to store unique distributions by order_number
+            $uniqueDistributions = collect();
+
+            // Create a set to track seen order_numbers
+            $seenOrderNumbers = [];
+
+            // Loop through the fetched distributions
+            foreach ($distributions as $distribution) {
+                // make sure the order_number has been seen before
+                if (!in_array($distribution->order_number, $seenOrderNumbers)) {
+                    $uniqueDistributions->push($distribution);
+                    // Mark this order_number as seen
+                    $seenOrderNumbers[] = $distribution->order_number;
+                }
+            }
+
+
+            return [
+                'status' => Status::OK,
+                'data' => $uniqueDistributions->isEmpty() ? [] : $uniqueDistributions,
+            ];  
+
+        } catch (\Exception $e) {
+
+            Log::error($e->getMessage());
+        }
+
+        return [
+            'status' => Status::INTERNAL_SERVER_ERROR,
+            'message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.',
+        ];  
+
+    }
+
+    /**
+     * fetch distributions records only by order_number fileds in the budy request
+     **/   
+
+    public function getRecordsByOrder(Request $request)
+    {
+        try {
+
+
+
+            //? fetch all distribution records based on order_number
+            $distributions = Distribution::with(['itemType', 'createdForUser'])
+            ->where('order_number', $request->input('order_number'))
+                ->where('is_deleted', 0)
+                ->get();
+
+            return [
+                'status' => Status::OK,
+                'data' =>  $distributions->isEmpty() ? [] :  $distributions,
+            ];  
+
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+
+        return [
+            'status' => Status::INTERNAL_SERVER_ERROR,
+            'message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.',
+        ];  
+
+    }
+
+    /**
+     * search distributions records by one or many fillter in the budy request
+     **/   
+    //? fetch distributions records - based on filter
+    public function getRecordsByFilter(Request $request)
+    {
+        try {
+
+
+
+            if (
+                $request->has('clients_id')
+                || $request->has('year')
+                || $request->has('status')
+                || $request->has('order_number')
+                || $request->has('inventory_id')
+                || $request->has('department_id')
+                || $request->has('created_at')
+                || $request->has('updated_at')
+            ) {
+                //? one or more of th search based on value filter send
+
+                $distributions = $this->fetchDistributionsByFilter($request);///use private function
+
+                if ($distributions) {
+                    $distributions->map(function ($distribution) {
+                        //? format date on each records
+                        $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+                        $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+
+                        return $distribution;
+                    });
+                }
+            } else {
+                //? fetch all distributions records.
+
+                $distributions = Distribution::with(['createdForUser', 'itemType'])
+                ->where('is_deleted', 0)
+                    ->orderBy('created_at', 'desc')
+                    ->get()
+                    ->map(function ($distribution) {
+                        // Format the created_at and updated_at timestamps
+                        $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+                        $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+
+                        return $distribution;
+                    });
+            }
+
+            return [
+                'status' => Status::OK,
+                'data' =>  $distributions->isEmpty() ? [] :  $distributions,
+            ];  
+
+
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+
+        return [
+            'status' => Status::INTERNAL_SERVER_ERROR,
+            'message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.',
+        ];  
+
+
     }
 
 
 
 
+    /**
+     * fetch distributions records and sort the records based on given fileds in advanced
+     **/  
+
+    public function sortByQuery(Request $request)
+    {
+        try {
+
+
+            // fetch all distributions records with associations
+            $distributions = Distribution::with(['itemType', 'createdForUser', 'inventory'])
+            ->where('is_deleted', 0)
+                ->get();
+
+            //? format date fileds
+            $distributions->each(function ($distribution) {
+                $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
+                $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+                return $distribution;
+            });
+
+            // Get sorting parameters from the request
+            $sortParams = $request->input('sort', []);
+
+            // Apply multiple sorting parameters
+            if (!empty($sortParams)) {
+                $distributions = $distributions->sortBy(function ($distribution) use ($sortParams) {
+                    $sortValues = [];
+
+                    foreach ($sortParams as $sort) {
+                        $sortField = $sort['field'];
+                        if ($sortField == 'order_number') {
+                            //? sort the records by order_number fileds
+                            $sortValues[] = $distribution->order_number;
+                        } elseif ($sortField == 'year') {
+                            //? sort by year
+                            $sortValues[] = $distribution->year;
+                        } elseif ($sortField == 'type_id') {
+                            //? sort the records by type of item_types associated records.
+                            $sortValues[] = $distribution->itemType->type ?? '';
+                        } elseif ($sortField == 'department_id') {
+                            //? sort by department name associated by department_id
+                            $sortValues[] = $distribution->createdForUser->department->name ?? '';
+                        } elseif ($sortField == 'created_at') {
+                            $sortValues[] = $distribution->created_at;
+                        }
+                    }
+
+                    return $sortValues;
+                });
+
+                foreach ($sortParams as $sort) {
+                    $sortField = $sort['field'];
+                    $sortDirection = strtolower($sort['direction']) === 'desc' ? 'desc' : 'asc';
+
+                    $distributions = $sortDirection === 'asc' ? $distributions->sortBy($sortField) : $distributions->sortByDesc($sortField);
+                }
+            }
+
+            // Convert to collection after sorting to maintain collection methods
+            $distributions = $distributions->values();
+
+            // Paginate the sorted collection
+            $perPage = 20;
+            $currentPage = LengthAwarePaginator::resolveCurrentPage();
+            $currentItems = $distributions->slice(($currentPage - 1) * $perPage, $perPage)->all();
+            $paginatedDistributions = new LengthAwarePaginator($currentItems, $distributions->count(), $perPage, $currentPage);
+
+            return [
+                'status' => Status::OK,
+                'data' =>  $paginatedDistributions->isEmpty() ? [] :  $paginatedDistributions,
+            ];  
+
+            // return response()->json($paginatedDistributions, Response::HTTP_OK);
+
+
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+
+        return [
+            'status' => Status::INTERNAL_SERVER_ERROR,
+            'message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.',
+        ];  
+
+    }
+
+
+    /**
+     * search distributions records based on query in the budy request can be type or order_number
+     **/
+    private function fetchDistributions(Request $request)
+    {
+        try {
+            $query = $request->input('query');
+
+            return Distribution::with(['itemType', 'createdForUser'])
+            ->where('is_deleted', 0)
+                //? fetch records - by query - can be type or order_number
+                ->where(function ($queryBuilder) use ($query) {
+                    // Search by item_type type field
+                    $queryBuilder->orWhereHas('itemType', function ($itemTypeQuery) use ($query) {
+                        $itemTypeQuery->where('type', 'like', "%$query%");
+                    });
+                    // Search by order number
+                    $queryBuilder->orWhere('order_number', 'like', "%$query%");
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } catch (\Exception $e) {
+
+            Log::error($e->getMessage());
+        }
+
+        return null;
+    }
+
+
+
+
+    /**
+     * search distributions records based on query in the budy request can be type or order_number with givan status in advance
+     **/  
+
+    private function fetchDistributionsByStatus(Request $request)
+    {
+        try {
+            $query = $request->input('query');
+
+            return Distribution::with(['itemType', 'createdForUser'])
+
+                ->where('status', $request->input('status'))
+
+                ->where('is_deleted', 0)
+
+                ->where(function ($queryBuilder) use ($query) {
+                    // Search by personal number
+                    $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
+                        $userQuery->where('personal_number', 'like', "%$query%");
+                    });
+
+                    // Search by item_type type field
+                    $queryBuilder->orWhereHas('itemType', function ($itemTypeQuery) use ($query) {
+                        $itemTypeQuery->where('type', 'like', "%$query%");
+                    });
+
+                    // Search by order number
+                    $queryBuilder->orWhere('order_number', 'like', "%$query%");
+
+                    // Search by year
+                    // $queryBuilder->orWhere('year', 'like', "%$query%");
+                    if (is_numeric($query) && strlen($query) == 4) {
+                        $queryBuilder->orWhereYear('created_at', $query);
+                    }
+
+                    // Search by full name
+                    $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
+                        $userQuery->where('name', 'like', "%$query%");
+                    });
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+
+        return null;
+        // return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+
+    /**
+     * fillter distributions records by  order_number deprtment year or date
+     **/  
+
+    private function fetchDistributionsByFilter(Request $request)
+    {
+        try {
+            $query = Distribution::query();
+
+            $inputStatus = $request->input('status');
+
+            // Search by status
+            if ($inputStatus == DistributionStatus::PENDING->value || $inputStatus == DistributionStatus::CANCELD->value || $inputStatus == DistributionStatus::APPROVED->value || $inputStatus == DistributionStatus::COLLECTED->value) {
+                $query->where('status', $request->input('status'));
+            }
+
+            // Search by order_number
+            if ($request->has('order_number') && empty($request->input('order_number')) == false) {
+                $query->where('order_number', $request->input('order_number'));
+            }
+
+            //? fetch records only where created_for asscoiated with department_id
+            if ($request->has('department_id') && empty($request->input('department_id')) == false) {
+                // $query->where('department_id', $request->input('department_id'));
+                $departmentId = $request->input('department_id');
+                $query->whereHas('createdForUser', function ($query) use ($departmentId) {
+                    $query->where('department_id', $departmentId);
+                });
+            }
+            // Search by year
+            if ($request->has('year') && empty($request->input('year')) == false) {
+                // $query->where('year', $request->input('year'));
+                $year = $request->input('year');
+                //? featch records  creatd by year.
+                $query->whereYear('created_at', $year);
+            }
+
+            // Search by user_id
+            if ($request->has('clients_id') && empty($request->input('clients_id')) == false) {
+                $query->whereIn('created_for', $request->input('clients_id'));
+            }
+
+            // Search by created_at
+            if ($request->has('created_at') && empty($request->input('created_at')) == false) {
+                $query->whereDate('created_at', $request->created_at);
+            }
+
+            // Search by updated_at
+            if ($request->has('updated_at') && empty($request->input('updated_at')) == false) {
+                $query->whereDate('updated_at', $request->updated_at);
+            }
+
+            return $query
+                ->with(['itemType', 'createdForUser'])
+                ->where('is_deleted', false)
+                ->get();
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+
+        return null;
+    }
+
+    
 
 }
