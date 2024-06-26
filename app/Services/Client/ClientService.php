@@ -35,8 +35,9 @@ class ClientService{
             $clients->each(function ($client) {
 
                 if ($client->emp_type_id) {
+
                     //? set and format poplution for each client records
-                    //set the first letter for the persnal_number
+
                     $client->population = match ($client->emp_type_id) {
                         EmployeeType::KEVA->value, EmployeeType::SADIR->value => 's' . $client->personal_number,
                         EmployeeType::MILUIM->value => 'm' . $client->personal_number,
@@ -86,7 +87,7 @@ class ClientService{
 
                 return [
                     'status' => Status::BAD_REQUEST,
-                    'message' => 'נותונים שנשלחו אינם תקינים.',
+                    'message' => 'נתונים שנשלחו אינם תקינים.',
                 ];
 
             }
@@ -103,8 +104,9 @@ class ClientService{
                 $clientsRecords->each(function ($client) {
 
                     if ($client->emp_type_id) {
+
                         //? set and format poplution for each client records
-                        //set the first letter for the persnal_number
+
                         $client->population = match ($client->emp_type_id) {
                             EmployeeType::KEVA->value, EmployeeType::SADIR->value => 's' . $client->personal_number,
                             EmployeeType::MILUIM->value => 'm' . $client->personal_number,
@@ -136,8 +138,9 @@ class ClientService{
             $clientsRecords->each(function ($client) {
 
                 if ($client->emp_type_id) {
+
                     //? set and format poplution for each client records
-                    //set the first letter for the persnal_number
+
                     $client->population = match ($client->emp_type_id) {
                         EmployeeType::KEVA->value, EmployeeType::SADIR->value => 's' . $client->personal_number,
                         EmployeeType::MILUIM->value => 'm' . $client->personal_number,
@@ -145,6 +148,7 @@ class ClientService{
                         default => throw new \InvalidArgumentException('סוג עובד לא תקין.')
                     };
                 }
+                
                 $client->makeHidden(['personal_number', 'emp_type_id']);
 
                 return $client;

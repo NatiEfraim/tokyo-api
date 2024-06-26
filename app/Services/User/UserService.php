@@ -7,19 +7,15 @@ use App\Enums\EmployeeType;
 use App\Enums\Role as EnumsRole;
 use App\Enums\Status;
 use App\Http\Requests\StoreUserRequest;
-use App\Http\Requests\UpdateUserRequest;
-use App\Mail\MissionInhibitMail;
-use App\Mail\UserMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-// use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Role;
+
+
+
+
 
 
 class UserService
@@ -39,6 +35,7 @@ class UserService
         try {
 
             // Fetch users with their employeeType and roles
+
             $users = User::with(['employeeType', 'roles'])
             ->where('is_deleted', false)
                 ->paginate(10);
@@ -46,7 +43,7 @@ class UserService
             // Initialize an empty array to hold the formatted users
             $formattedUsers = [];
 
-            // Use foreach to format the users data to include role name
+
             foreach ($users as $user) {
                 $formattedUsers[] = [
                     'id' => $user->id,
@@ -55,9 +52,10 @@ class UserService
                     'email' => $user->email,
                     'phone' => $user->phone,
                     'employee_type' => $user->getTranslatedEmployeeTypeAttribute() ?? null,
-                    'role' => $user->translateRoleAttribute() ?? null, //set asscoiae
+                    'role' => $user->translateRoleAttribute() ?? null, 
                 ];
             }
+
 
             $data = [
                 'data' => $formattedUsers,
@@ -92,7 +90,7 @@ class UserService
             $user = auth()->user();
 
 
-            // Make sure the user has an associated employeeType record
+            
             if (is_null($user->employeeType)) {
 
                 return [
@@ -304,7 +302,6 @@ class UserService
                 ];                
             }
 
-            //doft deleted user
             $user_exsist->update(['is_deleted' => true]);
 
             return [
@@ -363,6 +360,7 @@ class UserService
             $user_exsist = User::where('personal_number', $personal_number)->where('is_deleted', true)->first();
 
             if (is_null($user_exsist) == false) {
+
                 ///need to update the user fileds
                 $user_exsist->update([
                     'name' => $request->input('name'),
@@ -372,12 +370,13 @@ class UserService
                     'emp_type_id' => $request->input('employee_type'), //set the relation
                     'remember_token' => Str::random(10),
                     'is_deleted' => 0, //back to false.
+
+
                 ]);
 
 
                 $roleValue = (int)$request->input('role');
 
-                // Assign role based on the received value using match expression
                 $role = match ($roleValue) {
 
                     EnumsRole::ADMIN->value => Role::where('name', 'admin')->first(),
@@ -386,8 +385,8 @@ class UserService
                     default => throw new \InvalidArgumentException('Invalid role value.'),
                 };
 
-                // Assign the role to the new user.
                 $user_exsist->assignRole($role);
+
             } else {
                 //?create a new uesr from scretch
                 $newUser = User::create([
@@ -402,7 +401,7 @@ class UserService
 
                 $roleValue = (int) $request->input('role');
 
-                // Assign role based on the received value using match expression
+
                 $role = match ($roleValue) {
 
                     EnumsRole::ADMIN->value => Role::where('name', 'admin')->first(),
@@ -462,8 +461,9 @@ class UserService
                 ];
             }
 
-            // Fetch the role directly based on the ID provided in the request
+
             $role = Role::find($request->input('role'));
+
 
             if (is_null($role)) {
 
@@ -478,7 +478,6 @@ class UserService
             // Detach all existing roles
             $user->roles()->detach();
 
-            // Assign the new role to the user
             $user->assignRole($role);
 
             return [

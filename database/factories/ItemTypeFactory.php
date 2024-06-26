@@ -16,9 +16,13 @@ class ItemTypeFactory extends Factory
      */
     public function definition(): array
     {
+        
+        $faker = \Faker\Factory::create('he_IL');
+
+
         return [
             //
-            'type' => $this->faker->unique()->word, // Generate a unique random word for the type
+            'type' => $this->faker->unique()->word, 
             // 'sku' => $this->faker->unique()->ean13,
 
         ];

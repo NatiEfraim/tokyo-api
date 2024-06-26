@@ -23,8 +23,7 @@ class Client extends Model
         'personal_number',
         'email',
         'department_id',
-        // 'remember_token',
-        // 'password',
+
     ];
 
     /**
@@ -33,12 +32,13 @@ class Client extends Model
      * @var array<int, string>
      */
     protected $hidden = [
-        'password',
         'is_deleted',
         'created_at',
         'updated_at',
-        // 'emp_type_id',
-        'remember_token',
+        'emp_type_id',
+
+
+
     ];
 
     

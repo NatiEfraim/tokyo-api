@@ -13,8 +13,11 @@ class ItemTypeSeeder extends Seeder
      */
     public function run(): void
     {
+
         //
-        // ItemType::factory()->count(10)->create();
+
+
+        ItemType::factory()->count(10)->create();
         // ItemType::create([
         //     'type' => 'computer',
         //     'icon_number' => 1,
@@ -25,9 +28,13 @@ class ItemTypeSeeder extends Seeder
         $types = ['computer', 'keyBord', 'mouse', 'wireLees', 'laptop7', 'computer10', 'screen', 'computer4.2', 'screen7', 'mouse4'];
 
         foreach ($types as $type) {
+
             ItemType::create([
+
                 'type' => $type,
+
                 'icon_number' => rand(1, 7),
+
             ]);
         }
 

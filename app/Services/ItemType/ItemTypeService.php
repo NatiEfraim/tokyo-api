@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\DB;
     /**
      * fetch all itemType records from item_types table.
      **/
-
     public function index()
     {
         try {
@@ -48,8 +47,6 @@ use Illuminate\Support\Facades\DB;
     /**
      * update exist itemType records on database.
      **/
-
-
     public function update(Request $request, $id = null)
     {
 
@@ -65,7 +62,6 @@ use Illuminate\Support\Facades\DB;
 
             }
 
-            //? make sure there is no other records with the same type fileds
 
             $recordsExist= ItemType::where('type',$request->input('type'))
             ->where('is_deleted',false)
@@ -99,9 +95,9 @@ use Illuminate\Support\Facades\DB;
 
 
             return [
-                    'status' => Status::OK,
-                    'message' => 'שורה התעדכנה בהצלחה.',
-                ];
+                'status' => Status::OK,
+                'message' => 'שורה התעדכנה בהצלחה.',
+            ];
 
         } catch (\Exception $e) {
 
@@ -223,7 +219,7 @@ use Illuminate\Support\Facades\DB;
 
             if (is_null($itemTypeRecord)) {
 
-                DB::rollBack(); // Rollback the transaction in case of any error
+                DB::rollBack(); 
 
 
                 return [
@@ -252,7 +248,7 @@ use Illuminate\Support\Facades\DB;
 
 
         } catch (\Exception $e) {
-            
+
             DB::rollBack(); // Rollback the transaction in case of any error
             Log::error($e->getMessage());
         }

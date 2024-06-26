@@ -43,15 +43,6 @@ return new class extends Migration
             $table->foreign('quartermaster_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
             $table->foreign('inventory_id')->references('id')->on('inventories')->onUpdate('cascade')->onDelete('cascade');
             
-            
-            //! need to remove those relations
-            // $table->foreignId('department_id');
-            // // New JSON column to store the inventory items
-            // $table->json('inventory_items')->nullable();
-            // $table->integer('year');
-            //! need to remove those relations
-            // $table->foreign('department_id')->references('id')->on('departments')->onUpdate('cascade')->onDelete('cascade');
-            
         });
     }
 

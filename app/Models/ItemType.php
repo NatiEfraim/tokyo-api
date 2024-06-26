@@ -15,8 +15,8 @@ class ItemType extends Model
      * @var array
      */
     protected $fillable = [
+        
         'type',
-        // 'sku',
         'icon_number',
         'is_deleted',
         'created_at',

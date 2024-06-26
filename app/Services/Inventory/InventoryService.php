@@ -382,8 +382,6 @@ class InventoryService{
     /**
      * fetch reports records associated based on inventory_id records.
      **/
-
-
     public function fetchReport(Request $request)
     {
 
@@ -400,9 +398,11 @@ class InventoryService{
 
 
             $reports->each(function ($report) {
+
                 // Format the created_at and updated_at timestamps
                 $report->created_at_date = $report->created_at->format('d/m/Y');
                 $report->updated_at_date = $report->updated_at->format('d/m/Y');
+
                 $report->makeHidden(['inventory_id', 'created_by', 'sku']);
 
 
@@ -495,7 +495,7 @@ class InventoryService{
             $inventories->each(function ($inventory) {
 
                 $inventory->available = $inventory->quantity - $inventory->reserved;
-                // Hide the fields 'type', 'quantity', and 'reserved'
+                
                 $inventory->makeHidden(['quantity', 'reserved', 'type_id']);
             });
 

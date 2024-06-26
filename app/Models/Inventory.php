@@ -22,7 +22,7 @@ class Inventory extends Model
         'detailed_description',
         'is_deleted',
         'created_at',
-        'updated_at'
+        'updated_at',
     ];
 
     /**
@@ -30,8 +30,10 @@ class Inventory extends Model
      *
      * @var array
      */
+
+
     protected $hidden = [
-        // 'type_id',
+        'type_id',
         'is_deleted',
         'created_at',
         'updated_at',

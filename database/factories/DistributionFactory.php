@@ -36,7 +36,7 @@ class DistributionFactory extends Factory
 
         $randomInventory = Inventory::inRandomOrder()->first();
         $randomType = ItemType::inRandomOrder()->first();
-        // $randomDepartemnt = Department::inRandomOrder()->first();
+        
         $randomUser = User::inRandomOrder()->first();
         $randomUser = User::inRandomOrder()->first();
         $randomClient = Client::inRandomOrder()->first();
@@ -45,11 +45,11 @@ class DistributionFactory extends Factory
             //
 
             'order_number' => (string) $this->faker->unique()->numberBetween(1000000, 9999999),
-            'type_comment' => $this->faker->sentence, // Generate inventory comment
-            'quartermaster_comment' => $this->faker->sentence, // Generate generate comment for quartermaster_comment
-            'admin_comment' => $this->faker->sentence, // Generate generate comment for adamin
-            'canceled_reason' => $this->faker->sentence, // Generate generate reson of cancel for adamin
-            'user_comment' => $this->faker->sentence, // Generate generate comment for user
+            'type_comment' => $this->faker->sentence, 
+            'quartermaster_comment' => $this->faker->sentence, 
+            'admin_comment' => $this->faker->sentence, 
+            'canceled_reason' => $this->faker->sentence, 
+            'user_comment' => $this->faker->sentence, 
             'status' => $this->faker->numberBetween(1, 4),
             'type_id' => $randomType->id, //set relation
             'created_by' => $randomUser->id, //set relation
@@ -62,8 +62,6 @@ class DistributionFactory extends Factory
             'inventory_id' => $randomInventory->id, //set relation
             
             
-            // 'department_id' => $randomDepartemnt->id, //set relation
-            // 'year' => $this->faker->year,
         ];
     }
 }

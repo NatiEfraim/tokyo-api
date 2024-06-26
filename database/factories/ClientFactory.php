@@ -25,9 +25,7 @@ class ClientFactory extends Factory
         $randomDepartemnt = Department::inRandomOrder()->first();
 
         $faker = \Faker\Factory::create('he_IL');
-        //* generate random personl_number
         
-        // Generate a unique 7-digit personal number
         $pn = $faker->unique()->numberBetween(1000000, 9999999);
 
         // Array of letters to choose from

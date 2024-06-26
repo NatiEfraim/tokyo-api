@@ -9,7 +9,6 @@ class EmployeeType extends Model
 {
     use HasFactory;
 
-    // protected $guarded = [];
 
     /**
      * The attributes that are mass assignable.

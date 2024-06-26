@@ -15,13 +15,10 @@ return new class extends Migration
             $table->id();
             $table->integer('quantity');
             $table->string('sku');
-            // $table->string('item_type');
             $table->foreignId('type_id');
-
             $table->longText('detailed_description');
             $table->integer('reserved')->default(0);
             $table->boolean('is_deleted')->default('0');
-
             $table->foreign('type_id')->references('id')->on('item_types')->onUpdate('cascade')->onDelete('cascade');
 
             $table->timestamps();

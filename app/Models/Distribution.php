@@ -16,31 +16,28 @@ class Distribution extends Model
      * @var array
      */
     protected $fillable = [
+
+        'order_number',
+        'type_comment',
+        'status',
+        'quantity_per_item',
+        'total_quantity',
         'user_comment',
         'admin_comment',
+        'canceled_reason',
         'quartermaster_comment',
-        'type_comment',
-        'order_number',
-        'status',
-        'total_quantity',
-        'quantity_per_item',
         'sku',
         'quantity_per_inventory',
+        'quantity_approved',
         'type_id',
         'created_by',
-        'created_for',
         'quartermaster_id',
+        'created_for',
+        'inventory_id',
         'is_deleted',
         'created_at',
         'updated_at',
-        'inventory_id',
-        'quantity_approved',
-        'canceled_reason',
 
-        //! need to remove
-        // 'year',
-        // 'inventory_items',
-        // 'department_id',
     ];
 
     /**
@@ -49,21 +46,16 @@ class Distribution extends Model
      * @var array
      */
     protected $hidden = [
-        
+        //? hide all forien_id key.
         
         'type_id',
         'created_by',
         'created_for',
         'quartermaster_id',
-        
         'is_deleted',
         'created_at',
         'updated_at',
-        // 'inventory_id',
-
-
-        // //! need to remove
-        // 'department_id',
+        'inventory_id',
     ];
     
 

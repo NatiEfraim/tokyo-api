@@ -2,9 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\DistributionMail;
-use App\Mail\InventoryMail;
-use App\Mail\UserMail;
 use App\Models\Distribution;
 use App\Models\Inventory;
 use App\Models\User;
@@ -16,10 +13,9 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Validation\Rule;
 
-use Illuminate\Support\Facades\Validator;
+
+
 
 class ExportController extends Controller
 {

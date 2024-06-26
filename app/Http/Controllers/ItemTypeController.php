@@ -141,16 +141,25 @@ class ItemTypeController extends Controller
 
                 'type.required' => 'שדה השם הוא חובה.',
                 'type.string' => 'שדה ערך שם מחלקה אינו תקין.',
-
+                'type.unique' => 'סוג הפריט כבר קיים עבור פריטים שאינם נמחקו.',
+                
                 'icon_number.required' => 'שדה אייקון הוא חובה.',
                 'icon_number.integer' => 'שדה אייקון אינו תקין.',
-                'icon_number.between' => 'שדה אייקון אינו תקין.'
+                'icon_number.between' => 'שדה אייקון אינו תקין.',
             ];
 
             // Set the rules
             $rules = [
 
-                'type' => 'required|string|min:2|max:255',
+                // 'type' => 'required|string|min:2|max:255',
+                'type' => [
+                    'required',
+                    'string',
+                    'min:2',
+                    'max:255',
+                    'unique:item_types,type,NULL,id,is_deleted,0', // Custom unique rule
+
+                ],
                 'icon_number' => 'required|integer|between:1,7',
             ];
 

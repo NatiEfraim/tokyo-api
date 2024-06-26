@@ -55,7 +55,6 @@ class DistributionService{
 
             $distributions->each(function ($distribution) {
 
-                // Format the created_at and updated_at timestamps
 
                 $distribution->created_at_date = optional($distribution->created_at)->format('d/m/Y') ?? null;
                 $distribution->updated_at_date = optional($distribution->updated_at)->format('d/m/Y') ?? null;
@@ -101,7 +100,6 @@ class DistributionService{
                 ];
             }
 
-            // Fetch distribution by ID
             $distribution = Distribution::with(['quartermaster'])
                 ->where('id', $id)
                 ->where('is_deleted', 0)
@@ -116,15 +114,12 @@ class DistributionService{
 
             }
 
-            // Format date and time
             $createdAt = $distribution->updated_at->format('H:i:s'); // Time
             $createdAtDate = $distribution->updated_at->format('d/m/Y'); // Date
 
-            // Extract user data
             $quartermasterName = $distribution->quartermaster->name;
             $quartermasterId = $distribution->quartermaster->id;
 
-            // Prepare response data
             $responseData = [
                 'quartermaster_name' => $quartermasterName,
                 'quartermaster_id' => $quartermasterId,
@@ -164,18 +159,17 @@ class DistributionService{
 
             $query = $request->input('query');
 
-            // Build the base query
             $baseQuery = Distribution::with(['itemType', 'createdForUser'])
             ->where('is_deleted', 0)
                 ->orderBy('created_at', 'desc');
 
-            // Add role-based filtering
             if ($roleName == 'user') {
+
                 //? fetch records only what the user has been created.
                 $baseQuery->where('created_by', $user_auth->id);
             }
 
-            // Add search query filtering if provided
+            
             if (!empty($query)) {
                 $baseQuery->where(function ($queryBuilder) use ($query) {
                     // Search by item_type type field
@@ -192,19 +186,20 @@ class DistributionService{
                     $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
                         $userQuery->where('name', 'like', "%$query%");
                     });
+
                     // // Search by order number
                     // $queryBuilder->orWhere('order_number', 'like', "%$query%");
+
                 });
             }
 
-            // Execute the query and paginate the results
             $distributions = $baseQuery->paginate(20);
 
             $distributions->each(function ($distribution) {
-                // Format the created_at and updated_at timestamps
+
                 $distribution->created_at_date = optional($distribution->created_at)->format('d/m/Y');
                 $distribution->updated_at_date = optional($distribution->updated_at)->format('d/m/Y');
-                // Translate each name of employee_type fields 
+
                 if ($distribution->createdForUser && $distribution->createdForUser->employeeType) {
                     $distribution->createdForUser->employeeType->population = $distribution->createdForUser->employeeType->translated_employee_type;
                 }
@@ -212,19 +207,20 @@ class DistributionService{
                 return $distribution;
             });
 
-            // Create a new collection to store unique distributions by order_number
             $uniqueDistributions = collect();
 
-            // Temporary storage to keep track of processed order_number and type_id combinations
             $processedCombinations = [];
 
             foreach ($distributions as $distribution) {
-                //? make sure not duplicate records
+
+                //? set uniqe key for each records.
                 $combinationKey = $distribution->order_number . '_' . $distribution->type_id;
 
                 if (!in_array($combinationKey, $processedCombinations)) {
+
                     $uniqueDistributions->push($distribution);
-                    //? mark that key
+
+                    
                     $processedCombinations[] = $combinationKey;
                 }
             }
@@ -266,11 +262,9 @@ class DistributionService{
                 ->get();
 
 
-            // Loop through each record and add inventory_items object
 
             $distributions->transform(function ($distribution) {
 
-                //?format each date.
                 $distribution->created_at_date = optional($distribution->created_at)->format('d/m/Y');
                 $distribution->updated_at_date = optional($distribution->updated_at)->format('d/m/Y');
 
@@ -410,7 +404,6 @@ class DistributionService{
 
             $user_auth = Auth::user();
 
-            //? create new clients records. - and get the client_id
 
             //casting the value.
             $emp_type = (int) $request->input('employee_type');
@@ -423,7 +416,7 @@ class DistributionService{
                 default => throw new \InvalidArgumentException('סוג עובד לא תקין.'),
             };
 
-            //? try to find the ckient it the records  is exisit.
+            
             $client = Client::where('personal_number', $request->input('personal_number'))->first();
 
             if ($client) {
@@ -455,12 +448,13 @@ class DistributionService{
             }
 
 
-            // Fetch all existing order numbers
             $existingOrderNumbersQuery = Distribution::pluck('order_number');
 
-            // Generate a unique 7-digit order number
+
             do {
-                $orderNumber = random_int(1000000, 9999999); // Generates a random integer between 1000000 and 9999999
+
+                $orderNumber = random_int(1000000, 9999999); // genearete a new uniqe random order_number
+
             } while ($existingOrderNumbersQuery->contains($orderNumber));
 
 
@@ -468,11 +462,13 @@ class DistributionService{
             $allQuantity = array_sum(array_column($request->input('items'), 'quantity'));
 
             foreach ($request->input('items') as $item) {
+
                 $itemType = $item['type_id'];
                 $quantity = $item['quantity'];
                 $comment = $item['comment'] ?? null;
 
                 Distribution::create([
+
                     'order_number' => (string) $orderNumber,
                     'user_comment' => $request->input('user_comment') ?? 'אין הערות על ההזמנה.',
                     'type_comment' => $comment ?? 'אין הערות על הפריט.',
@@ -490,7 +486,7 @@ class DistributionService{
                 ]);
             }
 
-            $orderNumber = (int) $orderNumber; // Cast to integer
+            $orderNumber = (int) $orderNumber; 
 
             // Send success email
             Mail::to($user_auth->email)->send(new DistributionSuccess($user_auth, $client, $orderNumber));
@@ -530,6 +526,7 @@ class DistributionService{
     {
         try {
 
+
             if (is_null($request->input('admin_comment')) && $request->input('status') == DistributionStatus::CANCELD->value) {
 
                 return [
@@ -551,7 +548,6 @@ class DistributionService{
             // Fetch the records with the given order_number and is_deleted is false
             $distributionRecords = Distribution::where('order_number', $request->input('order_number'))->where('is_deleted', false)->get();
 
-            // Check if records exist
             if ($distributionRecords->isEmpty()) {
 
                 return [
@@ -579,26 +575,21 @@ class DistributionService{
 
 
 
-            // Track processed type_ids
             $processedTypeIds = [];
 
             //? distribution records has been approved
             if ($request->input('status') === DistributionStatus::APPROVED->value) {
 
 
-                // Loop through each type_id in the request
                 foreach ($request->input('inventory_items') as $key => $items) {
 
-                    // Skip if this type_id has already been processed
                     if (in_array($items['type_id'], $processedTypeIds)) {
                         continue;
                     }
 
-                    // Mark this type_id as processed
                     $processedTypeIds[] = $items['type_id'];
 
-                    //? make sure admin approved that type order.
-                    $sizeArrayItem = count($items['items']);
+                    $sizeArrayItem = count($items['items']);//save size of items
 
                     if ((($sizeArrayItem == 0) && (is_null($items['canceled_reason'])))
                         || (($sizeArrayItem !== 0) && (is_null($items['canceled_reason']) == false))
@@ -612,7 +603,7 @@ class DistributionService{
                     }
 
 
-                    // Find the first distribution record with the matching type_id that has not been processed
+                    // fetch the first distribution record with the matching type_id.
                     $distributionRecord = $distributionRecords->firstWhere('type_id', $items['type_id']);
 
                     if ($distributionRecord) {
@@ -629,10 +620,12 @@ class DistributionService{
                         } else {
 
                             //? records has been approved!
+
                             // //? make sure sum of qty match with qty_total that admin allocated
+
                             $allQuantity = array_sum(array_column($items['items'], 'quantity'));
 
-                            // Loop on each item within the type_id
+                            
                             foreach ($items['items'] as $inventoryItem) {
                                 $idInventory = $inventoryItem['inventory_id']; // Save the inventory_id records
                                 $quantity = $inventoryItem['quantity']; //? qty per sku
@@ -686,6 +679,7 @@ class DistributionService{
                                     'canceled_reason' => $distributionRecord->canceled_reason ?? 'אין סיבת ביטול.',
                                 ]);
                             }
+
                             //? deleted records (copy records - as time as admin selcted sku)
                             $distributionRecord->delete();
                         }
@@ -767,13 +761,13 @@ class DistributionService{
             
             $statusValue = (int) $request->input('status');
 
-            // Fetch the records with the given order_number and is_deleted is false
+
             $distributionRecords = Distribution::where('order_number', $request->input('order_number'))
                 ->where('status', DistributionStatus::APPROVED->value)
                 ->where('is_deleted', false)
                 ->get();
 
-            // Check if records exist
+
             if ($distributionRecords->isEmpty()) {
 
                 return [
@@ -783,11 +777,10 @@ class DistributionService{
 
             }
 
-            DB::beginTransaction(); // Start a database transaction
+            DB::beginTransaction(); 
 
             if ($statusValue == DistributionStatus::COLLECTED->value) {
 
-                // Loop through each record and update the fields as collected items
 
                 foreach ($distributionRecords as $distributionRecord) {
 
@@ -825,7 +818,6 @@ class DistributionService{
                 // Collection to store unique distributions by type_id
                 $uniqueDistributions = collect();
 
-                // Loop through the fetched records and ensure unique type_id
                 foreach ($distributionRecords as $distribution) {
                     $typeId = $distribution->type_id;
 
@@ -868,7 +860,7 @@ class DistributionService{
                             'canceled_reason' => $distribution->canceled_reason ?? 'אין סיבת ביטול.',
 
                         ]);
-                        // Add the type_id to the unique collection
+
                         $uniqueDistributions->push($newDistribution);
                     }
 
@@ -896,6 +888,7 @@ class DistributionService{
         ];  
 
     }
+
 
     /**
      * fetch distributions records based on query in the budy request
@@ -939,11 +932,11 @@ class DistributionService{
         ];  
     }
 
+
+
     /**
      * search distributions records based on query in the budy request and group-by order_number fileds
      **/   
-
-
     public function fetchDistributionsRecordsByOrderNumber(Request $request)
     {
         try {
@@ -952,10 +945,14 @@ class DistributionService{
 
 
             if ($request->input('query')) {
+
                 //? search records based on query and given status
+
                 $distributions = $this->fetchDistributionsByStatus($request); ///private function
             } else {
+
                 //? fetch all records without any query to search
+
                 $distributions = Distribution::with(['itemType', 'createdForUser'])
                 ->where('status', $request->input('status'))
                     ->where('is_deleted', 0)
@@ -964,10 +961,10 @@ class DistributionService{
             }
 
             $distributions->each(function ($distribution) {
-                // Format the created_at and updated_at timestamps
+
                 $distribution->created_at_date = optional($distribution->created_at)->format('d/m/Y');
                 $distribution->updated_at_date = optional($distribution->updated_at)->format('d/m/Y');
-                //translate each name of employee_type fileds 
+
                 if ($distribution->createdForUser && $distribution->createdForUser->employeeType) {
                     $distribution->createdForUser->employeeType->population = $distribution->createdForUser->employeeType->translated_employee_type;
                 }
@@ -978,13 +975,11 @@ class DistributionService{
 
 
 
-            // Create a new collection to store unique distributions by order_number
+            // create a new collection to store unique distributions by order_number
             $uniqueDistributions = collect();
 
-            // Create a set to track seen order_numbers
             $seenOrderNumbers = [];
 
-            // Loop through the fetched distributions
             foreach ($distributions as $distribution) {
                 // make sure the order_number has been seen before
                 if (!in_array($distribution->order_number, $seenOrderNumbers)) {
@@ -1047,7 +1042,7 @@ class DistributionService{
     /**
      * search distributions records by one or many fillter in the budy request
      **/   
-    //? fetch distributions records - based on filter
+
     public function getRecordsByFilter(Request $request)
     {
         try {
@@ -1078,6 +1073,8 @@ class DistributionService{
                     });
                 }
             } else {
+
+
                 //? fetch all distributions records.
 
                 $distributions = Distribution::with(['createdForUser', 'itemType'])
@@ -1085,7 +1082,7 @@ class DistributionService{
                     ->orderBy('created_at', 'desc')
                     ->get()
                     ->map(function ($distribution) {
-                        // Format the created_at and updated_at timestamps
+                        
                         $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
                         $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
 
@@ -1135,7 +1132,6 @@ class DistributionService{
                 return $distribution;
             });
 
-            // Get sorting parameters from the request
             $sortParams = $request->input('sort', []);
 
             // Apply multiple sorting parameters
@@ -1173,7 +1169,6 @@ class DistributionService{
                 }
             }
 
-            // Convert to collection after sorting to maintain collection methods
             $distributions = $distributions->values();
 
             // Paginate the sorted collection
@@ -1187,7 +1182,6 @@ class DistributionService{
                 'data' =>  $paginatedDistributions->isEmpty() ? [] :  $paginatedDistributions,
             ];  
 
-            // return response()->json($paginatedDistributions, Response::HTTP_OK);
 
 
         } catch (\Exception $e) {
@@ -1208,6 +1202,7 @@ class DistributionService{
     private function fetchDistributions(Request $request)
     {
         try {
+
             $query = $request->input('query');
 
             return Distribution::with(['itemType', 'createdForUser'])
@@ -1241,6 +1236,7 @@ class DistributionService{
     private function fetchDistributionsByStatus(Request $request)
     {
         try {
+
             $query = $request->input('query');
 
             return Distribution::with(['itemType', 'createdForUser'])
@@ -1264,7 +1260,7 @@ class DistributionService{
                     $queryBuilder->orWhere('order_number', 'like', "%$query%");
 
                     // Search by year
-                    // $queryBuilder->orWhere('year', 'like', "%$query%");
+                    
                     if (is_numeric($query) && strlen($query) == 4) {
                         $queryBuilder->orWhereYear('created_at', $query);
                     }
@@ -1281,7 +1277,6 @@ class DistributionService{
         }
 
         return null;
-        // return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
 
@@ -1292,6 +1287,7 @@ class DistributionService{
     private function fetchDistributionsByFilter(Request $request)
     {
         try {
+
             $query = Distribution::query();
 
             $inputStatus = $request->input('status');
