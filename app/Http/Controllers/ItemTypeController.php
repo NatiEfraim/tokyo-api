@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Status;
-use App\Models\ItemType;
 use App\Services\ItemType\ItemTypeService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use Carbon\Carbon;
+
+
+
 
 
 
@@ -142,7 +143,7 @@ class ItemTypeController extends Controller
                 'type.required' => 'שדה השם הוא חובה.',
                 'type.string' => 'שדה ערך שם מחלקה אינו תקין.',
                 'type.unique' => 'סוג הפריט כבר קיים עבור פריטים שאינם נמחקו.',
-                
+
                 'icon_number.required' => 'שדה אייקון הוא חובה.',
                 'icon_number.integer' => 'שדה אייקון אינו תקין.',
                 'icon_number.between' => 'שדה אייקון אינו תקין.',

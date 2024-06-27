@@ -17,13 +17,7 @@ class ItemTypeSeeder extends Seeder
         //
 
 
-        ItemType::factory()->count(10)->create();
-        // ItemType::create([
-        //     'type' => 'computer',
-        //     'icon_number' => 1,
-
-
-        // ]);
+        // ItemType::factory()->count(10)->create();
 
         $types = ['computer', 'keyBord', 'mouse', 'wireLees', 'laptop7', 'computer10', 'screen', 'computer4.2', 'screen7', 'mouse4'];
 

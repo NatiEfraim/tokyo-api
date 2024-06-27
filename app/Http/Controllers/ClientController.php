@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Client;
 use App\Services\Client\ClientService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
-use App\Enums\EmployeeType;
 use App\Enums\Status;
 use Illuminate\Support\Facades\Validator;
+
 
 
 class ClientController extends Controller

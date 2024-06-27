@@ -11,10 +11,11 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use App\Models\Inventory;
-use App\Models\Report;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+
+
+
+
 
 class InventoryController extends Controller
 {

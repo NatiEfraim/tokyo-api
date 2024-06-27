@@ -37,9 +37,12 @@ class CanceledOrder extends Mailable
         );
     }
 
+
+
     /**
      * Get the message content definition.
      */
+
     public function build()
     {
         return $this->view('emails.canceled_order')
@@ -50,6 +53,8 @@ class CanceledOrder extends Mailable
         ])
             ->subject('Order Failed');
     }
+
+
     // public function content(): Content
     // {
     //     return new Content(
@@ -62,6 +67,7 @@ class CanceledOrder extends Mailable
      *
      * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
+    
     public function attachments(): array
     {
         return [];

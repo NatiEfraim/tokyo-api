@@ -2,40 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\EmployeeType;
 
 use App\Enums\DistributionStatus;
 use App\Enums\Status;
 use App\Http\Requests\AllocationDistributionRequest;
-use App\Http\Requests\CanceledDistributionRequest;
 use App\Http\Requests\ChangeStatusDistributionRequest;
 use App\Http\Requests\StoreDistributionRequest;
-use App\Mail\ApprovedOrder;
-use App\Mail\CanceledOrder;
-use App\Models\Client;
 use App\Models\Distribution;
-use App\Models\Inventory;
 use App\Services\Distribution\DistributionService;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-
-use App\Mail\DistributionSuccess;
 use App\Mail\DistributionFailure;
-use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 
-// use App\Http\Requests\UpdateDistributionRequest;
-// use Illuminate\Validation\Rule;
-// use Illuminate\Support\Str;
-// use App\Models\Department;
-// use App\Models\User;
-// use App\Models\Inventory;
+
+
 
 class DistributionController extends Controller
 {

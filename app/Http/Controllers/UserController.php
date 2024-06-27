@@ -2,19 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\EmployeeType;
-use App\Enums\Role as EnumsRole;
-use App\Enums\Status;
 use App\Http\Requests\StoreUserRequest;
-use App\Models\User;
 use App\Services\User\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
-use Spatie\Permission\Models\Role;
-
 use Illuminate\Support\Facades\Validator;
+use App\Enums\Status;
+
 
 
 
