@@ -115,22 +115,13 @@ class AuthController extends Controller
             // Create new token
             $token = $user->createToken($tokenName);
 
-            // Get user roles
-            $roles = $user->roles->pluck('name'); // Extract the role names
-
-            // // Clear all previous cookies and set only the TokyoToken cookie
-            // Cookie::forget('MashaToken');
-
-
 
             return response()
                 ->json(
                     [
-
                         'name' => $user->name,
                         'personal_number' => $user->personal_number,
                         'role' => $user->roles->first()->name?? null,
-                        // 'token' => $token->accessToken,
                     ],
                     Response::HTTP_OK,
                 )

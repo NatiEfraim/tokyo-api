@@ -3,8 +3,11 @@
 namespace Database\Seeders;
 
 use App\Models\EmployeeType;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+
+
 
 class EmployeeTypeSeeder extends Seeder
 {
