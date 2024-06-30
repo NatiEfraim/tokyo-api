@@ -508,6 +508,7 @@ class DistributionService{
 
         // // Send failure email
         // Mail::to($user_auth->email)->send(new DistributionFailure($user_auth));
+        
 
         return [
             'status' => Status::INTERNAL_SERVER_ERROR,

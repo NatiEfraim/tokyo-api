@@ -89,17 +89,7 @@ class InventoryController extends Controller
                 default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
             };
 
-            // $inventories = Inventory::with(['itemType'])
-            // ->where('is_deleted', 0)
-            // ->orderBy('created_at','desc')
-            // ->paginate(20);
 
-            // $inventories->each(function($inventory){
-
-            //     $inventory->available = $inventory->quantity - $inventory->reserved;
-            // });
-
-            // return response()->json($inventories->isEmpty() ? [] : $inventories, Response::HTTP_OK);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
@@ -146,17 +136,7 @@ class InventoryController extends Controller
                 default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
             };
 
-            // $inventories = Inventory::select('id', 'sku')
-            //     ->where('is_deleted', 0)
-            //     ->get()
-            //     ->map(function ($inventory) {
-            //         return [
-            //             'id' => $inventory->id,
-            //             'name' => $inventory->sku
-            //         ];
-            //     });
 
-            // return response()->json($inventories->isEmpty() ? [] : $inventories, Response::HTTP_OK);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
@@ -254,30 +234,6 @@ class InventoryController extends Controller
             };
 
 
-            // $searchQuery = str_replace(' ', '', $request->input('query'));
-
-            // // Search users by name (ignoring spaces)
-            // $invetoriesRecords = Inventory::with(['itemType'])
-            // ->where('type_id', $request->input('type_id'))
-            // ->where('is_deleted', false)
-            // ->where('sku', 'LIKE', '%' . $searchQuery . '%')
-
-            // ->orderBy('id', 'asc')
-            //     ->get();
-
-            // if(is_null($invetoriesRecords)==false)
-            // {
-            //     $invetoriesRecords->each(function ($inventory) {
-    
-            //         $inventory->available = $inventory->quantity - $inventory->reserved;
-            //     });
-
-            // }
-
-
-            // return response()->json($invetoriesRecords->isEmpty()? []: $invetoriesRecords, Response::HTTP_OK);
-
-
         } catch (\Exception $e) {
 
             Log::error($e->getMessage());
@@ -355,22 +311,6 @@ class InventoryController extends Controller
                 default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
             };
 
-            // if (is_null($id)) {
-            //     return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
-            // }
-
-            // $inventory = Inventory::with(['itemType'])
-            // ->where('is_deleted', 0)
-            //     ->where('id', $id)
-            //     ->first();
-
-            // if (is_null($inventory)) {
-            //     return response()->json([], Response::HTTP_OK);
-            // }
-            //     $inventory->available=$inventory->quantity-$inventory->reserved;
-
-            // return response()->json($inventory, Response::HTTP_OK);
-
 
         } catch (\Exception $e) {
             Log::error($e->getMessage());
@@ -446,21 +386,6 @@ class InventoryController extends Controller
                 default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
             };
 
-            // if (is_null($id)) {
-            //     return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
-            // }
-
-            // $inventory = Inventory::where('is_deleted', 0)
-            //     ->where('id', $id)
-            //     ->first();
-            // if (is_null($inventory)) {
-            //     return response()->json(['message' => 'שורה אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
-            // }
-            // $inventory->update([
-            //     'is_deleted' => true,
-            // ]);
-            // return response()->json(['message' => 'שורה נמחקה בהצלחה.'], Response::HTTP_OK);
-
 
         } catch (\Exception $e) {
             Log::error($e->getMessage());
@@ -534,14 +459,6 @@ class InventoryController extends Controller
                 default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
             };
 
-            // if ($request->input('reserved') >$request->input('quantity')) {
-            //     return response()->json(['message' => 'נתוני פריט אינם תקינים.'], Response::HTTP_BAD_REQUEST);
-            // }
-
-            // $inventory = Inventory::create($request->validated());
-
-
-            // return response()->json(['message' => 'שורה נוצרה בהצלחה.'], Response::HTTP_CREATED);
 
         } catch (\Exception $e) {
             Log::error($e->getMessage());
@@ -593,9 +510,6 @@ class InventoryController extends Controller
 
         try {
 
-
-
-
             $result = $this->_inventoryService->update($request);
 
             // Use match to handle different status cases
@@ -609,54 +523,6 @@ class InventoryController extends Controller
 
                 default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
             };
-
-            // if (is_null($id)) {
-            //     return response()->json(['message' => 'יש לשלוח מספר מזהה של שורה'], Response::HTTP_BAD_REQUEST);
-            // }
-
-            // $authUser = Auth::user();
-
-
-            // $inventory = Inventory::where('is_deleted', 0)
-
-            //     ->where('id', $id)
-            //     ->first();
-            // if (is_null($inventory)) {
-            //     return response()->json(['message' => 'שורה אינה קיימת במערכת.'], Response::HTTP_BAD_REQUEST);
-            // }
-
-
-            // $currentTime = Carbon::now()->toDateTimeString();
-
-
-            // DB::beginTransaction();
-
-            // if ($request->input('quantity')) {
-            //         //? created new reports records
-            //     Report::create([
-
-            //         'hour' => Carbon::now()->format('H:i'), // Current hour and minutes in 'HH:MM' format
-            //         'created_by' => $authUser->id,
-            //         'last_quantity' => $inventory->quantity,
-            //         'new_quantity' => $request->input('quantity'),
-            //         'sku' => $inventory->sku,
-            //         'inventory_id' => $inventory->id,
-            //     ]);
-
-            // }
-
-            // $inventory->update([
-            //     'quantity' => $request->input('quantity') ? $request->input('quantity') : $inventory->quantity,
-            //     'sku' => $request->input('sku') ? $request->input('sku'): $inventory->sku,
-            //     'type_id' => $request->input('type_id') ?  $request->input('type_id') : $inventory->type_id,
-            //     'detailed_description' => $request->input('detailed_description') ? $request->input('detailed_description') : $inventory->detailed_description,
-            //     'updated_at' => $currentTime,
-            // ]);
-
-            // DB::commit();
-
-
-            // return response()->json(['message' => 'שורה התעדכנה בהצלחה.'], Response::HTTP_OK);
 
 
         } catch (\Exception $e) {
@@ -768,31 +634,11 @@ class InventoryController extends Controller
             };
 
 
-            // $reports = Report::with(['createdByUser'])
-            // ->where('inventory_id',$request->input('inventory_id'))
-            // ->where('is_deleted', false)
-            // ->get();
 
-
-
-            // $reports->each(function ($report) {
-            //     // Format the created_at and updated_at timestamps
-            //     $report->created_at_date = $report->created_at->format('d/m/Y');
-            //     $report->updated_at_date = $report->updated_at->format('d/m/Y');
-            //     $report->makeHidden(['inventory_id', 'created_by', 'sku']);
-
-
-
-
-            //     return $report;
-            // });
-
-            // return response()->json($reports->isEmpty() ? [] :$reports, Response::HTTP_OK);
 
         } catch (\Exception $e) {
 
             Log::error($e->getMessage());
-
 
         }
 
@@ -895,24 +741,6 @@ class InventoryController extends Controller
             };
 
 
-
-            // $inventories = $this->fetchInventories($request);
-
-            // if ($inventories) {
-
-
-            //     $inventories->each(function ($inventory) {
-
-            //         $inventory->available = $inventory->quantity - $inventory->reserved;
-            //     });
-
-
-            // }
-
-            // return response()->json($inventories->isEmpty() ? [] : $inventories, Response::HTTP_OK);
-
-
-
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
@@ -1004,19 +832,7 @@ class InventoryController extends Controller
             };
 
 
-            // $inventories = Inventory::where('type_id',$request->input('type_id'))
-            // ->where('is_deleted', 0)
-            // ->select('id','sku', 'type_id', 'quantity', 'reserved', 'detailed_description')
-            // ->get();
 
-            // $inventories->each(function ($inventory) {
-
-            //     $inventory->available = $inventory->quantity - $inventory->reserved;
-            //     // Hide the fields 'type', 'quantity', and 'reserved'
-            //     $inventory->makeHidden(['quantity', 'reserved', 'type_id']);
-            // });
-
-            // return response()->json($inventories->isEmpty() ? [] : $inventories, Response::HTTP_OK);
 
         } catch (\Exception $e) {
 
