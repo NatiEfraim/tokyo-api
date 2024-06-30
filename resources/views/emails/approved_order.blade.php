@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-    <title>Order Confirmation</title>
+    <title>הזמנתך אושרה</title>
 </head>
 <body>
     <p>שלום {{ $userName }},</p>

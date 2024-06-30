@@ -37,7 +37,7 @@ class DistributionSuccess extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Distribution Success',
+            subject: 'מספר הזמנה',
         );
     }
 

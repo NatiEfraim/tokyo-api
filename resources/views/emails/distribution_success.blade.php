@@ -1,20 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="he" dir="rtl">
 <head>
     <title>Order Confirmation</title>
 </head>
 <body>
-    <p>Hello {{ $userName }},</p>
+    <p>שלום {{ $userName }},</p>
 
-    <p>Your order has been successfully created with the following details:</p>
+    <p>ההזמנה בוצעה בהצלחה ונשמרה במערכת.</p>
 
-    <p>
-        <strong>Client Name:</strong> {{ $clientName }}<br>
-        <strong>Order Number:</strong> {{ $orderNumber }}
-    </p>
+    <p>שם לקוח {{ $clientName }}</p>
+    
+    <p>מספר הזמנה {{ $orderNumber }}</p>
 
-    <p>Thank you for your order!</p>
 
-    <p>Best regards,<br>Your Company</p>
 </body>
 </html>

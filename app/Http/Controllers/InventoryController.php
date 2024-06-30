@@ -82,9 +82,9 @@ class InventoryController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json($result['data'], Response::HTTP_OK),
+                Status::OK => response()->json(['data' => $result['data']], Response::HTTP_OK),
 
-                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+                Status::INTERNAL_SERVER_ERROR => response()->json(['message' => $result['message']], Response::HTTP_INTERNAL_SERVER_ERROR),
 
                 default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
             };
@@ -139,9 +139,9 @@ class InventoryController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json($result['data'], Response::HTTP_OK),
+                Status::OK => response()->json(['data' => $result['data']], Response::HTTP_OK),
 
-                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+                Status::INTERNAL_SERVER_ERROR => response()->json(['message' => $result['message']], Response::HTTP_INTERNAL_SERVER_ERROR),
 
                 default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
             };
@@ -246,9 +246,9 @@ class InventoryController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json($result['data'], Response::HTTP_OK),
+                Status::OK => response()->json(['data' => $result['data']], Response::HTTP_OK),
 
-                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+                Status::INTERNAL_SERVER_ERROR => response()->json(['message' => $result['message']], Response::HTTP_INTERNAL_SERVER_ERROR),
 
                 default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
             };
@@ -346,11 +346,11 @@ class InventoryController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json($result['data'], Response::HTTP_OK),
+                Status::OK => response()->json(['data' => $result['data']], Response::HTTP_OK),
 
-                Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
+                Status::BAD_REQUEST => response()->json(['message' => $result['message']], Response::HTTP_BAD_REQUEST),
 
-                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+                Status::INTERNAL_SERVER_ERROR => response()->json(['message' => $result['message']], Response::HTTP_INTERNAL_SERVER_ERROR),
 
                 default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
             };
@@ -437,11 +437,11 @@ class InventoryController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json($result['message'], Response::HTTP_OK),
+                Status::OK => response()->json(['message' => $result['message']], Response::HTTP_OK),
 
-                Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
+                Status::BAD_REQUEST => response()->json(['message' => $result['message']], Response::HTTP_BAD_REQUEST),
 
-                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+                Status::INTERNAL_SERVER_ERROR => response()->json(['message' => $result['message']], Response::HTTP_INTERNAL_SERVER_ERROR),
 
                 default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
             };
@@ -525,11 +525,11 @@ class InventoryController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json($result['message'], Response::HTTP_OK),
+                Status::OK => response()->json(['message' => $result['message']], Response::HTTP_OK),
 
-                Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
+                Status::BAD_REQUEST => response()->json(['message' => $result['message']], Response::HTTP_BAD_REQUEST),
 
-                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+                Status::INTERNAL_SERVER_ERROR => response()->json(['message' => $result['message']], Response::HTTP_INTERNAL_SERVER_ERROR),
 
                 default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
             };
@@ -601,11 +601,11 @@ class InventoryController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json($result['message'], Response::HTTP_OK),
+                Status::OK => response()->json(['message' => $result['message']], Response::HTTP_OK),
 
-                Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
+                Status::BAD_REQUEST => response()->json(['message' => $result['message']], Response::HTTP_BAD_REQUEST),
 
-                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+                Status::INTERNAL_SERVER_ERROR => response()->json(['message' => $result['message']], Response::HTTP_INTERNAL_SERVER_ERROR),
 
                 default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
             };
@@ -758,11 +758,11 @@ class InventoryController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json($result['data'], Response::HTTP_OK),
+                Status::OK => response()->json(['data' => $result['data']], Response::HTTP_OK),
 
-                Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
+                Status::BAD_REQUEST => response()->json(['message' => $result['message']], Response::HTTP_BAD_REQUEST),
 
-                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+                Status::INTERNAL_SERVER_ERROR => response()->json(['message' => $result['message']], Response::HTTP_INTERNAL_SERVER_ERROR),
 
                 default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
             };
@@ -885,11 +885,11 @@ class InventoryController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json($result['data'], Response::HTTP_OK),
+                Status::OK => response()->json(['data' => $result['data']], Response::HTTP_OK),
 
-                Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
+                Status::BAD_REQUEST => response()->json(['message' => $result['message']], Response::HTTP_BAD_REQUEST),
 
-                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+                Status::INTERNAL_SERVER_ERROR => response()->json(['message' => $result['message']], Response::HTTP_INTERNAL_SERVER_ERROR),
 
                 default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
             };
@@ -994,11 +994,11 @@ class InventoryController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json($result['data'], Response::HTTP_OK),
+                Status::OK => response()->json(['data' => $result['data']], Response::HTTP_OK),
 
-                Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
+                Status::BAD_REQUEST => response()->json(['message' => $result['message']], Response::HTTP_BAD_REQUEST),
 
-                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+                Status::INTERNAL_SERVER_ERROR => response()->json(['message' => $result['message']], Response::HTTP_INTERNAL_SERVER_ERROR),
 
                 default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
             };

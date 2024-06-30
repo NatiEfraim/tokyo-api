@@ -1,13 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="he" dir="rtl">
 <head>
-    <title>Order Failed</title>
+    <title>ההזמנה לא אושרה</title>
 </head>
 <body>
-    <p>Hello {{ $userName }},</p>
+    <p>שלום {{ $userName }},</p>
 
-    <p>We regret to inform you that your order could not be processed due to a server error. Please try again later.</p>
-
-    <p>Best regards,<br>Your Company</p>
+    <p>ההזמנה אינה נשמרה במערכת.</p>
+    <p>יש לנסות שוב מאוחר יותר.</p>
 </body>
 </html>

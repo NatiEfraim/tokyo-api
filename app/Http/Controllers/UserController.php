@@ -98,11 +98,11 @@ class UserController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json($result['data'], Response::HTTP_OK),
+                Status::OK => response()->json(['data' => $result['data']], Response::HTTP_OK),
 
-                Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
+                Status::BAD_REQUEST => response()->json(['message' => $result['message']], Response::HTTP_BAD_REQUEST),
 
-                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+                Status::INTERNAL_SERVER_ERROR => response()->json(['message' => $result['message']], Response::HTTP_INTERNAL_SERVER_ERROR),
 
                 default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
             };
@@ -124,7 +124,7 @@ class UserController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json($result['data'], Response::HTTP_OK),
+                Status::OK => response()->json(['data' => $result['data']], Response::HTTP_OK),
 
                 Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
 
@@ -189,15 +189,15 @@ class UserController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json($result['data'], Response::HTTP_OK),
+                Status::OK => response()->json(['data' => $result['data']], Response::HTTP_OK),
 
-                Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
+                Status::BAD_REQUEST => response()->json(['message' => $result['message']], Response::HTTP_BAD_REQUEST),
 
-                Status::CONFLICT => response()->json($result['message'], Response::HTTP_CONFLICT),
+                Status::CONFLICT => response()->json(['message' => $result['message']], Response::HTTP_CONFLICT),
 
-                Status::UNPROCESSABLE_ENTITY => response()->json($result['message'], Response::HTTP_UNPROCESSABLE_ENTITY),
+                Status::UNPROCESSABLE_ENTITY => response()->json(['message' => $result['message']], Response::HTTP_UNPROCESSABLE_ENTITY),
 
-                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+                Status::INTERNAL_SERVER_ERROR => response()->json(['message' => $result['message']], Response::HTTP_INTERNAL_SERVER_ERROR),
 
                 default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
             };
@@ -306,13 +306,13 @@ class UserController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json($result['data'], Response::HTTP_OK),
+                Status::OK => response()->json(['data' => $result['data']], Response::HTTP_OK),
 
-                Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
+                Status::BAD_REQUEST => response()->json(['message' => $result['message']], Response::HTTP_BAD_REQUEST),
 
-                Status::UNPROCESSABLE_ENTITY => response()->json($result['message'], Response::HTTP_UNPROCESSABLE_ENTITY),
+                Status::UNPROCESSABLE_ENTITY => response()->json(['message' => $result['message']], Response::HTTP_UNPROCESSABLE_ENTITY),
 
-                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+                Status::INTERNAL_SERVER_ERROR => response()->json(['message' => $result['message']], Response::HTTP_INTERNAL_SERVER_ERROR),
 
                 default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
             };
@@ -409,13 +409,13 @@ class UserController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::CREATED => response()->json($result['message'], Response::HTTP_CREATED),
+                Status::CREATED => response()->json(['message' => $result['message']], Response::HTTP_CREATED),
 
-                Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
+                Status::BAD_REQUEST => response()->json(['message' => $result['message']], Response::HTTP_BAD_REQUEST),
 
-                Status::UNPROCESSABLE_ENTITY => response()->json($result['message'], Response::HTTP_UNPROCESSABLE_ENTITY),
+                Status::UNPROCESSABLE_ENTITY => response()->json(['message' => $result['message']], Response::HTTP_UNPROCESSABLE_ENTITY),
 
-                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+                Status::INTERNAL_SERVER_ERROR => response()->json(['message' => $result['message']], Response::HTTP_INTERNAL_SERVER_ERROR),
 
                 default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
             };
@@ -582,13 +582,13 @@ class UserController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json($result['message'], Response::HTTP_OK),
+                Status::OK => response()->json(['message' => $result['message']], Response::HTTP_OK),
 
-                Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
+                Status::BAD_REQUEST => response()->json(['message' => $result['message']], Response::HTTP_BAD_REQUEST),
 
-                Status::UNPROCESSABLE_ENTITY => response()->json($result['message'], Response::HTTP_UNPROCESSABLE_ENTITY),
+                Status::UNPROCESSABLE_ENTITY => response()->json(['message' => $result['message']], Response::HTTP_UNPROCESSABLE_ENTITY),
 
-                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+                Status::INTERNAL_SERVER_ERROR => response()->json(['message' => $result['message']], Response::HTTP_INTERNAL_SERVER_ERROR),
 
                 default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
             };
@@ -662,13 +662,13 @@ class UserController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json($result['message'], Response::HTTP_OK),
+                Status::OK => response()->json(['message' => $result['message']], Response::HTTP_OK),
 
-                Status::BAD_REQUEST => response()->json($result['message'], Response::HTTP_BAD_REQUEST),
+                Status::BAD_REQUEST => response()->json(['message' => $result['message']], Response::HTTP_BAD_REQUEST),
 
-                Status::UNPROCESSABLE_ENTITY => response()->json($result['message'], Response::HTTP_UNPROCESSABLE_ENTITY),
+                Status::UNPROCESSABLE_ENTITY => response()->json(['message' => $result['message']], Response::HTTP_UNPROCESSABLE_ENTITY),
 
-                Status::INTERNAL_SERVER_ERROR => response()->json($result['message'], Response::HTTP_INTERNAL_SERVER_ERROR),
+                Status::INTERNAL_SERVER_ERROR => response()->json(['message' => $result['message']], Response::HTTP_INTERNAL_SERVER_ERROR),
 
                 default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
 
