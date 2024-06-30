@@ -16,8 +16,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use App\Mail\DistributionFailure;
-use Illuminate\Support\Facades\Mail;
+// use App\Mail\DistributionFailure;
+// use Illuminate\Support\Facades\Mail;
 
 
 
@@ -123,7 +123,7 @@ class DistributionController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json(['data' => $result['data']], Response::HTTP_OK),
+                Status::OK => response()->json($result['data'], Response::HTTP_OK),
 
                 Status::INTERNAL_SERVER_ERROR => response()->json(['message' => $result['message']], Response::HTTP_INTERNAL_SERVER_ERROR),
 
@@ -208,7 +208,7 @@ class DistributionController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json(['data' => $result['data']], Response::HTTP_OK),
+                Status::OK => response()->json($result['data'], Response::HTTP_OK),
 
                 Status::BAD_REQUEST => response()->json(['message' => $result['message']], Response::HTTP_BAD_REQUEST),
 
@@ -369,7 +369,7 @@ class DistributionController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json(['data' => $result['data']], Response::HTTP_OK),
+                Status::OK => response()->json($result['data'], Response::HTTP_OK),
 
                 Status::BAD_REQUEST => response()->json(['message' => $result['message']], Response::HTTP_BAD_REQUEST),
 
@@ -562,7 +562,7 @@ class DistributionController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json(['data' => $result['data']], Response::HTTP_OK),
+                Status::OK => response()->json($result['data'], Response::HTTP_OK),
 
                 Status::BAD_REQUEST => response()->json(['message' => $result['message']], Response::HTTP_BAD_REQUEST),
 
@@ -681,7 +681,7 @@ class DistributionController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json(['data' => $result['data']], Response::HTTP_OK),
+                Status::OK => response()->json($result['data'], Response::HTTP_OK),
 
                 Status::BAD_REQUEST => response()->json(['message' => $result['message']], Response::HTTP_BAD_REQUEST),
 
@@ -987,8 +987,8 @@ class DistributionController extends Controller
             Log::error($e->getMessage());
         }
 
-        // Send failure email
-        Mail::to($user_auth->email)->send(new DistributionFailure($user_auth));
+        // // Send failure email
+        // Mail::to($user_auth->email)->send(new DistributionFailure($user_auth));
 
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
@@ -1589,7 +1589,7 @@ class DistributionController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json(['data' => $result['data']], Response::HTTP_OK),
+                Status::OK => response()->json($result['data'], Response::HTTP_OK),
 
                 Status::BAD_REQUEST => response()->json(['message' => $result['message']], Response::HTTP_BAD_REQUEST),
 
@@ -1729,7 +1729,7 @@ class DistributionController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json(['data' => $result['data']], Response::HTTP_OK),
+                Status::OK => response()->json($result['data'], Response::HTTP_OK),
 
                 Status::BAD_REQUEST => response()->json(['message' => $result['message']], Response::HTTP_BAD_REQUEST),
 
@@ -1910,7 +1910,7 @@ class DistributionController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json(['data' => $result['data']], Response::HTTP_OK),
+                Status::OK => response()->json($result['data'], Response::HTTP_OK),
 
                 Status::BAD_REQUEST => response()->json(['message' => $result['message']], Response::HTTP_BAD_REQUEST),
 
@@ -2101,7 +2101,7 @@ class DistributionController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json(['data' => $result['data']], Response::HTTP_OK),
+                Status::OK => response()->json($result['data'], Response::HTTP_OK),
 
                 Status::BAD_REQUEST => response()->json(['message' => $result['message']], Response::HTTP_BAD_REQUEST),
 
@@ -2208,7 +2208,7 @@ class DistributionController extends Controller
             // Use match to handle different status cases
             return match ($result['status']) {
 
-                Status::OK => response()->json(['data' => $result['data']], Response::HTTP_OK),
+                Status::OK => response()->json($result['data'], Response::HTTP_OK),
 
                 Status::BAD_REQUEST => response()->json(['message' => $result['message']], Response::HTTP_BAD_REQUEST),
 

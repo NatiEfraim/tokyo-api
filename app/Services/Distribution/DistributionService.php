@@ -488,8 +488,8 @@ class DistributionService{
 
             $orderNumber = (int) $orderNumber; 
 
-            // Send success email
-            Mail::to($user_auth->email)->send(new DistributionSuccess($user_auth, $client, $orderNumber));
+            // // Send success email
+            // Mail::to($user_auth->email)->send(new DistributionSuccess($user_auth, $client, $orderNumber));
 
             DB::commit();
 
@@ -506,8 +506,8 @@ class DistributionService{
             Log::error($e->getMessage());
         }
 
-        // Send failure email
-        Mail::to($user_auth->email)->send(new DistributionFailure($user_auth));
+        // // Send failure email
+        // Mail::to($user_auth->email)->send(new DistributionFailure($user_auth));
 
         return [
             'status' => Status::INTERNAL_SERVER_ERROR,
