@@ -129,8 +129,6 @@ class DepartmentController extends Controller
     {
         try {
 
-
-
             // Set custom error messages in Hebrew
             $customMessages = [
                 'name.required' => 'שדה השם הוא חובה.',
@@ -146,12 +144,11 @@ class DepartmentController extends Controller
             // Validate the request data
             $validator = Validator::make($request->all(), $rules, $customMessages);
 
+
             // Check if validation fails
             if ($validator->fails()) {
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
-
-
 
             $result = $this->_departmentService->store($request);
 
@@ -168,9 +165,7 @@ class DepartmentController extends Controller
 
                 default => response()->json(['message' => 'Unknown error occurred.'], Response::HTTP_INTERNAL_SERVER_ERROR),
             };
-
-
-            // return response()->json(['message' => 'המחלקה נוצרה בהצלחה.'], Response::HTTP_CREATED);
+            
         } catch (\Exception $e) {
 
             Log::error($e->getMessage());

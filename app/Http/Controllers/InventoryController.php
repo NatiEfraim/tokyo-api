@@ -843,41 +843,4 @@ class InventoryController extends Controller
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
-
-
-    //? search based on request->input('query').
-    private function fetchInventories(Request $request)
-    {
-        try {
-            $query = $request->input('query');
-
-            return Inventory::with([ 'itemType'])
-
-                ->where('is_deleted', 0)
-
-                ->where(function ($queryBuilder) use ($query) {
-
-
-                    // Search by item_type type field
-                    $queryBuilder->orWhereHas('itemType', function ($itemTypeQuery) use ($query) {
-                        $itemTypeQuery->where('type', 'like', "%$query%");
-                    });
-
-                    // Search by order sku
-                    $queryBuilder->orWhere('sku', 'like', "%$query%");
-
-                    // Search by order sku
-                    $queryBuilder->orWhere('detailed_description', 'like', "%$query%");
-
-                })
-
-                ->orderBy('created_at', 'desc')
-                ->get();
-        } catch (\Exception $e) {
-            Log::error($e->getMessage());
-        }
-        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
-    }
-
-
 }

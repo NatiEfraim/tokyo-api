@@ -24,12 +24,6 @@ class UserSeeder extends Seeder
     {
 
         //
-        // Create an instance of the Faker library
-        $faker = Faker::create('he_IL');
-
-        // Fetch all roles with the correct guard
-        $roles = Role::where('guard_name', 'passport')->pluck('name')->toArray();
-
         $user =User::create([
 
             'name' => 'רועי סחייק',
@@ -37,12 +31,21 @@ class UserSeeder extends Seeder
             'email' => 'c9804761@army.idf.il',
             'emp_type_id' => 4,
             'phone' => '0545452493',
-            // 'remember_token' => Str::random(10),
-
         ]);
 
         $role= Role::where('name', 'admin')->first();
         $user->assignRole($role);//give admin role
+
+
+
+        // //? dev seeder
+
+        // // Create an instance of the Faker library
+        // $faker = Faker::create('he_IL');
+
+        // // Fetch all roles with the correct guard
+        // $roles = Role::where('guard_name', 'passport')->pluck('name')->toArray();
+
 
         // for ($i = 0; $i < 10; $i++) {
             

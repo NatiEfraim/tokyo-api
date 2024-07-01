@@ -508,7 +508,7 @@ class DistributionService{
 
         // // Send failure email
         // Mail::to($user_auth->email)->send(new DistributionFailure($user_auth));
-        
+
 
         return [
             'status' => Status::INTERNAL_SERVER_ERROR,
@@ -1294,7 +1294,12 @@ class DistributionService{
             $inputStatus = $request->input('status');
 
             // Search by status
-            if ($inputStatus == DistributionStatus::PENDING->value || $inputStatus == DistributionStatus::CANCELD->value || $inputStatus == DistributionStatus::APPROVED->value || $inputStatus == DistributionStatus::COLLECTED->value) {
+            if (
+                $inputStatus == DistributionStatus::PENDING->value ||
+                $inputStatus == DistributionStatus::CANCELD->value
+                || $inputStatus == DistributionStatus::APPROVED->value
+                || $inputStatus == DistributionStatus::COLLECTED->value
+            ) {
                 $query->where('status', $request->input('status'));
             }
 

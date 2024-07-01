@@ -1427,7 +1427,7 @@ class DistributionController extends Controller
      * )
      */
 
-    //? fetch distributions records - based on filter
+   
     public function getRecordsByFilter(Request $request)
     {
         try {
@@ -1511,7 +1511,13 @@ class DistributionController extends Controller
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
-    //? fetch distributions records based on sort query and paginate
+
+
+
+    /**
+     * fetch distributions records based on sort query and paginate.
+     **/
+
     public function sortByQuery(Request $request)
     {
         try {
@@ -1544,10 +1550,6 @@ class DistributionController extends Controller
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-
-
-
-
             $result = $this->_distributionService->sortByQuery($request);
 
 
@@ -1576,138 +1578,5 @@ class DistributionController extends Controller
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
-
-
-
-
-    //? search based on request->input('query').
-    private function fetchDistributions(Request $request)
-    {
-        try {
-            $query = $request->input('query');
-
-            return Distribution::with(['itemType', 'createdForUser'])
-                ->where('is_deleted', 0)
-                //? fetch records - by query - can be type or order_number
-                ->where(function ($queryBuilder) use ($query) {
-                    // Search by item_type type field
-                    $queryBuilder->orWhereHas('itemType', function ($itemTypeQuery) use ($query) {
-                        $itemTypeQuery->where('type', 'like', "%$query%");
-                    });
-                    // Search by order number
-                    $queryBuilder->orWhere('order_number', 'like', "%$query%");
-                })
-                ->orderBy('created_at', 'desc')
-                ->get();
-        } catch (\Exception $e) {
-            Log::error($e->getMessage());
-        }
-        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
-    }
-
-    //? search based on request->input('query'). based on status given
-    private function fetchDistributionsByStatus(Request $request)
-    {
-        try {
-            $query = $request->input('query');
-
-            return Distribution::with(['itemType', 'createdForUser'])
-
-                ->where('status', $request->input('status'))
-
-                ->where('is_deleted', 0)
-
-                ->where(function ($queryBuilder) use ($query) {
-                    // Search by personal number
-                    $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
-                        $userQuery->where('personal_number', 'like', "%$query%");
-                    });
-
-                    // Search by item_type type field
-                    $queryBuilder->orWhereHas('itemType', function ($itemTypeQuery) use ($query) {
-                        $itemTypeQuery->where('type', 'like', "%$query%");
-                    });
-
-                    // Search by order number
-                    $queryBuilder->orWhere('order_number', 'like', "%$query%");
-
-                    // Search by year
-                    // $queryBuilder->orWhere('year', 'like', "%$query%");
-                    if (is_numeric($query) && strlen($query) == 4) {
-                        $queryBuilder->orWhereYear('created_at', $query);
-                    }
-
-                    // Search by full name
-                    $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
-                        $userQuery->where('name', 'like', "%$query%");
-                    });
-                })
-                ->orderBy('created_at', 'desc')
-                ->get();
-        } catch (\Exception $e) {
-            Log::error($e->getMessage());
-        }
-        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
-    }
-
-    //? fillter & fetch distributions records based on filter input
-    private function fetchDistributionsByFilter(Request $request)
-    {
-        try {
-            $query = Distribution::query();
-
-            $inputStatus = $request->input('status');
-
-            // Search by status
-            if ($inputStatus == DistributionStatus::PENDING->value || $inputStatus == DistributionStatus::CANCELD->value || $inputStatus == DistributionStatus::APPROVED->value || $inputStatus == DistributionStatus::COLLECTED->value) {
-                $query->where('status', $request->input('status'));
-            }
-
-            // Search by order_number
-            if ($request->has('order_number') && empty($request->input('order_number')) == false) {
-                $query->where('order_number', $request->input('order_number'));
-            }
-
-            //? fetch records only where created_for asscoiated with department_id
-            if ($request->has('department_id') && empty($request->input('department_id')) == false) {
-                // $query->where('department_id', $request->input('department_id'));
-                $departmentId = $request->input('department_id');
-                $query->whereHas('createdForUser', function ($query) use ($departmentId) {
-                    $query->where('department_id', $departmentId);
-                });
-            }
-            // Search by year
-            if ($request->has('year') && empty($request->input('year')) == false) {
-                // $query->where('year', $request->input('year'));
-                $year = $request->input('year');
-                //? featch records  creatd by year.
-                $query->whereYear('created_at', $year);
-            }
-
-            // Search by user_id
-            if ($request->has('clients_id') && empty($request->input('clients_id')) == false) {
-                $query->whereIn('created_for', $request->input('clients_id'));
-            }
-
-            // Search by created_at
-            if ($request->has('created_at') && empty($request->input('created_at')) == false) {
-                $query->whereDate('created_at', $request->created_at);
-            }
-
-            // Search by updated_at
-            if ($request->has('updated_at') && empty($request->input('updated_at')) == false) {
-                $query->whereDate('updated_at', $request->updated_at);
-            }
-
-            return $query
-                ->with(['itemType', 'createdForUser'])
-                ->where('is_deleted', false)
-                ->get();
-        } catch (\Exception $e) {
-            Log::error($e->getMessage());
-            return response()->json(['message' => 'התרחשה בעיה בשרת. נסה שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    
+  
 }

@@ -28,9 +28,8 @@ class StoreInventoryRequest extends FormRequest
             'sku' => 'required|string|max:255',
 
             'type_id' => 'required|integer|exists:item_types,id,is_deleted,0',
-
             'detailed_description' => 'required|string',
-            // 'item_type' => 'required|string|max:255',
+            
         ];
     }
 
