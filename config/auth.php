@@ -116,5 +116,5 @@ return [
     */
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
-    'token_name' => env('ACCESS_TOKEN'),
+    'token_name' => env('ACCESS_TOKEN_NAME'),
 ];

@@ -35,6 +35,42 @@ class UserSeeder extends Seeder
 
         $role= Role::where('name', 'admin')->first();
         $user->assignRole($role);//give admin role
+        //
+        $user =User::create([
+
+            'name' => 'נתנאל אפרים',
+            'personal_number' => '9810738',
+            'email' => 'c9810738@army.idf.il',
+            'emp_type_id' => 4,
+            'phone' => '0532157802',
+        ]);
+
+        $role= Role::where('name', 'admin')->first();
+        $user->assignRole($role);//give admin role
+        //
+        $user =User::create([
+
+            'name' => 'אופיר גולדברג',
+            'personal_number' => '8489686',
+            'email' => 'm8489686@army.idf.il',
+            'emp_type_id' => 2,
+            'phone' => '0527576444',
+        ]);
+
+        $role= Role::where('name', 'admin')->first();
+        $user->assignRole($role);//give admin role
+        //
+        $user =User::create([
+
+            'name' => 'שחר ישראלי',
+            'personal_number' => '9403854',
+            'email' => 's9403854@army.idf.il',
+            'emp_type_id' => 3,
+            'phone' => '0585023235',
+        ]);
+
+        $role= Role::where('name', 'admin')->first();
+        $user->assignRole($role);//give admin role
 
 
 
@@ -48,7 +84,7 @@ class UserSeeder extends Seeder
 
 
         // for ($i = 0; $i < 10; $i++) {
-            
+
         //     // Generate random user data
         //     $randomEmpType = EmployeeType::inRandomOrder()->first();
         //     $personalNumber = $faker->unique()->numberBetween(1000000, 9999999);

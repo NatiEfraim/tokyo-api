@@ -22,9 +22,9 @@ class AuthController extends Controller
         try {
 
             $client = new Client();
-            $adfsUrl = config('auth.adfs.url');
-            $adfsUser = config('auth.adfs.user');
-            $adfsPassword = config('auth.adfs.password');
+            $adfsUrl = env("ADFS_URL");
+            $adfsUser = env("ADFS_USER");
+            $adfsPassword = env("ADFS_PASSWORD");
 
             $adfs = $client->get($adfsUrl . "/api/token/" . $request->token, ['verify' => false, 'auth' => [
                 $adfsUser,
@@ -71,7 +71,7 @@ class AuthController extends Controller
         return response()->json($request->user(), Response::HTTP_OK);
     }
 
- 
+
 
     private function isValidPersonalNumber(string $personalNumber): bool
     {
