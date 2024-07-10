@@ -79,7 +79,6 @@ RUN php artisan storage:link
 
 # Create a script to run Laravel Scheduler
 RUN echo '#!/bin/bash\n\
-    if [ "$CONTAINER_ROLE" != "scheduler" ]; then\n\
     # Start Apache in the foreground\n\
     apache2-foreground &\n\
     # Start the scheduler in a separate process\n\
@@ -95,9 +94,6 @@ RUN echo '#!/bin/bash\n\
     # Optionally, add any monitoring or logging code here\n\
     sleep 5\n\
     done\n\
-    else\n\
-    # If not a scheduler, just start Apache in the foreground\n\
-    exec apache2-foreground\n\
     fi' > /usr/local/bin/start-scheduler
 
 # Execute the command to clear Laravel log file
