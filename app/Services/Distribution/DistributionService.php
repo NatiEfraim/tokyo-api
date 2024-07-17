@@ -549,6 +549,7 @@ class DistributionService{
             // Fetch the records with the given order_number and is_deleted is false
             $distributionRecords = Distribution::where('order_number', $request->input('order_number'))->where('is_deleted', false)->get();
 
+
             if ($distributionRecords->isEmpty()) {
 
                 return [
@@ -590,13 +591,15 @@ class DistributionService{
 
                     $processedTypeIds[] = $items['type_id'];
 
-                    $sizeArrayItem = count($items['items']);//save size of items
+                    $sizeArrayItem = count($items['items']); //save size of items
 
-                    if ((($sizeArrayItem == 0) && (is_null($items['canceled_reason'])))
-                        || (($sizeArrayItem !== 0) && (is_null($items['canceled_reason']) == false))
+
+                    if (
+                        ($sizeArrayItem==0 && isset($items['canceled_reason'])==false)
                     ) {
 
                         DB::rollBack(); // Rollback the transaction
+
                         return [
                             'status' => Status::BAD_REQUEST,
                             'message' => 'הנתונים שנשלחו אינם תקינים.',
@@ -690,11 +693,8 @@ class DistributionService{
                 // Send aproved order email
                 Mail::to($createdByUser->email)->send(new ApprovedOrder($createdByUser, $request->input('order_number')));
 
-                //? distribution records has been canceld
+                //? distribution records has been canceld - all order_number
             } elseif ($request->input('status') === DistributionStatus::CANCELD->value) {
-
-
-                //? Loop through each record and update the fields
 
                 foreach ($distributionRecords as $distributionRecord) {
                     $distributionRecord->update([

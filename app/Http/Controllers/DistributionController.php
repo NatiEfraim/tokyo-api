@@ -802,6 +802,8 @@ class DistributionController extends Controller
 
                 Status::CREATED => response()->json(['message' => $result['message']], Response::HTTP_CREATED),
 
+                Status::OK => response()->json(['message' => $result['message']], Response::HTTP_OK),
+
                 Status::BAD_REQUEST => response()->json(['message' => $result['message']], Response::HTTP_BAD_REQUEST),
 
                 Status::INTERNAL_SERVER_ERROR => response()->json(['message' => $result['message']], Response::HTTP_INTERNAL_SERVER_ERROR),
