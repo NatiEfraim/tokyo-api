@@ -364,7 +364,7 @@ class UserService
                 ///need to update the user fileds
                 $user_exsist->update([
                     'name' => $request->input('name'),
-                    'personal_number' => $personal_number,
+                    'personal_number' => $request->input('personal_number'),
                     'phone' => $request->input('phone'),
                     'email' => "{$personal_number}@army.idf.il",
                     'emp_type_id' => $request->input('employee_type'), //set the relation
@@ -392,7 +392,7 @@ class UserService
                 $newUser = User::create([
                     'name' => $request->input('name'),
                     'phone' => $request->input('phone'),
-                    'personal_number' => $personal_number,
+                    'personal_number' => $request->input('personal_number'),
                     'email' => "{$personal_number}@army.idf.il",
                     'emp_type_id' => $request->input('employee_type'), //set the relation
                 ]);

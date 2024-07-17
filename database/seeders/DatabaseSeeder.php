@@ -24,12 +24,12 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
 
             // //? dev seeder
-            // DepartmentSeeder::class,
-            // ClientSeeder::class,
-            // ItemTypeSeeder::class,
-            // InventorySeeder::class,
-            // DistributionSeeder::class,
-            // ReportSeeder::class,
+            DepartmentSeeder::class,
+            ClientSeeder::class,
+            ItemTypeSeeder::class,
+            InventorySeeder::class,
+            DistributionSeeder::class,
+            ReportSeeder::class,
 
         ]);
 
