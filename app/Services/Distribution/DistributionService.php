@@ -8,29 +8,22 @@ use App\Enums\EmployeeType;
 
 use App\Enums\DistributionStatus;
 use App\Http\Requests\AllocationDistributionRequest;
-use App\Http\Requests\CanceledDistributionRequest;
 use App\Http\Requests\ChangeStatusDistributionRequest;
 use App\Http\Requests\StoreDistributionRequest;
-use App\Http\Requests\UpdateDistributionRequest;
 use App\Mail\ApprovedOrder;
 use App\Mail\CanceledOrder;
 use App\Models\Client;
 use App\Models\Distribution;
 use App\Models\Inventory;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
-
-use App\Mail\DistributionSuccess;
-use App\Mail\DistributionFailure;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 
-// use Illuminate\Http\Response;
+
 
 
 
@@ -42,6 +35,7 @@ class DistributionService{
 
     /**
      * fetch all distributions records from distributions table.
+     *  @return array
      **/
 
     public function index()
@@ -83,7 +77,8 @@ class DistributionService{
 
 
     /**
-     * fetch quartermaster that has been updated the the distribution records
+     * fetch quartermaster that has been updated the the distribution records.
+     *  @return array
      **/
  
     public function fetchQuartermaster($id = null)
@@ -147,7 +142,8 @@ class DistributionService{
 
 
     /**
-     * fetch distributions records and group_by by order_number and type_id query is optinal
+     * fetch distributions records and group_by by order_number and type_id query is optinal.
+     *  @return array
      **/
 
     public function fetchRecordsByType(Request $request)
@@ -245,7 +241,8 @@ class DistributionService{
 
 
     /**
-     * fetch distributions records only where status fileds is 2 approved
+     * fetch distributions records only where status fileds is 2 approved.
+     *  @return array
      **/    
 
 
@@ -296,7 +293,8 @@ class DistributionService{
 
 
     /**
-     * fetch distribution records based on id
+     * fetch distribution records based on id.
+     *  @return array
      **/    
 
     public function getRecordById($id = null)
@@ -340,7 +338,8 @@ class DistributionService{
 
 
     /**
-     * destroy distribution records based on id
+     * destroy distribution records based on id.
+     *  @return array
      **/    
 
     public function destroy($id = null)
@@ -391,7 +390,8 @@ class DistributionService{
 
 
     /**
-     * store a new distribution records and send user email whether it succeed or failure
+     * store a new distribution records and send user email whether it succeed or failure.
+     *  @return array
      **/    
 
     public function store(StoreDistributionRequest $request)
@@ -488,9 +488,6 @@ class DistributionService{
 
             $orderNumber = (int) $orderNumber; 
 
-            // // Send success email
-            // Mail::to($user_auth->email)->send(new DistributionSuccess($user_auth, $client, $orderNumber));
-
             DB::commit();
 
             return [
@@ -506,10 +503,6 @@ class DistributionService{
             Log::error($e->getMessage());
         }
 
-        // // Send failure email
-        // Mail::to($user_auth->email)->send(new DistributionFailure($user_auth));
-
-
         return [
             'status' => Status::INTERNAL_SERVER_ERROR,
             'message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.',
@@ -520,7 +513,8 @@ class DistributionService{
 
 
     /**
-     * allocation records based on order_number fileds on the budy request
+     * allocation records based on order_number fileds on the budy request.
+     *  @return array
      **/   
 
     public function allocationRecords(AllocationDistributionRequest $request)
@@ -733,7 +727,8 @@ class DistributionService{
 
 
     /**
-     * changed status fileds on distribution records value can be pending or collected
+     * changed status fileds on distribution records value can be pending or collected.
+     *  @return array
      **/   
 
     public function changeStatus(ChangeStatusDistributionRequest $request)
@@ -892,7 +887,8 @@ class DistributionService{
 
 
     /**
-     * fetch distributions records based on query in the budy request
+     * fetch distributions records based on query in the budy request.
+     *  @return array
      **/   
 
     public function getRecordsByQuery(Request $request)
@@ -936,8 +932,10 @@ class DistributionService{
 
 
     /**
-     * search distributions records based on query in the budy request and group-by order_number fileds
+     * search distributions records based on query in the budy request and group-by order_number fileds.
+     *  @return array
      **/   
+
     public function fetchDistributionsRecordsByOrderNumber(Request $request)
     {
         try {
@@ -959,6 +957,7 @@ class DistributionService{
                     ->where('is_deleted', 0)
                     ->orderBy('created_at', 'desc')
                     ->paginate(20);
+
             }
 
             $distributions->each(function ($distribution) {
@@ -985,7 +984,7 @@ class DistributionService{
                 // make sure the order_number has been seen before
                 if (!in_array($distribution->order_number, $seenOrderNumbers)) {
                     $uniqueDistributions->push($distribution);
-                    // Mark this order_number as seen
+
                     $seenOrderNumbers[] = $distribution->order_number;
                 }
             }
@@ -1010,6 +1009,7 @@ class DistributionService{
 
     /**
      * fetch distributions records only by order_number fileds in the budy request
+     *  @return array
      **/   
 
     public function getRecordsByOrder(Request $request)
@@ -1041,7 +1041,8 @@ class DistributionService{
     }
 
     /**
-     * search distributions records by one or many fillter in the budy request
+     * search distributions records by one or many fillter in the budy requestץ
+     *  @return array
      **/   
 
     public function getRecordsByFilter(Request $request)
@@ -1074,9 +1075,6 @@ class DistributionService{
                     });
                 }
             } else {
-
-
-                //? fetch all distributions records.
 
                 $distributions = Distribution::with(['createdForUser', 'itemType'])
                 ->where('is_deleted', 0)
@@ -1114,6 +1112,7 @@ class DistributionService{
 
     /**
      * fetch distributions records and sort the records based on given fileds in advanced
+     *  @return array
      **/  
 
     public function sortByQuery(Request $request)
@@ -1198,7 +1197,8 @@ class DistributionService{
 
 
     /**
-     * search distributions records based on query in the budy request can be type or order_number
+     * search distributions records based on query in the budy request can be type or order_number.
+     * @return mixed
      **/
     private function fetchDistributions(Request $request)
     {

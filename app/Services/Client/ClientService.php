@@ -20,6 +20,7 @@ class ClientService{
 
     /**
      * fetch all clients records from users table.
+     * @return array
      **/
 
      public function fetchCleintsRecords()
@@ -69,6 +70,7 @@ class ClientService{
 
     /**
      * search clients records from based on personal_number or based on name.
+     * @return array
      **/
 
     public function searchClients(Request $request)

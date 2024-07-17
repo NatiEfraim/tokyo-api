@@ -27,7 +27,7 @@ class UserService
 
     /**
      * fetch all users records from users table.
-     *
+     *   @return array
      */
 
     public function fetchUsersRecords()
@@ -81,7 +81,7 @@ class UserService
 
     /**
      * fetch current user auth to the app.
-     *
+     *  @return array
      */
     public function fetchCurrentUser()
     {
@@ -131,6 +131,7 @@ class UserService
 
     /**
      * search users records based on personl_number or name.
+     *  @return array
      *
      */
     public function searchUsersRecords(Request $request)
@@ -232,6 +233,7 @@ class UserService
 
     /**
      * fetch all roles records from database.
+     *  @return array
      **/
 
     public function fetchRolesRecords()
@@ -323,6 +325,7 @@ class UserService
 
     /**
      * store new user records on the database.
+     *  @return array
      **/
 
     public function store(StoreUserRequest $request)
@@ -434,6 +437,7 @@ class UserService
 
     /**
      * update exisit user records on the database.
+     *  @return array
      **/
 
 

@@ -11,6 +11,7 @@ use App\Models\Inventory;
 use Illuminate\Support\Facades\DB;
 use App\Models\Report;
 use Carbon\Carbon;
+use Illuminate\Foundation\Mix;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -20,6 +21,7 @@ class InventoryService{
 
     /**
      * fetch all inventories records from inventories table.
+     *  @return array
      **/
 
 
@@ -57,6 +59,7 @@ class InventoryService{
 
     /**
      * select id and sku fileds on inventories records from inventories table.
+     *  @return array
      **/
 
     public function getSkuRecords()
@@ -97,6 +100,7 @@ class InventoryService{
 
     /**
      * fetch invntory records based on id records.
+     *  @return array
      **/
 
     public function getRecordById($id = null)
@@ -147,6 +151,7 @@ class InventoryService{
 
     /**
      * fetch inventories records based on type_id and sku query is optinal.
+     *  @return array
      **/
 
     public function fetchBySku(Request $request)
@@ -198,6 +203,7 @@ class InventoryService{
 
     /**
      * destroy inventory records based on id.
+     *  @return array
      **/
 
     public function destroy($id = null)
@@ -251,6 +257,7 @@ class InventoryService{
 
     /**
      * store a new inventory records on database.
+     *  @return array
      **/
 
     public function store(StoreInventoryRequest $request)
@@ -292,6 +299,7 @@ class InventoryService{
 
     /**
      * update exisit inventory records on database and store a new report records.
+     *  @return array
      **/
 
 
@@ -381,6 +389,7 @@ class InventoryService{
 
     /**
      * fetch reports records associated based on inventory_id records.
+     *  @return array
      **/
     public function fetchReport(Request $request)
     {
@@ -431,6 +440,7 @@ class InventoryService{
 
     /**
      * search inventory records based on query.
+     *  @return array
      **/
 
     public function searchRecords(Request $request)
@@ -477,6 +487,7 @@ class InventoryService{
 
     /**
      * fetch inventory records based on type_id fileds.
+     *  @return array
      **/
 
 
@@ -522,6 +533,7 @@ class InventoryService{
 
     /**
      * search inventory records based on query input on budy request.
+     *  @return mixed
      **/
 
     private function fetchInventories(Request $request)

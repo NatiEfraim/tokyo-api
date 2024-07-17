@@ -46,6 +46,7 @@ use Illuminate\Support\Facades\DB;
 
     /**
      * update exist itemType records on database.
+     *  @return array
      **/
     public function update(Request $request, $id = null)
     {
@@ -114,6 +115,7 @@ use Illuminate\Support\Facades\DB;
 
     /**
      * sore new itemType records in database.
+     *  @return array
      **/
     public function store(Request $request)
     {
@@ -163,6 +165,7 @@ use Illuminate\Support\Facades\DB;
 
     /**
      * search exist itemType records from item_types table.
+     *  @return array
      **/
 
     public function searchRecords(Request $request)
@@ -197,7 +200,8 @@ use Illuminate\Support\Facades\DB;
 
 
     /**
-     * destroy itemType records along with all invetories records associated..
+     * destroy itemType records along with all invetories records associated.
+     *  @return array
      **/
 
     public function destroy($id = null)

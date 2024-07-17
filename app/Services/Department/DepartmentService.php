@@ -12,6 +12,7 @@ class DepartmentService{
 
     /**
      * fetch all departments records from users table.
+     * @return array
      **/
 
     public function fetchDepartmentsRecords()
@@ -44,6 +45,7 @@ class DepartmentService{
 
     /**
      * store new department in database.
+     *  @return array
      **/
 
     public function store(Request $request)
@@ -88,6 +90,7 @@ class DepartmentService{
 
     /**
      * destroy exist department in database.
+     *  @return array
      **/
 
     public function destroy($id = null)

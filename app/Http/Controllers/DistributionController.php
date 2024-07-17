@@ -1140,7 +1140,7 @@ class DistributionController extends Controller
      * )
      */
 
-     //? group-by records  by order_number
+
     public function fetchDistributionsRecordsByOrderNumber(Request $request)
     {
         try {
@@ -1172,7 +1172,7 @@ class DistributionController extends Controller
             }
 
 
-            $result = $this->_distributionService->getRecordsByQuery($request);
+            $result = $this->_distributionService->fetchDistributionsRecordsByOrderNumber($request);
 
 
             // Use match to handle different status cases
