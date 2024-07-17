@@ -3,12 +3,10 @@
 namespace App\Http\Controllers;
 
 
-use App\Enums\DistributionStatus;
 use App\Enums\Status;
 use App\Http\Requests\AllocationDistributionRequest;
 use App\Http\Requests\ChangeStatusDistributionRequest;
 use App\Http\Requests\StoreDistributionRequest;
-use App\Models\Distribution;
 use App\Services\Distribution\DistributionService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -16,8 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-// use App\Mail\DistributionFailure;
-// use Illuminate\Support\Facades\Mail;
+
 
 
 
@@ -119,8 +116,6 @@ class DistributionController extends Controller
 
             $result = $this->_distributionService->index();
           
-
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),
@@ -179,7 +174,6 @@ class DistributionController extends Controller
      * )
      */
 
-    //? fetch associated quartermaster
     public function fetchQuartermaster($id = null)
     {
         try {
@@ -188,7 +182,6 @@ class DistributionController extends Controller
             $result = $this->_distributionService->fetchQuartermaster($id);
 
 
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),
@@ -287,36 +280,32 @@ class DistributionController extends Controller
      * )
      */
 
-    // ? fetch all records - based on role of user
     public function fetchRecordsByType(Request $request)
     {
         try {
 
 
-            // set custom error messages in Hebrew
             $customMessages = [
                 'query.required' => 'יש לשלוח שדה לחיפוש',
                 'query.string' => 'ערך השדה שנשלח אינו תקין.',
             ];
-            //set the rules
 
             $rules = [
                 'query' => 'nullable|string',
             ];
 
-            // validate the request data
             $validator = Validator::make($request->all(), $rules, $customMessages);
 
-            // Check if validation fails
             if ($validator->fails()) {
+
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+
             }
 
 
             $result = $this->_distributionService->fetchRecordsByType($request);
 
 
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),
@@ -407,27 +396,22 @@ class DistributionController extends Controller
      * )
      */
 
-    //? fetch records for only records that has been approved by orde_number
     public function fetchApprovedDistribution(Request $request)
     {
         try {
 
 
-            // set validation rules
             $rules = [
                 'order_number' => 'required|string|exists:distributions,order_number,is_deleted,0',
             ];
 
-            // Define custom error messages
 
             $customMessages = [
                 'order_number.exists' => 'מספר הזמנה אינה קיית במערכת.',
             ];
 
-            // validate the request with custom error messages
             $validator = Validator::make($request->all(), $rules, $customMessages);
 
-            // Check if validation fails
             if ($validator->fails()) {
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
@@ -436,7 +420,6 @@ class DistributionController extends Controller
             $result = $this->_distributionService->fetchApprovedDistribution($request);
 
 
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),
@@ -529,15 +512,14 @@ class DistributionController extends Controller
 
     public function getRecordById($id = null)
     {
+
+
+
+
         try {
-
-
-
 
             $result = $this->_distributionService->getRecordById($id);
 
-
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),
@@ -608,13 +590,13 @@ class DistributionController extends Controller
 
     public function destroy($id = null)
     {
-        try {
 
+
+
+        try {
 
             $result = $this->_distributionService->destroy($id);
 
-
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json(['message' => $result['message']], Response::HTTP_OK),
@@ -702,12 +684,9 @@ class DistributionController extends Controller
     {
         try {
 
-            $user_auth = Auth::user();
 
             $result = $this->_distributionService->store($request);
 
-
-            // Use match to handle different status cases
             return match ($result['status']) {
 
 
@@ -723,12 +702,10 @@ class DistributionController extends Controller
 
 
         } catch (\Exception $e) {
-            DB::rollBack(); // Rollback the transaction in case of any error
+            DB::rollBack(); 
             Log::error($e->getMessage());
         }
 
-        // // Send failure email
-        // Mail::to($user_auth->email)->send(new DistributionFailure($user_auth));
 
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
@@ -787,7 +764,6 @@ class DistributionController extends Controller
      * )
      */
 
-    //? route for admin - to allocate records based on order_number.
     public function allocationRecords(AllocationDistributionRequest $request)
     {
         try {
@@ -796,8 +772,6 @@ class DistributionController extends Controller
 
             $result = $this->_distributionService->allocationRecords($request);
 
-
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::CREATED => response()->json(['message' => $result['message']], Response::HTTP_CREATED),
@@ -814,7 +788,7 @@ class DistributionController extends Controller
 
 
         } catch (\Exception $e) {
-            DB::rollBack(); // Rollback the transaction in case of any error
+            DB::rollBack(); 
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -905,13 +879,12 @@ class DistributionController extends Controller
 
     public function changeStatus(ChangeStatusDistributionRequest $request)
     {
-        try {
 
+
+        try {
 
             $result = $this->_distributionService->changeStatus($request);
 
-
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json(['message' => $result['message']], Response::HTTP_OK),
@@ -929,7 +902,7 @@ class DistributionController extends Controller
 
 
         } catch (\Exception $e) {
-            DB::rollBack(); // Rollback the transaction in case of any error
+            DB::rollBack(); 
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -1020,38 +993,30 @@ class DistributionController extends Controller
     public function getRecordsByQuery(Request $request)
     {
 
-
-
         try {
 
-
-            // set custom error messages in Hebrew
             $customMessages = [
                 'query.required' => 'יש לשלוח שדה לחיפוש',
                 'query.string' => 'ערך השדה שנשלח אינו תקין.',
             ];
 
-
-            //set the rules
             $rules = [
 
                 'query' => 'required|string',
 
             ];
 
-            // validate the request data
             $validator = Validator::make($request->all(), $rules, $customMessages);
 
-            // Check if validation fails
             if ($validator->fails()) {
+
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+
             }
 
 
             $result = $this->_distributionService->getRecordsByQuery($request);
 
-
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),
@@ -1068,6 +1033,7 @@ class DistributionController extends Controller
 
 
         } catch (\Exception $e) {
+
             Log::error($e->getMessage());
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -1143,10 +1109,10 @@ class DistributionController extends Controller
 
     public function fetchDistributionsRecordsByOrderNumber(Request $request)
     {
+
+
         try {
 
-
-            // set custom error messages in Hebrew
             $customMessages = [
                 'status.required' => 'יש לשלוח שדה לחיפוש',
                 'order_number.integer' => 'ערך השדה שנשלח אינו תקין.',
@@ -1156,17 +1122,13 @@ class DistributionController extends Controller
                 'query.max' => 'שדה חיפוש אינו תקין.',
             ];
 
-            //set the rules
             $rules = [
                 'status' => 'required|integer|between:1,4',
                 'query' => 'nullable|string|min:1|max:255',
             ];
 
-
-            // validate the request data
             $validator = Validator::make($request->all(), $rules, $customMessages);
 
-            // Check if validation fails
             if ($validator->fails()) {
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
@@ -1174,8 +1136,6 @@ class DistributionController extends Controller
 
             $result = $this->_distributionService->fetchDistributionsRecordsByOrderNumber($request);
 
-
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),
@@ -1286,22 +1246,18 @@ class DistributionController extends Controller
     {
         try {
 
-            // set custom error messages in Hebrew
             $customMessages = [
                 'order_number.required' => 'יש לשלוח שדה לחיפוש',
                 'order_number.string' => 'ערך השדה שנשלח אינו תקין.',
                 'order_number.exists' => 'מספר הזמנה אינה קיימת.',
             ];
 
-            //set the rules
             $rules = [
                 'order_number' => 'required|string|exists:distributions,order_number,is_deleted,0',
             ];
 
-            // validate the request data
             $validator = Validator::make($request->all(), $rules, $customMessages);
 
-            // Check if validation fails
             if ($validator->fails()) {
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
@@ -1309,8 +1265,6 @@ class DistributionController extends Controller
 
             $result = $this->_distributionService->getRecordsByOrder($request);
 
-
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),
@@ -1327,8 +1281,11 @@ class DistributionController extends Controller
 
 
         } catch (\Exception $e) {
+
             Log::error($e->getMessage());
+
         }
+
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
@@ -1432,14 +1389,11 @@ class DistributionController extends Controller
    
     public function getRecordsByFilter(Request $request)
     {
+
+
         try {
 
-
-
-
-            // set validation rules
             $rules = [
-                // 'inventory_id' => 'nullable|string|max:255|exists:inventories,id,is_deleted,0',
 
                 'status' => 'nullable|integer|between:1,4',
 
@@ -1457,8 +1411,8 @@ class DistributionController extends Controller
                 'updated_at' => ['nullable', 'date'],
             ];
 
-            // Define custom error messages
             $customMessages = [
+
                 'clients_id.array' => 'שדה משתמש שנשלח אינו תקין.',
                 'clients_id.*.exists' => 'הערך שהוזן לא חוקי.',
 
@@ -1475,23 +1429,18 @@ class DistributionController extends Controller
                 'created_at.exists' => 'שדה תאריך אינו קיים במערכת.',
                 'updated_at.date' => 'שדה תאריך סיום אינו תקין.',
                 'updated_at.exists' => 'שדה תאריך סיום אינו קיים במערכת.',
+
             ];
 
-            // validate the request with custom error messages
             $validator = Validator::make($request->all(), $rules, $customMessages);
 
-            // Check if validation fails
             if ($validator->fails()) {
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
 
-
-
             $result = $this->_distributionService->getRecordsByFilter($request);
 
-
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),
@@ -1507,7 +1456,9 @@ class DistributionController extends Controller
 
 
         } catch (\Exception $e) {
+
             Log::error($e->getMessage());
+
         }
 
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -1523,6 +1474,7 @@ class DistributionController extends Controller
     public function sortByQuery(Request $request)
     {
         try {
+
             // Define the fields that are allowed to be sorted by
             $sortableFields = ['order_number', 'year', 'type_id', 'department_id', 'created_at'];
 
@@ -1533,7 +1485,6 @@ class DistributionController extends Controller
                 'sort.*.direction' => 'required|string|in:asc,desc',
             ];
 
-            // Define custom error messages
             $messages = [
                 'sort.required' => 'יש לשלוח שדה למיון.',
                 'sort.array' => 'ערך שדה למיון אינו נשלח בצורה תקינה.',
@@ -1544,10 +1495,8 @@ class DistributionController extends Controller
                 'sort.*.direction.in' => 'ערך שדה מיון שורות אינו נשלח בצורה תקינה.',
             ];
 
-            // validate the request with custom error messages
             $validator = Validator::make($request->all(), $rules, $messages);
 
-            // Check if validation fails
             if ($validator->fails()) {
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
@@ -1555,7 +1504,6 @@ class DistributionController extends Controller
             $result = $this->_distributionService->sortByQuery($request);
 
 
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),

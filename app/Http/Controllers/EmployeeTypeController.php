@@ -50,9 +50,9 @@ class EmployeeTypeController extends Controller
     {
         try {
 
+            
             $empTypeRecords=EmployeeType::where('is_deleted',false)->get();
 
-            // Define the translations
             $translations = [
                 'civilian_employee' => 'אע"צ',
                 'sadir' => 'סדיר',

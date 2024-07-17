@@ -64,7 +64,6 @@ class DepartmentController extends Controller
 
             $result = $this->_departmentService->fetchDepartmentsRecords();
 
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),
@@ -129,30 +128,26 @@ class DepartmentController extends Controller
     {
         try {
 
-            // Set custom error messages in Hebrew
             $customMessages = [
                 'name.required' => 'שדה השם הוא חובה.',
                 'name.string' => 'שדה ערך שם מחלקה אינו תקין.',
                 'name.unique' => 'השם שהוזן כבר קיים במערכת.',
             ];
 
-            // Set the rules
             $rules = [
                 'name' => 'required|unique:departments,name,NULL,id,is_deleted,0',
             ];
 
-            // Validate the request data
             $validator = Validator::make($request->all(), $rules, $customMessages);
 
-
-            // Check if validation fails
             if ($validator->fails()) {
+
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+
             }
 
             $result = $this->_departmentService->store($request);
 
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::CREATED => response()->json(['message' => $result['message']], Response::HTTP_CREATED),
@@ -228,7 +223,6 @@ class DepartmentController extends Controller
 
             $result = $this->_departmentService->destroy($id);
 
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json(['message' => $result['message']], Response::HTTP_OK),
@@ -243,7 +237,9 @@ class DepartmentController extends Controller
 
 
         } catch (\Exception $e) {
+
             Log::error($e->getMessage());
+            
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }

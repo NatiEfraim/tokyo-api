@@ -95,7 +95,6 @@ class UserController extends Controller
 
             $result = $this->_userService->fetchUsersRecords();
 
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),
@@ -121,7 +120,6 @@ class UserController extends Controller
 
             $result = $this->_userService->fetchRolesRecords();
 
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),
@@ -186,7 +184,6 @@ class UserController extends Controller
 
             $result = $this->_userService->fetchCurrentUser();
 
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),
@@ -281,21 +278,17 @@ class UserController extends Controller
         try {
 
 
-            // set custom error messages in Hebrew
             $customMessages = [
                 'query.required' => 'יש לשלוח שדה לחיפוש',
                 'query.string' => 'ערך השדה שנשלח אינו תקין.',
             ];
-            //set the rules
 
             $rules = [
                 'query' => 'required|string',
             ];
 
-            // validate the request data
             $validator = Validator::make($request->all(), $rules, $customMessages);
 
-            // Check if validation fails
             if ($validator->fails()) {
 
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -303,7 +296,6 @@ class UserController extends Controller
 
             $result=$this->_userService->searchUsersRecords($request);
 
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),
@@ -401,12 +393,12 @@ class UserController extends Controller
 
     public function store(StoreUserRequest $request)
     {
-        try {
 
+
+        try {
 
             $result = $this->_userService->store($request);
 
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::CREATED => response()->json(['message' => $result['message']], Response::HTTP_CREATED),
@@ -551,14 +543,12 @@ class UserController extends Controller
     {
         try {
 
-            // set validation rules
             $rules = [
 
                 'role' => 'required|integer|exists:roles,id',
 
             ];
 
-            // Define custom error messages
             $customMessages = [
 
                 'role.required' => 'יש לשלוח שדה תקיד עבור משתמש.',
@@ -567,11 +557,9 @@ class UserController extends Controller
 
             ];
 
-            // validate the request with custom error messages
             $validator = Validator::make($request->all(), $rules, $customMessages);
 
 
-            // Check if validation fails
             if ($validator->fails()) {
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
@@ -579,7 +567,6 @@ class UserController extends Controller
 
             $result = $this->_userService->update($request,$id);
 
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json(['message' => $result['message']], Response::HTTP_OK),
@@ -659,7 +646,6 @@ class UserController extends Controller
 
             $result = $this->_userService->destroy($id);
 
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json(['message' => $result['message']], Response::HTTP_OK),
@@ -675,7 +661,9 @@ class UserController extends Controller
             };
 
         } catch (\Exception $e) {
+
             Log::error($e->getMessage());
+            
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
 

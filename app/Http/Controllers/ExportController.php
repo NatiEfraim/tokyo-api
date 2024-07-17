@@ -58,28 +58,25 @@ class ExportController extends Controller
     {
         try {
   
-            // Fetch all inventories records
             $inventories = Inventory::with(['itemType'])
                 ->where('is_deleted', false)
                 ->orderBy('created_at', 'desc')
                 ->get()
                 ->map(function ($inventory) {
 
-                    // Format the created_at and updated_at timestamps
                     $inventory->created_at_date = optional($inventory->created_at)->format('d/m/Y') ?? null;
                     $inventory->updated_at_date = optional($inventory->updated_at)->format('d/m/Y') ?? null;
                     $inventory->available = $inventory->quantity - $inventory->reserved;
 
                 return $inventory;
+
                 });
 
-            // Create a new Spreadsheet object
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
 
             $sheet->setRightToLeft(true);
 
-            // Set headers
             $sheet->setCellValue('A1', 'מזהה שורה');
             $sheet->setCellValue('B1', 'מלאי זמין');
             $sheet->setCellValue('C1', 'מק"ט');
@@ -90,6 +87,7 @@ class ExportController extends Controller
             $sheet->setCellValue('H1', 'עודכן בתאריך');
 
             $row = 2;
+
             foreach ($inventories as $inventory) {
 
                 $sheet->setCellValue('A' . $row, $inventory->id ?? 'לא קיים');
@@ -139,10 +137,8 @@ class ExportController extends Controller
                 ],
             ];
 
-            // apply styling to all cells in the sheet
             $sheet->getStyle('A1:H' . ($row - 1))->applyFromArray($cellStyle);
 
-            // set the size for rest of columns
             foreach (range('A', 'H') as $column) {
                 $sheet->getColumnDimension($column)->setAutoSize(true);
             }
@@ -151,7 +147,6 @@ class ExportController extends Controller
 
             $writer = new Xlsx($spreadsheet);
 
-            // Save the file to a temporary location
             $writer->save(storage_path('app/' .   $fileName));
 
             $headers = [
@@ -205,13 +200,11 @@ class ExportController extends Controller
         try {
 
 
-            // Fetch users_fetch
             $users = User::where('is_deleted', false)
                 ->orderBy('created_at', 'desc')
                 ->get()
                 ->map(function ($user) {
 
-                    // Format the created_at and updated_at timestamps
                     $user->created_at_date = optional($user->created_at)->format('d/m/Y')??null;
                     $user->updated_at_date = optional($user->updated_at)->format('d/m/Y')??null;
 
@@ -297,7 +290,6 @@ class ExportController extends Controller
             }
 
 
-            // create Excel file
             $writer = new Xlsx($spreadsheet);
 
             $fileName = 'users_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
@@ -391,9 +383,7 @@ class ExportController extends Controller
     {
         try {
      
-            // //? fetch all distributions records along with relations.
 
-            // Fetch all distributions records.
             $distributions = Distribution::with([ 'itemType','createdForUser'])
                 ->where('is_deleted', 0)
                 ->orderBy('created_at', 'desc')
@@ -401,7 +391,6 @@ class ExportController extends Controller
 
                 ->map(function ($distribution) {
 
-                    // Format the created_at and updated_at timestamps
 
                     $distribution->created_at_date = optional($distribution->created_at)->format('d/m/Y')??null;
 
@@ -412,13 +401,12 @@ class ExportController extends Controller
                 });
 
 
-            // Create a new Spreadsheet object
             $spreadsheet = new Spreadsheet();
+
             $sheet = $spreadsheet->getActiveSheet();
 
             $sheet->setRightToLeft(true);
 
-            // Set the header row for the Excel sheet
             $sheet->setCellValue('A1', 'מזהה שורה');
             $sheet->setCellValue('B1', 'תאריך ניפוק');
             $sheet->setCellValue('C1', 'מספר הזמנה');
@@ -443,7 +431,8 @@ class ExportController extends Controller
                         $row = 2;
 
             foreach ($distributions as $distribution) {
-                // Add the main distribution data
+
+                
                 $sheet->setCellValue('A' . $row, $distribution->id ?? 'לא קיים');
                 $sheet->setCellValue('B' . $row, $distribution->created_at_date ?? 'לא קיים');
                 $sheet->setCellValue('C' . $row, $distribution->order_number ?? 'לא קיים');
@@ -511,10 +500,8 @@ class ExportController extends Controller
                 $sheet->getColumnDimension($column)->setAutoSize(true);
             }
 
-            // $filename = 'inventories.xlsx';
             $fileName = 'distributions_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
 
-            // Save the file to a temporary location
             $writer = new Xlsx($spreadsheet);
 
             $writer->save(storage_path('app/' .   $fileName));
@@ -531,69 +518,5 @@ class ExportController extends Controller
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
-
-    //? search based on request->input('query').
-    private function fetchDistributions(Request $request)
-    {
-        try {
-
-
-            $query = Distribution::query();
-
-
- 
-
-        
-            //? search by the associated id
-
-            //? fetch by status
-            if ($request->has('status')) {
-                $query->where('status', $request->status);
-            }
-
-
-            //? fetch by department
-            //? fetch records only where created_for asscoiated with department_id
-            if ($request->has('department_id') && empty($request->input('department_id')) == false) {
-
-                // $query->where('department_id', $request->input('department_id'));
-                $departmentId = $request->input('department_id');
-                $query->whereHas('createdForUser', function ($query) use ($departmentId) {
-                    $query->where('department_id', $departmentId);
-                });
-            }
-
-
-            // Search by order_number
-            if ($request->has('order_number')) {
-                $query->where('order_number', $request->input('order_number'));
-            }
-            // Search by user_id
-            if ($request->has('clients_id') && empty($request->input('clients_id')) == false) {
-                $query->whereIn('created_for', $request->input('clients_id'));
-            }
-
-
-            if ($request->has('created_at')) {
-                $query->whereDate('created_at', $request->created_at);
-            }
-
-            if ($request->has('updated_at')) {
-                $query->whereDate('updated_at', $request->updated_at);
-            }
-
-            // Ensure is_deleted is 0
-            $query->where('is_deleted', 0);
-
-            return $query->with(['itemType','createdForUser'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-        } catch (\Exception $e) {
-            Log::error($e->getMessage());
-        }
-        return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);
-
-    }
-
 
 }

@@ -71,21 +71,17 @@ class AuthController extends Controller
     {
         try {
 
-            // set validation rules
             $rules = [
                 'personal_number' => 'required|regex:/^[0-9]{7}$/',
             ];
 
-            // Define custom error messages
             $customMessages = [
                 'personal_number.required' => 'חובה לשלוח מספר אישי לאימות.',
                 'personal_number.regex' => 'מספר אישי אינו תקין. יש לפנות למסגרת אמ"ת.',
             ];
 
-            // validate the request with custom error messages
             $validator = Validator::make($request->all(), $rules, $customMessages);
 
-            // Check if validation fails
             if ($validator->fails()) {
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
@@ -97,13 +93,10 @@ class AuthController extends Controller
             ->where('is_deleted', false)
             ->first();
 
-
-            ///validate the user exsist and has emp_type and permission.
             if (is_null($user)) {
                 return response()->json(['message' => 'המשתמש לא קיים במערכת, יש לפנות למסגרת אמ"ת.'], Response::HTTP_BAD_REQUEST);
             }
 
-            // Make sure the user has an associated employeeType record
             if (is_null($user->employeeType)) {
                 return response()->json(['message' => 'המשתמש לא מקושר לסוג עובד.'], Response::HTTP_BAD_REQUEST);
             }

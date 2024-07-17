@@ -167,22 +167,17 @@ protected $_clientService;
     {
         try {
 
-
-            // set custom error messages in Hebrew
             $customMessages = [
                 'query.required' => 'יש לשלוח שדה לחיפוש',
                 'query.string' => 'ערך השדה שנשלח אינו תקין.',
             ];
-            //set the rules
 
             $rules = [
                 'query' => 'required|string',
             ];
 
-            // validate the request data
             $validator = Validator::make($request->all(), $rules, $customMessages);
 
-            // Check if validation fails
             if ($validator->fails()) {
 
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -191,7 +186,6 @@ protected $_clientService;
 
             $result = $this->_clientService->searchClients($request);
 
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),
@@ -204,7 +198,9 @@ protected $_clientService;
             };
 
         } catch (\Exception $e) {
+
             Log::error($e->getMessage());
+            
         }
 
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);

@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
-use App\Models\Inventory;
 use Illuminate\Support\Facades\DB;
 
 
@@ -79,7 +78,7 @@ class InventoryController extends Controller
 
             $result = $this->_inventoryService->index();
 
-            // Use match to handle different status cases
+     
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),
@@ -126,7 +125,7 @@ class InventoryController extends Controller
 
             $result = $this->_inventoryService->getSkuRecords();
 
-            // Use match to handle different status cases
+ 
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),
@@ -191,7 +190,6 @@ class InventoryController extends Controller
         try {
 
 
-            // set custom error messages in Hebrew
             $customMessages = [
                 
                 'type_id.required' => 'יש לבחור סוג פריט.',
@@ -203,7 +201,6 @@ class InventoryController extends Controller
                 'query.max' => 'שדה חיפוש אינו תקין.',
                 
             ];
-            //set the rules
 
             $rules = [
                 
@@ -211,10 +208,9 @@ class InventoryController extends Controller
                 'query'=> 'required|string'
             ];
 
-            // validate the request data
             $validator = Validator::make($request->all(), $rules, $customMessages);
 
-            // Check if validation fails
+
             if ($validator->fails()) {
 
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -223,7 +219,7 @@ class InventoryController extends Controller
 
             $result = $this->_inventoryService->fetchBySku($request);
 
-            // Use match to handle different status cases
+        
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),
@@ -299,7 +295,6 @@ class InventoryController extends Controller
 
             $result = $this->_inventoryService->getRecordById($id);
 
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),
@@ -374,7 +369,7 @@ class InventoryController extends Controller
 
             $result = $this->_inventoryService->destroy($id);
 
-            // Use match to handle different status cases
+
             return match ($result['status']) {
 
                 Status::OK => response()->json(['message' => $result['message']], Response::HTTP_OK),
@@ -447,7 +442,7 @@ class InventoryController extends Controller
 
             $result = $this->_inventoryService->store($request);
 
-            // Use match to handle different status cases
+       
             return match ($result['status']) {
 
                 Status::OK => response()->json(['message' => $result['message']], Response::HTTP_OK),
@@ -510,9 +505,9 @@ class InventoryController extends Controller
 
         try {
 
-            $result = $this->_inventoryService->update($request);
+            $result = $this->_inventoryService->update($request,$id);
 
-            // Use match to handle different status cases
+           
             return match ($result['status']) {
 
                 Status::OK => response()->json(['message' => $result['message']], Response::HTTP_OK),
@@ -527,8 +522,8 @@ class InventoryController extends Controller
 
         } catch (\Exception $e) {
             
-            DB::rollBack(); // Rollback the transaction in case of any error
-        Log::error($e->getMessage());
+            DB::rollBack(); 
+            Log::error($e->getMessage());
 
         }
         return response()->json(['message' => 'התרחש בעיית שרת יש לנסות שוב מאוחר יותר.'], Response::HTTP_INTERNAL_SERVER_ERROR);

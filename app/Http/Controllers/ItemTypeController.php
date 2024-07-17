@@ -68,7 +68,6 @@ class ItemTypeController extends Controller
 
             $result =$this->_itemTypeSerivce->index();
 
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),
@@ -137,7 +136,6 @@ class ItemTypeController extends Controller
         try {
 
 
-            // Set custom error messages in Hebrew
             $customMessages = [
 
                 'type.required' => 'שדה השם הוא חובה.',
@@ -149,32 +147,29 @@ class ItemTypeController extends Controller
                 'icon_number.between' => 'שדה אייקון אינו תקין.',
             ];
 
-            // Set the rules
             $rules = [
 
-                // 'type' => 'required|string|min:2|max:255',
                 'type' => [
                     'required',
                     'string',
                     'min:2',
                     'max:255',
-                    'unique:item_types,type,NULL,id,is_deleted,0', // Custom unique rule
+                    'unique:item_types,type,NULL,id,is_deleted,0', 
 
                 ],
                 'icon_number' => 'required|integer|between:1,7',
             ];
 
-            // Validate the request data
             $validator = Validator::make($request->all(), $rules, $customMessages);
 
-            // Check if validation fails
             if ($validator->fails()) {
+
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+
             }
 
             $result = $this->_itemTypeSerivce->store($request);
 
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::CREATED => response()->json(['message' => $result['message']], Response::HTTP_CREATED),
@@ -251,7 +246,6 @@ class ItemTypeController extends Controller
 
             $result = $this->_itemTypeSerivce->destroy($id);
 
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json(['message' => $result['message']], Response::HTTP_OK),
@@ -318,7 +312,6 @@ class ItemTypeController extends Controller
             }
 
 
-            // Set custom error messages in Hebrew
             $customMessages = [
 
                 'type.required' => 'שדה השם הוא חובה.',
@@ -329,25 +322,23 @@ class ItemTypeController extends Controller
 
             ];
 
-            // Set the rules
             $rules = [
 
                 'type' => 'required|string|min:2|max:255',
 
             ];
 
-            // Validate the request data
             $validator = Validator::make($request->all(), $rules, $customMessages);
 
-            // Check if validation fails
             if ($validator->fails()) {
+
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+
             }
 
 
             $result = $this->_itemTypeSerivce->update($request,$id);
 
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json(['message' => $result['message']], Response::HTTP_OK),
@@ -424,22 +415,19 @@ class ItemTypeController extends Controller
         try {
 
 
-            // set custom error messages in Hebrew
             $customMessages = [
                 'query.required' => 'יש לשלוח ערך לחיפוש',
                 'query.string' => 'ערך שנשלח אינו תקין',
                 'query.min' => 'ערך שנשלח אינו תקין',
                 'query.max' => 'ערך שנשלח אינו תקין',
             ];
-            //set the rules
+
             $rules = [
                 'query' => 'required|string|min:1|max:255',
             ];
 
-            // validate the request data
             $validator = Validator::make($request->all(), $rules, $customMessages);
 
-            // Check if validation fails
             if ($validator->fails()) {
 
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -448,7 +436,6 @@ class ItemTypeController extends Controller
 
             $result = $this->_itemTypeSerivce->searchRecords($request);
 
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),
