@@ -6,7 +6,6 @@ use App\Models\Department;
 use Illuminate\Database\Seeder;
 
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 
 class DepartmentSeeder extends Seeder

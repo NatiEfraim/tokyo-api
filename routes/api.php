@@ -6,7 +6,6 @@ use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\DistributionController;
 use App\Http\Controllers\EmployeeTypeController;
 use App\Http\Controllers\ExportController;
-// use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ItemTypeController;

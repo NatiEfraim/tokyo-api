@@ -2,16 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\EmployeeType;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-
-
 use Spatie\Permission\Models\Role;
-use Faker\Factory as Faker;
-// use Illuminate\Support\Facades\Hash;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-// use Illuminate\Support\Str;
+
 
 
 
@@ -110,7 +104,7 @@ class UserSeeder extends Seeder
         // }
 
 
-
         // User::factory(10)->create();
+        
     }
 }

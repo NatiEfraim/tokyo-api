@@ -40,9 +40,7 @@ class UserFactory extends Factory
             'personal_number' => $pn,
             'emp_type_id' => $randomEmpType->id, //set realtion
             'phone' => $faker->unique()->regexify('05\d{8}'),
-            'remember_token' => Str::random(10),
-            // 'email_verified_at' => now(),
-            // 'password' => static::$password ??= Hash::make('password'),
+
         ];
     }
 

@@ -212,11 +212,9 @@ class ExportController extends Controller
                 });
 
 
-            // Set a spreadsheet instance
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
 
-            // Set direction from right to left
             $sheet->setRightToLeft(true);
 
             // Set headers

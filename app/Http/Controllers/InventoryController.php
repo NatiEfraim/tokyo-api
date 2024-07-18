@@ -589,23 +589,20 @@ class InventoryController extends Controller
         try {
 
 
-            // set custom error messages in Hebrew
             $customMessages = [
                 'inventory_id.required' => 'יש לשלוח מוצר פריט.',
                 'inventory_id.integer' => 'יש לשלוח בפורמט תקין.',
                 'inventory_id.exists' => 'מוצר פריט לא קיים במלאי.',
 
             ];
-            //set the rules
+
             $rules = [
 
                 'inventory_id' => 'required|integer|exists:inventories,id,is_deleted,0',
             ];
 
-            // validate the request data
             $validator = Validator::make($request->all(), $rules, $customMessages);
 
-            // Check if validation fails
             if ($validator->fails()) {
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
@@ -616,7 +613,6 @@ class InventoryController extends Controller
 
             $result = $this->_inventoryService->fetchReport($request);
 
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),
@@ -700,20 +696,17 @@ class InventoryController extends Controller
         try {
 
 
-            // set custom error messages in Hebrew
             $customMessages = [
                 'query.required' => 'יש לשלוח ערך לחיפוש' ,
                 'query.string' => 'ערך שנשלח אינו תקין'
             ];
-            //set the rules
+
             $rules = [
                 'query' => 'required|string',
             ];
 
-            // validate the request data
             $validator = Validator::make($request->all(), $rules, $customMessages);
 
-            // Check if validation fails
             if ($validator->fails()) {
 
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -723,7 +716,6 @@ class InventoryController extends Controller
 
             $result = $this->_inventoryService->searchRecords($request);
 
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),
@@ -792,29 +784,24 @@ class InventoryController extends Controller
         try {
 
 
-            // set validation rules
             $rules = [
                 'type_id' => 'required|integer|exists:item_types,id,is_deleted,0',
             ];
 
-            // Define custom error messages
             $customMessages = [
                 'type_id.required' => 'חובה לשלוח מספר פריט.',
                 'type_id.integer' => 'ערך הקלט שנשלח אינו תקין.',
                 'type_id.exists' => 'סוג פריט שנשלח אינו קיים במערכת.',
             ];
 
-            // validate the request with custom error messages
             $validator = Validator::make($request->all(), $rules, $customMessages);
 
-            // Check if validation fails
             if ($validator->fails()) {
                 return response()->json(['messages' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
             $result = $this->_inventoryService->fetchByType($request);
 
-            // Use match to handle different status cases
             return match ($result['status']) {
 
                 Status::OK => response()->json($result['data'], Response::HTTP_OK),

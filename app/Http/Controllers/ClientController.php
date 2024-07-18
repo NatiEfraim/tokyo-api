@@ -80,7 +80,7 @@ protected $_clientService;
 
             $result = $this->_clientService->fetchCleintsRecords();
 
-            // Use match to handle different status cases
+
             return match ($result['status']) {
 
                 Status::OK => response()->json( $result['data'], Response::HTTP_OK),

@@ -60,7 +60,6 @@ class EmployeeTypeController extends Controller
                 'keva' => 'קבע',
             ];
 
-            // Map through empType and translate the names
             $translatedEmpTypes = $empTypeRecords->map(function ($empType) use ($translations) {
                 return [
                     'id' => $empType->id,

@@ -7,8 +7,6 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-// use Illuminate\Contracts\Queue\ShouldQueue;
-// use Illuminate\Mail\Mailables\Content;
 
 
 class DistributionSuccess extends Mailable

@@ -10,7 +10,6 @@ use App\Http\Requests\StoreDistributionRequest;
 use App\Services\Distribution\DistributionService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -1478,7 +1477,6 @@ class DistributionController extends Controller
             // Define the fields that are allowed to be sorted by
             $sortableFields = ['order_number', 'year', 'type_id', 'department_id', 'created_at'];
 
-            // Define validation rules
             $rules = [
                 'sort' => 'required|array',
                 'sort.*.field' => 'required|string|in:' . implode(',', $sortableFields),
