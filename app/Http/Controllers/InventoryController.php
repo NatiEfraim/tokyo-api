@@ -76,12 +76,6 @@ class InventoryController extends Controller
     {
         try {
 
-            
-            $user= Auth::user();
-            $user->roles->first()->name;
-
-            dd($user->roles->first()->name);
-
 
             $result = $this->_inventoryService->index();
 
