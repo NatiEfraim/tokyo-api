@@ -26,7 +26,7 @@ Route::post('/logout', [AuthController::class,'logout'])
 
 
 
-Route::get("/user", [UserController::class, "user"])->middleware(['auth:api']);
+Route::get("/user", [UserController::class, "user"])->middleware(['auth:api', 'role:admin|quartermaster|user']);
 
 
 Route::controller(InventoryController::class)
@@ -34,28 +34,23 @@ Route::controller(InventoryController::class)
     ->middleware(['auth:api'])
     ->group(function () {
 
-        Route::get('/', 'index');
+        Route::get('/', 'index')->middleware(['role:admin|quartermaster|user']);
 
-        //? fetch sku & id only
-        Route::get('/sku-records', 'getSkuRecords');
+        Route::get('/sku-records', 'getSkuRecords')->middleware(['role:admin|quartermaster|user']);
 
-        //? search invetories records 
-        Route::get('/search-records', 'searchRecords');
+        Route::get('/search-records', 'searchRecords')->middleware(['role:admin|quartermaster|user']);
 
-        //? fetch records by type_id fileds
-        Route::get('/fetch-by-type', 'fetchByType');
+        Route::get('/fetch-by-type', 'fetchByType')->middleware(['role:admin|quartermaster|user']);
 
-        //? sort by sku based on type_id
-        Route::get('/fetch-by-sku', 'fetchBySku');
+        Route::get('/fetch-by-sku', 'fetchBySku')->middleware(['role:admin|quartermaster|user']);
 
-        //? fetch all reports records by sku of invetory records (property sku:5487415).
         Route::get('/history', 'fetchReport')->middleware(['role:admin']);
 
-        Route::get('/{id?}', 'getRecordById');
+        Route::get('/{id?}', 'getRecordById')->middleware(['role:admin|quartermaster|user']);
 
         Route::put('/{id?}', 'update')->middleware(['role:admin|quartermaster']);
 
-        Route::post('/', 'store')->middleware(['role:admin']);
+        Route::post('/', 'store')->middleware(['role:admin|quartermaster']);
 
         Route::delete('/mass-destroy', 'massDestroy')->middleware(['role:admin']);
 
@@ -70,41 +65,30 @@ Route::controller(DistributionController::class)
     ->middleware(['auth:api'])
     ->group(function () {
 
-        Route::get('/', 'index');
+        Route::get('/', 'index')->middleware(['role:admin|quartermaster|user']);
 
-        //?fetch  history records - group by type_id fileds 
         Route::get('/fetch-history', 'fetchRecordsByType')->middleware(['role:admin|user|quartermaster']);
 
-        //?search distributions records based on one query - only be type_id or order_number
-        Route::get('/search-by-query', 'getRecordsByQuery');
+        Route::get('/search-by-query', 'getRecordsByQuery')->middleware(['role:admin|quartermaster|user']);
 
-        //? fillter distributions records based on one or more fileds (to export data)
         Route::get('/search-by-filter', 'getRecordsByFilter')->middleware(['role:admin']);
 
-        //? search records by order_number.
-        Route::get('/search-by-order', 'getRecordsByOrder');
+        Route::get('/search-by-order', 'getRecordsByOrder')->middleware(['role:admin|quartermaster|user']);
 
-        //? fetch based on only order_number fileds - and group_by (given query is optional)
         Route::get('/fetch-records-by-order', 'fetchDistributionsRecordsByOrderNumber')->middleware(['role:admin|quartermaster']);
 
-        //? route for quartermaster - fetch records - based on order_number. 
         Route::get('/fetch-approved', 'fetchApprovedDistribution')->middleware(['role:admin|quartermaster']);
 
-        //?sort & fetch by quering
-        Route::get('/sort', 'sortByQuery');
+        Route::get('/sort', 'sortByQuery')->middleware(['role:admin|quartermaster|user']);
 
-        //? fetch quartermaster associated to the records 
         Route::get('/fetch-quartermaster/{id?}', 'fetchQuartermaster')->middleware(['role:admin']);
 
-        Route::get('/{id?}', 'getRecordById');
+        Route::get('/{id?}', 'getRecordById')->middleware(['role:admin|quartermaster|user']);
         
-        //? route for liran allocations records items
         Route::post('/allocation', 'allocationRecords')->middleware(['role:admin']);
 
-        //? route for to make order on item  route for user
-        Route::post('/', 'store');
+        Route::post('/', 'store')->middleware(['role:admin|quartermaster|user']);
         
-        //?route for quartermaster - to sign for collected or back to liran
         Route::put('/changed-status', 'changeStatus')->middleware(['role:admin|quartermaster']);
 
         Route::delete('/{id?}', 'destroy')->middleware(['role:admin']);
@@ -115,7 +99,7 @@ Route::controller(DepartmentController::class)
     ->middleware(['auth:api'])
     ->group(function () {
 
-        Route::get('/', 'index');
+        Route::get('/', 'index')->middleware(['role:admin|quartermaster|user']);
 
         Route::post('/', 'store')->middleware(['role:admin|user']);
 
@@ -130,7 +114,7 @@ Route::controller(EmployeeTypeController::class)
     ->middleware(['auth:api'])
     ->group(function () {
 
-        Route::get('/', 'index');
+        Route::get('/', 'index')->middleware(['role:admin|quartermaster|user']);
 
     });
     
@@ -139,10 +123,8 @@ Route::controller(ClientController::class)
     ->middleware(['auth:api'])
     ->group(function () {
 
-        //?fetch all clients id & name
-        Route::get('/', 'index');
+        Route::get('/', 'index')->middleware(['role:admin|quartermaster|user']);
 
-        //? search clients records - based on pn or name.
         Route::get('/search', 'searchClients')->middleware(['role:admin|quartermaster']);
     });
 
@@ -151,13 +133,10 @@ Route::controller(UserController::class)
     ->middleware(['auth:api'])
     ->group(function () {
 
-        //? fetch all users records with associated roles.
         Route::get('/', 'index')->middleware(['role:admin|quartermaster']);
 
-        //? search users records - based on pn or name.
         Route::get('/search', 'searchUser')->middleware(['role:admin|quartermaster']);
 
-        //? fetch all roles 
         Route::get('/roles', 'getRoles')->middleware(['role:admin']);
 
         Route::post('/', 'store')->middleware(['role:admin']);
@@ -170,17 +149,16 @@ Route::controller(UserController::class)
     });
 
 ///Export tables to Excel.
-///these routes the user must has permission_name='admin'
 Route::controller(ExportController::class)
     ->prefix('export')
     ->middleware(['auth:api','role:admin'])
     ->group(function () {
 
-        Route::get('/inventories', 'exportInventories');
+        Route::get('/inventories', 'exportInventories')->middleware(['role:admin|quartermaster|user']);
 
-        Route::get('/users', 'exportUsers');
+        Route::get('/users', 'exportUsers')->middleware(['role:admin|quartermaster|user']);
         
-        Route::get('/distributions', 'exportDistributions');
+        Route::get('/distributions', 'exportDistributions')->middleware(['role:admin|quartermaster|user']);
 
     });
 
@@ -190,14 +168,14 @@ Route::controller(ExportController::class)
     ->middleware(['auth:api'])
     ->group(function () {
 
-        Route::get('/', 'index');
+        Route::get('/', 'index')->middleware(['role:admin|quartermaster|user']);
 
-        Route::get('/search-record', 'searchRecords');
+        Route::get('/search-record', 'searchRecords')->middleware(['role:admin|quartermaster|user']);
 
-        Route::post('/', 'store');
+        Route::post('/', 'store')->middleware(['role:admin|quartermaster|user']);
         
-        Route::put('/{id?}', 'update');
+        Route::put('/{id?}', 'update')->middleware(['role:admin|quartermaster|user']);
 
-        Route::delete('/{id?}', 'destroy');
+        Route::delete('/{id?}', 'destroy')->middleware(['role:admin|quartermaster|user']);
 
     });

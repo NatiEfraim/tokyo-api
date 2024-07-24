@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateInventoryRequest;
 use App\Services\Inventory\InventoryService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -74,6 +75,12 @@ class InventoryController extends Controller
     public function index()
     {
         try {
+
+            
+            $user= Auth::user();
+            $user->roles->first()->name;
+
+            dd($user->roles->first()->name);
 
 
             $result = $this->_inventoryService->index();

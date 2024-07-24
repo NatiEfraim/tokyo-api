@@ -22,13 +22,13 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class, 
             UserSeeder::class,
 
-            // //? dev seeder
-            DepartmentSeeder::class,
-            ClientSeeder::class,
-            ItemTypeSeeder::class,
-            InventorySeeder::class,
-            DistributionSeeder::class,
-            ReportSeeder::class,
+            // // //? dev seeder
+            // DepartmentSeeder::class,
+            // ClientSeeder::class,
+            // ItemTypeSeeder::class,
+            // InventorySeeder::class,
+            // DistributionSeeder::class,
+            // ReportSeeder::class,
 
         ]);
 
