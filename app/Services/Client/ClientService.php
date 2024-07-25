@@ -28,7 +28,6 @@ class ClientService{
 
         try {
 
-            // Fetch users with their employeeType and roles
             $clients = Client::select('id', 'name', 'emp_type_id', 'personal_number')
             ->where('is_deleted', false)
                 ->get();
@@ -37,7 +36,6 @@ class ClientService{
 
                 if ($client->emp_type_id) {
 
-                    //? set and format poplution for each client records
 
                     $client->population = match ($client->emp_type_id) {
                         EmployeeType::KEVA->value, EmployeeType::SADIR->value => 's' . $client->personal_number,
@@ -96,7 +94,6 @@ class ClientService{
 
             if ((ctype_digit($searchQuery) == true)) {
 
-                //? search user by personal_number
                 $clientsRecords = Client::with(['employeeType'])
                     ->where('personal_number', 'like', '%' . $searchQuery . '%')
                     ->where('is_deleted', false)
@@ -107,7 +104,6 @@ class ClientService{
 
                     if ($client->emp_type_id) {
 
-                        //? set and format poplution for each client records
 
                         $client->population = match ($client->emp_type_id) {
                             EmployeeType::KEVA->value, EmployeeType::SADIR->value => 's' . $client->personal_number,
@@ -128,7 +124,6 @@ class ClientService{
             }
 
 
-            // Search users by name (ignoring spaces)
             $clientsRecords = Client::with(['employeeType'])
                 ->whereRaw("REPLACE(name, ' ', '') LIKE ?", ['%' . $searchQuery . '%'])
                 ->where('is_deleted', false)
@@ -141,7 +136,6 @@ class ClientService{
 
                 if ($client->emp_type_id) {
 
-                    //? set and format poplution for each client records
 
                     $client->population = match ($client->emp_type_id) {
                         EmployeeType::KEVA->value, EmployeeType::SADIR->value => 's' . $client->personal_number,

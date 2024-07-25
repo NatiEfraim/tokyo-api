@@ -100,26 +100,11 @@ class DistributionService{
                 ->where('is_deleted', 0)
                 ->first();
 
-            if (is_null($distribution) || is_null($distribution->quartermaster_id)) {
-
-                return [
-                    'status' => Status::BAD_REQUEST,
-                    'message' => 'הזמנה זו אינה קיימת במערכת.',
-                ];    
-
-            }
-
-            $createdAt = $distribution->updated_at->format('H:i:s'); // Time
-            $createdAtDate = $distribution->updated_at->format('d/m/Y'); // Date
-
-            $quartermasterName = $distribution->quartermaster->name;
-            $quartermasterId = $distribution->quartermaster->id;
-
             $responseData = [
-                'quartermaster_name' => $quartermasterName,
-                'quartermaster_id' => $quartermasterId,
-                'created_at_time' => $createdAt,
-                'created_at_date' => $createdAtDate,
+                'quartermaster_name' => $distribution?->quartermaster?->name,
+                'quartermaster_id' =>   $distribution?->quartermaster?->id,
+                'created_at_time' => optional($distribution->created_at)->format('H:i:s')??null,
+                'created_at_date' => optional($distribution->updated_at)->format('d/m/Y') ??null,
             ];
 
 
@@ -182,9 +167,6 @@ class DistributionService{
                     $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
                         $userQuery->where('name', 'like', "%$query%");
                     });
-
-                    // // Search by order number
-                    // $queryBuilder->orWhere('order_number', 'like', "%$query%");
 
                 });
             }
@@ -815,9 +797,7 @@ class DistributionService{
                 $uniqueDistributions = collect();
 
                 foreach ($distributionRecords as $distribution) {
-                    $typeId = $distribution->type_id;
 
-                    //? fetch associated inventory_id records
                     $inventoryRecord = Inventory::where('id', $distribution->inventory_id)
                         ->where('is_deleted', false)
                         ->first();
@@ -831,7 +811,6 @@ class DistributionService{
                         ];  
                     }
 
-                    //?update each inveotry records reserved (no longer reserved.)
                     $inventoryRecord->update([
                         'reserved' => $inventoryRecord->reserved - $distribution->quantity_per_inventory,
                     ]);
@@ -896,7 +875,6 @@ class DistributionService{
         try {
 
 
-            //? one or more of th search based on value filter send
             $distributions = $this->fetchDistributions($request); ///private function
 
             if (is_null($distributions)) {
@@ -907,8 +885,8 @@ class DistributionService{
             }
 
             $distributions->map(function ($distribution) {
-                $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
-                $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+                $distribution->created_at_date = optional($distribution->created_at)->format('d/m/Y');
+                $distribution->updated_at_date = optional($distribution->updated_at)->format('d/m/Y');
 
                 return $distribution;
             });
@@ -945,12 +923,10 @@ class DistributionService{
 
             if ($request->input('query')) {
 
-                //? search records based on query and given status
 
                 $distributions = $this->fetchDistributionsByStatus($request); ///private function
             } else {
 
-                //? fetch all records without any query to search
 
                 $distributions = Distribution::with(['itemType', 'createdForUser'])
                 ->where('status', $request->input('status'))
@@ -973,15 +949,11 @@ class DistributionService{
             });
 
 
-
-
-            // create a new collection to store unique distributions by order_number
             $uniqueDistributions = collect();
 
             $seenOrderNumbers = [];
 
             foreach ($distributions as $distribution) {
-                // make sure the order_number has been seen before
                 if (!in_array($distribution->order_number, $seenOrderNumbers)) {
                     $uniqueDistributions->push($distribution);
 
@@ -1016,9 +988,6 @@ class DistributionService{
     {
         try {
 
-
-
-            //? fetch all distribution records based on order_number
             $distributions = Distribution::with(['itemType', 'createdForUser'])
             ->where('order_number', $request->input('order_number'))
                 ->where('is_deleted', 0)
@@ -1061,15 +1030,15 @@ class DistributionService{
                 || $request->has('created_at')
                 || $request->has('updated_at')
             ) {
-                //? one or more of th search based on value filter send
 
                 $distributions = $this->fetchDistributionsByFilter($request);///use private function
 
                 if ($distributions) {
+
                     $distributions->map(function ($distribution) {
-                        //? format date on each records
-                        $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
-                        $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+
+                        $distribution->created_at_date = optional($distribution->created_at)->format('d/m/Y');
+                        $distribution->updated_at_date = optional($distribution->updated_at)->format('d/m/Y');
 
                         return $distribution;
                     });
@@ -1082,8 +1051,8 @@ class DistributionService{
                     ->get()
                     ->map(function ($distribution) {
                         
-                        $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
-                        $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+                        $distribution->created_at_date = optional($distribution->created_at)->format('d/m/Y');
+                        $distribution->updated_at_date = optional($distribution->updated_at)->format('d/m/Y');
 
                         return $distribution;
                     });
@@ -1119,22 +1088,18 @@ class DistributionService{
     {
         try {
 
-
-            // fetch all distributions records with associations
             $distributions = Distribution::with(['itemType', 'createdForUser', 'inventory'])
             ->where('is_deleted', 0)
                 ->get();
 
-            //? format date fileds
             $distributions->each(function ($distribution) {
-                $distribution->created_at_date = $distribution->created_at->format('d/m/Y');
-                $distribution->updated_at_date = $distribution->updated_at->format('d/m/Y');
+                $distribution->created_at_date = optional($distribution->created_at)->format('d/m/Y');
+                $distribution->updated_at_date = optional($distribution->updated_at)->format('d/m/Y');
                 return $distribution;
             });
 
             $sortParams = $request->input('sort', []);
 
-            // Apply multiple sorting parameters
             if (!empty($sortParams)) {
                 $distributions = $distributions->sortBy(function ($distribution) use ($sortParams) {
                     $sortValues = [];
@@ -1142,16 +1107,12 @@ class DistributionService{
                     foreach ($sortParams as $sort) {
                         $sortField = $sort['field'];
                         if ($sortField == 'order_number') {
-                            //? sort the records by order_number fileds
                             $sortValues[] = $distribution->order_number;
                         } elseif ($sortField == 'year') {
-                            //? sort by year
                             $sortValues[] = $distribution->year;
                         } elseif ($sortField == 'type_id') {
-                            //? sort the records by type of item_types associated records.
                             $sortValues[] = $distribution->itemType->type ?? '';
                         } elseif ($sortField == 'department_id') {
-                            //? sort by department name associated by department_id
                             $sortValues[] = $distribution->createdForUser->department->name ?? '';
                         } elseif ($sortField == 'created_at') {
                             $sortValues[] = $distribution->created_at;
@@ -1171,7 +1132,6 @@ class DistributionService{
 
             $distributions = $distributions->values();
 
-            // Paginate the sorted collection
             $perPage = 20;
             $currentPage = LengthAwarePaginator::resolveCurrentPage();
             $currentItems = $distributions->slice(($currentPage - 1) * $perPage, $perPage)->all();
@@ -1208,13 +1168,10 @@ class DistributionService{
 
             return Distribution::with(['itemType', 'createdForUser'])
             ->where('is_deleted', 0)
-                //? fetch records - by query - can be type or order_number
                 ->where(function ($queryBuilder) use ($query) {
-                    // Search by item_type type field
                     $queryBuilder->orWhereHas('itemType', function ($itemTypeQuery) use ($query) {
                         $itemTypeQuery->where('type', 'like', "%$query%");
                     });
-                    // Search by order number
                     $queryBuilder->orWhere('order_number', 'like', "%$query%");
                 })
                 ->orderBy('created_at', 'desc')
@@ -1247,26 +1204,21 @@ class DistributionService{
                 ->where('is_deleted', 0)
 
                 ->where(function ($queryBuilder) use ($query) {
-                    // Search by personal number
                     $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
                         $userQuery->where('personal_number', 'like', "%$query%");
                     });
 
-                    // Search by item_type type field
                     $queryBuilder->orWhereHas('itemType', function ($itemTypeQuery) use ($query) {
                         $itemTypeQuery->where('type', 'like', "%$query%");
                     });
 
-                    // Search by order number
                     $queryBuilder->orWhere('order_number', 'like', "%$query%");
 
-                    // Search by year
                     
                     if (is_numeric($query) && strlen($query) == 4) {
                         $queryBuilder->orWhereYear('created_at', $query);
                     }
 
-                    // Search by full name
                     $queryBuilder->orWhereHas('createdForUser', function ($userQuery) use ($query) {
                         $userQuery->where('name', 'like', "%$query%");
                     });
@@ -1293,7 +1245,6 @@ class DistributionService{
 
             $inputStatus = $request->input('status');
 
-            // Search by status
             if (
                 $inputStatus == DistributionStatus::PENDING->value ||
                 $inputStatus == DistributionStatus::CANCELD->value
@@ -1303,38 +1254,30 @@ class DistributionService{
                 $query->where('status', $request->input('status'));
             }
 
-            // Search by order_number
             if ($request->has('order_number') && empty($request->input('order_number')) == false) {
                 $query->where('order_number', $request->input('order_number'));
             }
 
-            //? fetch records only where created_for asscoiated with department_id
             if ($request->has('department_id') && empty($request->input('department_id')) == false) {
-                // $query->where('department_id', $request->input('department_id'));
                 $departmentId = $request->input('department_id');
                 $query->whereHas('createdForUser', function ($query) use ($departmentId) {
                     $query->where('department_id', $departmentId);
                 });
             }
-            // Search by year
+
             if ($request->has('year') && empty($request->input('year')) == false) {
-                // $query->where('year', $request->input('year'));
                 $year = $request->input('year');
-                //? featch records  creatd by year.
                 $query->whereYear('created_at', $year);
             }
 
-            // Search by user_id
             if ($request->has('clients_id') && empty($request->input('clients_id')) == false) {
                 $query->whereIn('created_for', $request->input('clients_id'));
             }
 
-            // Search by created_at
             if ($request->has('created_at') && empty($request->input('created_at')) == false) {
                 $query->whereDate('created_at', $request->created_at);
             }
 
-            // Search by updated_at
             if ($request->has('updated_at') && empty($request->input('updated_at')) == false) {
                 $query->whereDate('updated_at', $request->updated_at);
             }

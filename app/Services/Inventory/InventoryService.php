@@ -11,7 +11,6 @@ use App\Models\Inventory;
 use Illuminate\Support\Facades\DB;
 use App\Models\Report;
 use Carbon\Carbon;
-use Illuminate\Foundation\Mix;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -160,7 +159,6 @@ class InventoryService{
 
             $searchQuery = str_replace(' ', '', $request->input('query'));
 
-            // Search users by name (ignoring spaces)
             $invetoriesRecords = Inventory::with(['itemType'])
                 ->where('type_id', $request->input('type_id'))
                 ->where('is_deleted', false)
@@ -409,8 +407,8 @@ class InventoryService{
             $reports->each(function ($report) {
 
                 // Format the created_at and updated_at timestamps
-                $report->created_at_date = $report->created_at->format('d/m/Y');
-                $report->updated_at_date = $report->updated_at->format('d/m/Y');
+                $report->created_at_date = optional($report->created_at)->format('d/m/Y')??null;
+                $report->updated_at_date = optional($report->updated_at)->format('d/m/Y') ??  null;
 
                 $report->makeHidden(['inventory_id', 'created_by', 'sku']);
 
@@ -549,15 +547,12 @@ class InventoryService{
                 ->where(function ($queryBuilder) use ($query) {
 
 
-                    // Search by item_type type field
                     $queryBuilder->orWhereHas('itemType', function ($itemTypeQuery) use ($query) {
                         $itemTypeQuery->where('type', 'like', "%$query%");
                     });
 
-                    // Search by order sku
                     $queryBuilder->orWhere('sku', 'like', "%$query%");
 
-                    // Search by order sku
                     $queryBuilder->orWhere('detailed_description', 'like', "%$query%");
                 })
 

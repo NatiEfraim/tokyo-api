@@ -127,14 +127,12 @@ use Illuminate\Support\Facades\DB;
             $itemTypeRecord = ItemType::where('type', $request->input('type'))->where('is_deleted', true)->first();
 
             if (is_null($itemTypeRecord)) {
-                //? create new itemTypeRecord record
                 ItemType::create([
                     'type' => $request->input('type'),
                     'icon_number' => $request->input('icon_number'),
 
                 ]);
             } else {
-                //? updated itemTypeRecord records that exist in the depatments table
                 $itemTypeRecord->update([
                     'type' =>  $request->input('type'),
                     'icon_number' => $request->input('icon_number'),
@@ -174,7 +172,6 @@ use Illuminate\Support\Facades\DB;
         try {
 
 
-            // Search by type
             $itemTypeRecord = ItemType::where('type', 'LIKE', '%' . $request->input('query') . '%')
                 ->where('is_deleted', false)
                 ->get();
@@ -233,7 +230,6 @@ use Illuminate\Support\Facades\DB;
             
             }
 
-            //? make sure all associated inveotries records will deleted as well.
 
             Inventory::whereIn('type_id',$id)->update(['is_deleted'=> true]);
 

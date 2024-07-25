@@ -9,7 +9,6 @@ use App\Enums\Status;
 use App\Http\Requests\StoreUserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Models\Role;
 
@@ -34,13 +33,11 @@ class UserService
     {
         try {
 
-            // Fetch users with their employeeType and roles
 
             $users = User::with(['employeeType', 'roles'])
             ->where('is_deleted', false)
                 ->paginate(10);
 
-            // Initialize an empty array to hold the formatted users
             $formattedUsers = [];
 
 
@@ -156,17 +153,14 @@ class UserService
 
             if ((ctype_digit($searchQuery) == true)) {
 
-                //? search user by personal_number
                 $user_search_for = User::with(['employeeType', 'roles'])
                     ->where('personal_number', 'like', '%' . $searchQuery . '%')
                     ->where('is_deleted', false)
                     ->orderBy('id', 'asc')
                     ->get();
 
-                // Initialize an empty array to hold the formatted users
                 $formattedUsers = [];
 
-                // Use foreach to format the users data to include role name
                 foreach ($user_search_for as $user) {
                     $formattedUsers[] = [
                         'id' => $user->id,
@@ -187,7 +181,6 @@ class UserService
             }
 
 
-            // Search users by name (ignoring spaces)
             $user_search_for = User::with(['employeeType', 'roles'])
                 ->whereRaw("REPLACE(name, ' ', '') LIKE ?", ['%' . $searchQuery . '%'])
                 ->where('is_deleted', false)
@@ -196,10 +189,8 @@ class UserService
 
 
 
-            // Initialize an empty array to hold the formatted users
             $formattedUsers = [];
 
-            // Use foreach to format the users data to include role name
             foreach ($user_search_for as $user) {
                 $formattedUsers[] = [
                     'id' => $user->id,
@@ -240,17 +231,14 @@ class UserService
     {
         try {
 
-            // Fetch all roles
             $roles = Role::all(['id', 'name']);
 
-            // Define the translations
             $translations = [
                 'admin' => 'מנהל',
                 'quartermaster' => 'אפסנאי',
                 'user' => 'ראש מדור',
             ];
 
-            // Map through roles and translate the names
             $translatedRoles = $roles->map(function ($role) use ($translations) {
                 return [
                     'id' => $role->id,
@@ -333,10 +321,8 @@ class UserService
         try {
 
 
-            //casting the value.
             $emp_type = (int) $request->input('employee_type');
 
-            //set the first letter for the persnal_number
             $personal_number = match ($emp_type) {
 
                 EmployeeType::KEVA->value, EmployeeType::SADIR->value => 's' . $request->personal_number,
@@ -364,14 +350,12 @@ class UserService
 
             if (is_null($user_exsist) == false) {
 
-                ///need to update the user fileds
                 $user_exsist->update([
                     'name' => $request->input('name'),
                     'personal_number' => $request->input('personal_number'),
                     'phone' => $request->input('phone'),
                     'email' => "{$personal_number}@army.idf.il",
                     'emp_type_id' => $request->input('employee_type'), //set the relation
-                    'remember_token' => Str::random(10),
                     'is_deleted' => 0, //back to false.
 
 
@@ -391,7 +375,6 @@ class UserService
                 $user_exsist->assignRole($role);
 
             } else {
-                //?create a new uesr from scretch
                 $newUser = User::create([
                     'name' => $request->input('name'),
                     'phone' => $request->input('phone'),
@@ -413,7 +396,6 @@ class UserService
                     default => throw new \InvalidArgumentException('Invalid role value.'),
                 };
 
-                // Assign the role to the new user.
                 $newUser->assignRole($role);
             }
 
@@ -479,7 +461,6 @@ class UserService
 
             }
 
-            // Detach all existing roles
             $user->roles()->detach();
 
             $user->assignRole($role);

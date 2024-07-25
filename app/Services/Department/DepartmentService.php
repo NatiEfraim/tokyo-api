@@ -58,13 +58,11 @@ class DepartmentService{
 
 
             if (is_null($department)) {
-                //? create new department record
                 Department::create([
                     'name' => $request->input('name'),
   
                 ]);
             } else {
-                //? updated department records that exist in the depatments table
                 $department->update([
                     'name' =>  $request->input('name'),
                     'is_deleted' => false,
