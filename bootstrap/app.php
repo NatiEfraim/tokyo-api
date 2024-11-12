@@ -18,11 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
     ]);
     
-    // Add permission middleware here
-    // $middleware->append([VerifyCookie::class]);
-    // $middleware->alias([
-    //     'verify.cookie' => VerifyCookie::class
-    // ]);
+
 })
     ->withExceptions(function (Exceptions $exceptions) {
         //

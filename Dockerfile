@@ -24,21 +24,20 @@ RUN apt-get update && \
     net-tools && \
     rm -rf /var/lib/apt/lists/*
 
-# Explicitly set PHP memory limit and enable FTP extension in php.ini
+# Explicitly set PHP memory limit
 RUN sed -i 's/memory_limit = .*/memory_limit = 256M/' /usr/local/etc/php/php.ini-development && \
     sed -i 's/memory_limit = .*/memory_limit = 256M/' /usr/local/etc/php/php.ini-production && \
     sed -i 's/upload_max_filesize = .*/upload_max_filesize = 128M/' /usr/local/etc/php/php.ini-development && \
     sed -i 's/upload_max_filesize = .*/upload_max_filesize = 128M/' /usr/local/etc/php/php.ini-production && \
     sed -i 's/post_max_size = .*/post_max_size = 128M/' /usr/local/etc/php/php.ini-development && \
     sed -i 's/post_max_size = .*/post_max_size = 128M/' /usr/local/etc/php/php.ini-production && \
-    cp /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini && \
-    echo "extension=ftp" >> /usr/local/etc/php/php.ini
+    cp /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
 
 # Configure GD with additional support
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
 
 # Install PHP extensions
-RUN docker-php-ext-install pdo pdo_mysql gd zip ftp
+RUN docker-php-ext-install pdo pdo_mysql gd zip
 
 # Install Composer globally
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
